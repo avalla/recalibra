@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VagoFlow Onboarding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ecc8",
+              "background-light": "#f6f8f8",
+              "background-dark": "#10221f",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden" style="--radio-dot-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(16,34,31)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3ccircle cx=%278%27 cy=%278%27 r=%273%27/%3e%3c/svg%3e');">
+<div class="flex-1 flex flex-col">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between text-zinc-900 dark:text-white">
+<div class="flex size-12 shrink-0 items-center justify-center">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</div>
+</div>
+<!-- Page Indicators -->
+<div class="flex w-full flex-row items-center justify-center gap-3 py-5 px-4">
+<div class="h-1 flex-1 rounded-full bg-primary/30"><div class="h-1 rounded-full bg-primary" style="width: 100%;"></div></div>
+<div class="h-1 flex-1 rounded-full bg-primary/30"><div class="h-1 rounded-full bg-primary" style="width: 100%;"></div></div>
+<div class="h-1 flex-1 rounded-full bg-primary/30"><div class="h-1 rounded-full bg-primary" style="width: 60%;"></div></div>
+<div class="h-1 flex-1 rounded-full bg-primary/30"></div>
+<div class="h-1 flex-1 rounded-full bg-primary/30"></div>
+</div>
+<!-- Headline Text -->
+<h1 class="text-zinc-900 dark:text-white tracking-tight text-[32px] font-bold leading-tight px-4 text-left pb-3 pt-6">What's your experience with breathing &amp; meditation?</h1>
+<!-- Radio List -->
+<div class="flex flex-col gap-3 p-4">
+<label class="flex items-center gap-4 rounded-xl border border-solid border-zinc-200 dark:border-zinc-700 p-4 has-[:checked]:bg-primary has-[:checked]:border-primary transition-colors duration-200 ease-in-out">
+<input class="h-6 w-6 shrink-0 appearance-none rounded-full border-2 border-zinc-300 dark:border-zinc-600 bg-transparent checked:border-primary checked:bg-white checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0" name="experience-level" type="radio"/>
+<div class="flex grow flex-col">
+<p class="text-zinc-900 dark:text-background-dark text-base font-medium leading-normal">Never tried before</p>
+</div>
+</label>
+<label class="flex items-center gap-4 rounded-xl border border-solid border-zinc-200 dark:border-zinc-700 p-4 has-[:checked]:bg-primary has-[:checked]:border-primary transition-colors duration-200 ease-in-out">
+<input checked="" class="h-6 w-6 shrink-0 appearance-none rounded-full border-2 border-zinc-300 dark:border-zinc-600 bg-transparent checked:border-primary checked:bg-white checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0" name="experience-level" type="radio"/>
+<div class="flex grow flex-col">
+<p class="text-zinc-900 dark:text-background-dark text-base font-medium leading-normal">Beginner (Tried it a few times)</p>
+</div>
+</label>
+<label class="flex items-center gap-4 rounded-xl border border-solid border-zinc-200 dark:border-zinc-700 p-4 has-[:checked]:bg-primary has-[:checked]:border-primary transition-colors duration-200 ease-in-out">
+<input class="h-6 w-6 shrink-0 appearance-none rounded-full border-2 border-zinc-300 dark:border-zinc-600 bg-transparent checked:border-primary checked:bg-white checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0" name="experience-level" type="radio"/>
+<div class="flex grow flex-col">
+<p class="text-zinc-900 dark:text-background-dark text-base font-medium leading-normal">Intermediate (Practice regularly)</p>
+</div>
+</label>
+<label class="flex items-center gap-4 rounded-xl border border-solid border-zinc-200 dark:border-zinc-700 p-4 has-[:checked]:bg-primary has-[:checked]:border-primary transition-colors duration-200 ease-in-out">
+<input class="h-6 w-6 shrink-0 appearance-none rounded-full border-2 border-zinc-300 dark:border-zinc-600 bg-transparent checked:border-primary checked:bg-white checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0" name="experience-level" type="radio"/>
+<div class="flex grow flex-col">
+<p class="text-zinc-900 dark:text-background-dark text-base font-medium leading-normal">Advanced (It's a daily habit)</p>
+</div>
+</label>
+</div>
+</div>
+<!-- Single Button -->
+<div class="flex px-4 py-3 sticky bottom-0 bg-background-light dark:bg-background-dark">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-5 flex-1 bg-primary text-background-dark text-base font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Next</span>
+</button>
+</div>
+</div>
+</body></html>

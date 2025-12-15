@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VagoFlow Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 300,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ecc8",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#10221f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-gray-800 flex items-center justify-center min-h-screen">
+<div class="w-full max-w-[420px] mx-auto overflow-hidden shadow-2xl">
+<!-- Main container -->
+<div class="relative flex h-auto min-h-[850px] w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden font-display">
+<!-- Slide 1 -->
+<div class="flex flex-col h-full w-full">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex size-12 shrink-0 items-center"></div>
+<div class="flex w-auto items-center justify-end">
+<p class="text-slate-500 dark:text-slate-400 text-base font-bold leading-normal tracking-[0.015em] shrink-0">Skip</p>
+</div>
+</div>
+<!-- Spacer -->
+<div class="flex-grow"></div>
+<!-- Image/Icon -->
+<div class="flex w-full grow items-center justify-center py-3 px-4">
+<div class="flex items-center justify-center size-48 text-primary">
+<span class="material-symbols-outlined !text-9xl scale-150">
+                            neurology
+                        </span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="px-4">
+<h1 class="text-slate-800 dark:text-white tracking-light text-[32px] font-bold leading-tight text-center pb-3 pt-6">Welcome to VagoFlow</h1>
+<p class="text-slate-600 dark:text-slate-300 text-base font-normal leading-normal pb-3 pt-1 text-center">5 minutes a day to recalibrate your nervous system.</p>
+</div>
+<!-- Spacer -->
+<div class="flex-grow"></div>
+<div class="flex-grow"></div>
+<!-- Page Indicators -->
+<div class="flex w-full flex-row items-center justify-center gap-3 py-5 mb-8">
+<div class="h-2 w-2 rounded-full bg-primary"></div>
+<div class="h-2 w-2 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+<div class="h-2 w-2 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+</div>
+</div>
+<!-- Slide 2 (hidden for demonstration, would be revealed by swipe)
+            <div class="absolute inset-0 flex flex-col h-full w-full bg-background-light dark:bg-background-dark">
+                
+                <div class="flex items-center p-4 pb-2 justify-between">
+                    <div class="flex size-12 shrink-0 items-center"></div>
+                    <div class="flex w-auto items-center justify-end">
+                        <p class="text-slate-500 dark:text-slate-400 text-base font-bold leading-normal tracking-[0.015em] shrink-0">Skip</p>
+                    </div>
+                </div>
+
+                <div class="flex-grow"></div>
+
+                
+                <div class="flex w-full grow items-center justify-center py-3 px-4">
+                    <div class="grid grid-cols-2 gap-8 text-primary">
+                        <div class="flex flex-col items-center gap-2">
+                             <span class="material-symbols-outlined !text-6xl">airwave</span>
+                             <p class="text-sm text-slate-500 dark:text-slate-400">Breathing</p>
+                        </div>
+                        <div class="flex flex-col items-center gap-2">
+                             <span class="material-symbols-outlined !text-6xl">water_drop</span>
+                             <p class="text-sm text-slate-500 dark:text-slate-400">Water</p>
+                        </div>
+                        <div class="flex flex-col items-center gap-2">
+                             <span class="material-symbols-outlined !text-6xl">graphic_eq</span>
+                             <p class="text-sm text-slate-500 dark:text-slate-400">Vocal</p>
+                        </div>
+                        <div class="flex flex-col items-center gap-2">
+                             <span class="material-symbols-outlined !text-6xl">directions_run</span>
+                             <p class="text-sm text-slate-500 dark:text-slate-400">Movement</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-4">
+                    <h1 class="text-slate-800 dark:text-white tracking-light text-[32px] font-bold leading-tight text-center pb-3 pt-6">Guided Routines</h1>
+                    <p class="text-slate-600 dark:text-slate-300 text-base font-normal leading-normal pb-3 pt-1 text-center">Discover exercises for breathing, water immersion, vocal toning, and gentle movement.</p>
+                </div>
+                
+                <div class="flex-grow"></div>
+                <div class="flex-grow"></div>
+                
+                <div class="flex w-full flex-row items-center justify-center gap-3 py-5 mb-8">
+                    <div class="h-2 w-2 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                    <div class="h-2 w-2 rounded-full bg-primary"></div>
+                    <div class="h-2 w-2 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                </div>
+            </div>
+            -->
+<!-- Slide 3 (hidden for demonstration)
+            <div class="absolute inset-0 flex flex-col h-full w-full bg-background-light dark:bg-background-dark">
+                
+                <div class="flex items-center p-4 pb-2 justify-between">
+                    <div class="flex size-12 shrink-0 items-center"></div>
+                </div>
+                
+                <div class="flex-grow"></div>
+
+                <div class="flex w-full grow items-center justify-center py-3 px-4">
+                    <div class="flex items-center justify-center size-48 text-primary">
+                         <span class="material-symbols-outlined !text-9xl scale-150">
+                            cardiology
+                        </span>
+                    </div>
+                </div>
+
+                <div class="px-4">
+                    <h1 class="text-slate-800 dark:text-white tracking-light text-[32px] font-bold leading-tight text-center pb-3 pt-6">Feel the Difference</h1>
+                    <p class="text-slate-600 dark:text-slate-300 text-base font-normal leading-normal pb-3 pt-1 text-center">Reduce stress, improve emotional regulation, and gain awareness of your HRV.</p>
+                </div>
+                
+                <div class="flex-grow"></div>
+                <div class="flex-grow"></div>
+
+                <div class="flex w-full flex-row items-center justify-center gap-3 py-5">
+                    <div class="h-2 w-2 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                    <div class="h-2 w-2 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                    <div class="h-2 w-2 rounded-full bg-primary"></div>
+                </div>
+
+                <div class="p-6 mt-auto w-full">
+                    <button class="w-full bg-primary text-background-dark font-bold text-lg h-14 rounded-xl">Get Started</button>
+                    <button class="w-full text-slate-500 dark:text-slate-400 font-bold text-base h-14 rounded-xl mt-2">Log in</button>
+                </div>
+
+            </div>
+            -->
+</div>
+</div>
+</body></html>

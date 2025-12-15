@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VagoFlow - History &amp; Progress</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#48D1CC",
+              "background-light": "#F5F7FA",
+              "background-dark": "#0A2E46",
+              "card-light": "#FFFFFF",
+              "card-dark": "#1E4966",
+              "text-light": "#0A2E46",
+              "text-dark": "#F5F7FA",
+              "muted-light": "#A0AEC0",
+              "muted-dark": "#A0AEC0",
+              "danger": "#fa5838",
+              "success": "#0bda4d",
+              "segment-bg-light": "#E2E8F0",
+              "segment-bg-dark": "#082438",
+              "segment-active-light": "#FFFFFF",
+              "segment-active-dark": "#1E4966",
+              "segment-text-light": "#4A5568",
+              "segment-text-dark": "#A0AEC0",
+              "segment-text-active-light": "#0A2E46",
+              "segment-text-active-dark": "#FFFFFF"
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 bg-background-light dark:bg-background-dark sticky top-0 z-10">
+<div class="flex size-12 shrink-0 items-center justify-start text-text-light dark:text-text-dark">
+<span class="material-symbols-outlined !text-2xl">arrow_back</span>
+</div>
+<h1 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center text-text-light dark:text-text-dark">History &amp; Progress</h1>
+<div class="size-12 shrink-0"></div> <!-- Spacer -->
+</div>
+<!-- Segmented Buttons -->
+<div class="flex px-4 py-3">
+<div class="flex h-12 flex-1 items-center justify-center rounded-xl bg-segment-bg-light dark:bg-segment-bg-dark p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-segment-active-light dark:has-[:checked]:bg-segment-active-dark has-[:checked]:shadow-sm has-[:checked]:text-segment-text-active-light dark:has-[:checked]:text-segment-text-active-dark text-segment-text-light dark:text-segment-text-dark text-sm font-medium leading-normal transition-colors">
+<span class="truncate">Week</span>
+<input checked="" class="invisible w-0" name="time-filter" type="radio" value="Week"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-segment-active-light dark:has-[:checked]:bg-segment-active-dark has-[:checked]:shadow-sm has-[:checked]:text-segment-text-active-light dark:has-[:checked]:text-segment-text-active-dark text-segment-text-light dark:text-segment-text-dark text-sm font-medium leading-normal transition-colors">
+<span class="truncate">Month</span>
+<input class="invisible w-0" name="time-filter" type="radio" value="Month"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-segment-active-light dark:has-[:checked]:bg-segment-active-dark has-[:checked]:shadow-sm has-[:checked]:text-segment-text-active-light dark:has-[:checked]:text-segment-text-active-dark text-segment-text-light dark:text-segment-text-dark text-sm font-medium leading-normal transition-colors">
+<span class="truncate">90 days</span>
+<input class="invisible w-0" name="time-filter" type="radio" value="90 days"/>
+</label>
+</div>
+</div>
+<!-- Populated State -->
+<div class="flex flex-col space-y-6">
+<!-- Charts Section -->
+<div class="flex flex-col gap-6 px-4 py-4">
+<div class="flex min-w-72 flex-1 flex-col gap-3 p-6 rounded-xl bg-card-light dark:bg-card-dark">
+<p class="text-base font-medium leading-normal text-text-light dark:text-text-dark">Stress Trend</p>
+<p class="tracking-light text-[32px] font-bold leading-tight truncate text-text-light dark:text-text-dark">Avg. 4.2</p>
+<div class="flex gap-1.5 items-center">
+<p class="text-sm font-normal leading-normal text-muted-light dark:text-muted-dark">This Week</p>
+<p class="text-sm font-medium leading-normal text-danger">-8%</p>
+</div>
+<div class="flex min-h-[140px] flex-1 flex-col gap-6 pt-4">
+<svg fill="none" height="110" preserveaspectratio="none" viewbox="-3 0 478 112" width="100%" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 81.75C18.1538 81.75 18.1538 15.75 36.3077 15.75C54.4615 15.75 54.4615 30.75 72.6154 30.75C90.7692 30.75 90.7692 69.75 108.923 69.75C127.077 69.75 127.077 24.75 145.231 24.75C163.385 24.75 163.385 75.75 181.538 75.75C199.692 75.75 199.692 45.75 217.846 45.75C236 45.75 236 33.75 254.154 33.75C272.308 33.75 272.308 90.75 290.462 90.75C308.615 90.75 308.615 111.75 326.769 111.75C344.923 111.75 344.923 0.75 363.077 0.75C381.231 0.75 381.231 60.75 399.385 60.75C417.538 60.75 417.538 96.75 435.692 96.75C453.846 96.75 453.846 18.75 472 18.75V111.75H0V81.75Z" fill="url(#chart-gradient)"></path>
+<path d="M0 81.75C18.1538 81.75 18.1538 15.75 36.3077 15.75C54.4615 15.75 54.4615 30.75 72.6154 30.75C90.7692 30.75 90.7692 69.75 108.923 69.75C127.077 69.75 127.077 24.75 145.231 24.75C163.385 24.75 163.385 75.75 181.538 75.75C199.692 75.75 199.692 45.75 217.846 45.75C236 45.75 236 33.75 254.154 33.75C272.308 33.75 272.308 90.75 290.462 90.75C308.615 90.75 308.615 111.75 326.769 111.75C344.923 111.75 344.923 0.75 363.077 0.75C381.231 0.75 381.231 60.75 399.385 60.75C417.538 60.75 417.538 96.75 435.692 96.75C453.846 96.75 453.846 18.75 472 18.75" stroke="#48D1CC" stroke-linecap="round" stroke-width="3"></path>
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="chart-gradient" x1="236" x2="236" y1="0.75" y2="111.75">
+<stop stop-color="#48D1CC" stop-opacity="0.2"></stop>
+<stop offset="1" stop-color="#48D1CC" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="flex justify-around">
+<p class="text-xs font-bold leading-normal tracking-wide text-muted-light dark:text-muted-dark">Mon</p>
+<p class="text-xs font-bold leading-normal tracking-wide text-muted-light dark:text-muted-dark">Tue</p>
+<p class="text-xs font-bold leading-normal tracking-wide text-muted-light dark:text-muted-dark">Wed</p>
+<p class="text-xs font-bold leading-normal tracking-wide text-muted-light dark:text-muted-dark">Thu</p>
+<p class="text-xs font-bold leading-normal tracking-wide text-muted-light dark:text-muted-dark">Fri</p>
+<p class="text-xs font-bold leading-normal tracking-wide text-muted-light dark:text-muted-dark">Sat</p>
+<p class="text-xs font-bold leading-normal tracking-wide text-muted-light dark:text-muted-dark">Sun</p>
+</div>
+</div>
+</div>
+<div class="flex min-w-72 flex-1 flex-col justify-center items-center gap-2 p-6 rounded-xl bg-card-light dark:bg-card-dark h-48">
+<p class="text-base font-medium leading-normal text-text-light dark:text-text-dark">HRV Trend</p>
+<p class="text-sm font-normal text-center text-muted-light dark:text-muted-dark">Heart Rate Variability data is coming soon.</p>
+</div>
+</div>
+<!-- Recent Sessions List -->
+<div class="flex flex-col space-y-3 pb-8">
+<h3 class="text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 text-text-light dark:text-text-dark">Recent Sessions</h3>
+<div class="flex flex-col px-2 space-y-2">
+<div class="flex items-center gap-4 bg-card-light dark:bg-card-dark px-4 py-4 rounded-xl">
+<div class="flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12 text-primary">
+<span class="material-symbols-outlined !text-2xl">waves</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-base font-medium leading-normal line-clamp-1 text-text-light dark:text-text-dark">Deep Breathing</p>
+<p class="text-sm font-normal leading-normal line-clamp-2 text-muted-light dark:text-muted-dark">Mon, Oct 23 - 10 min</p>
+</div>
+<div class="shrink-0 flex items-center gap-1.5">
+<p class="text-base font-medium leading-normal text-text-light dark:text-text-dark">7</p>
+<span class="material-symbols-outlined !text-base text-muted-light dark:text-muted-dark">arrow_right_alt</span>
+<p class="text-base font-medium leading-normal text-success">4</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-card-light dark:bg-card-dark px-4 py-4 rounded-xl">
+<div class="flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12 text-primary">
+<span class="material-symbols-outlined !text-2xl">graphic_eq</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-base font-medium leading-normal line-clamp-1 text-text-light dark:text-text-dark">Sound Bath</p>
+<p class="text-sm font-normal leading-normal line-clamp-2 text-muted-light dark:text-muted-dark">Sun, Oct 22 - 15 min</p>
+</div>
+<div class="shrink-0 flex items-center gap-1.5">
+<p class="text-base font-medium leading-normal text-text-light dark:text-text-dark">6</p>
+<span class="material-symbols-outlined !text-base text-muted-light dark:text-muted-dark">arrow_right_alt</span>
+<p class="text-base font-medium leading-normal text-success">3</p>
+</div>
+</div>
+<div class="flex items-center gap-4 bg-card-light dark:bg-card-dark px-4 py-4 rounded-xl">
+<div class="flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12 text-primary">
+<span class="material-symbols-outlined !text-2xl">self_improvement</span>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-base font-medium leading-normal line-clamp-1 text-text-light dark:text-text-dark">Mindful Focus</p>
+<p class="text-sm font-normal leading-normal line-clamp-2 text-muted-light dark:text-muted-dark">Sat, Oct 21 - 5 min</p>
+</div>
+<div class="shrink-0 flex items-center gap-1.5">
+<p class="text-base font-medium leading-normal text-text-light dark:text-text-dark">5</p>
+<span class="material-symbols-outlined !text-base text-muted-light dark:text-muted-dark">arrow_right_alt</span>
+<p class="text-base font-medium leading-normal text-text-light dark:text-text-dark">5</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 
+        // Empty State - UNCOMMENT TO VIEW
+        <div class="flex flex-col items-center justify-center text-center px-8 py-20 space-y-6 flex-1">
+            <div class="flex items-center justify-center size-24 text-primary opacity-50">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-full"><path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v.75c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875v-.75C22.5 3.839 21.66 3 20.625 3H3.375z"></path><path fill-rule="evenodd" d="M3.087 9l.54 9.176A3 3 0 006.62 21h10.757a3 3 0 002.995-2.824L20.913 9H3.087zm6.133 2.845a.75.75 0 011.06 0l1.72 1.72 1.72-1.72a.75.75 0 111.06 1.06l-1.72 1.72 1.72 1.72a.75.75 0 11-1.06 1.06L12 15.685l-1.72 1.72a.75.75 0 11-1.06-1.06l1.72-1.72-1.72-1.72a.75.75 0 010-1.06z" clip-rule="evenodd"></path></svg>
+            </div>
+            <div class="space-y-2">
+                <h2 class="text-2xl font-bold text-text-light dark:text-text-dark">Your Journey Starts Here</h2>
+                <p class="text-base text-muted-light dark:text-muted-dark">Complete your first session to see your progress tracked on this screen.</p>
+            </div>
+            <button class="bg-primary text-background-dark font-bold py-3 px-6 rounded-full">
+                Start First Session
+            </button>
+        </div>
+        -->
+</div>
+</body></html>

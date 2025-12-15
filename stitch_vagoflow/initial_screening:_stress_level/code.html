@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vagus Nerve Stimulation App - Stress Level</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#13ecc8",
+            "background-light": "#f6f8f8",
+            "background-dark": "#10221f",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="flex h-screen flex-col">
+<header class="flex-shrink-0 pt-10 pb-4 px-6">
+<div class="flex w-full flex-row items-center justify-center gap-3">
+<div class="h-2 w-2 rounded-full bg-primary"></div>
+<div class="h-2 w-2 rounded-full bg-gray-700"></div>
+<div class="h-2 w-2 rounded-full bg-gray-700"></div>
+<div class="h-2 w-2 rounded-full bg-gray-700"></div>
+</div>
+</header>
+<main class="flex-grow flex flex-col justify-center px-6">
+<div class="text-center">
+<h1 class="text-white tracking-light text-[32px] font-bold leading-tight">How are you feeling right now?</h1>
+<p class="text-white/70 text-base font-normal leading-normal pt-2">Rate your perceived stress on a scale of 1 to 10.</p>
+</div>
+<div class="flex flex-col items-center justify-center gap-6 pt-16 pb-8">
+<p class="text-primary text-7xl font-bold">5</p>
+</div>
+<div class="@container w-full max-w-sm mx-auto">
+<div class="relative flex w-full flex-col items-start gap-3">
+<div class="flex h-4 w-full items-center gap-4">
+<div class="flex h-1.5 flex-1 rounded-full bg-[#3b544f]">
+<div class="h-full w-[44.4%] rounded-full bg-primary"></div>
+<div class="relative">
+<div class="absolute -left-3 -top-2.5 size-6 rounded-full bg-white ring-4 ring-primary"></div>
+</div>
+</div>
+</div>
+<div class="flex w-full justify-between">
+<p class="text-sm font-medium text-white/70">1 (Calm)</p>
+<p class="text-sm font-medium text-white/70">10 (Stressed)</p>
+</div>
+</div>
+</div>
+</main>
+<footer class="flex-shrink-0 p-6">
+<div class="flex w-full">
+<button class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-5 flex-1 bg-primary text-background-dark text-base font-bold leading-normal tracking-[0.015em]">
+<span class="truncate">Next</span>
+</button>
+</div>
+</footer>
+</div>
+</body></html>

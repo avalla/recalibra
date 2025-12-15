@@ -1,0 +1,16 @@
+{
+  "name": "vagoflow",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "expo-device": "^8.0.10",
+    "expo-notifications": "^0.32.14"
+  }
+}

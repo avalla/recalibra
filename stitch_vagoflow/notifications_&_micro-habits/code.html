@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VagoFlow - Notifications &amp; Habits</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 300,
+            'GRAD' 0,
+            'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ecec",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#102222",
+                        "card-light": "#ffffff",
+                        "card-dark": "#1c2727",
+                        "icon-bg-light": "#eef3f3",
+                        "icon-bg-dark": "#283939",
+                        "text-light": "#1A3A5A",
+                        "text-dark": "#ffffff",
+                        "subtle-text-light": "#5a7a9a",
+                        "subtle-text-dark": "#9db9b9",
+                        "border-light": "#e2e8f0",
+                        "border-dark": "#334155",
+                        "segment-bg-light": "#eef3f3",
+                        "segment-bg-dark": "#102222",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between">
+<div class="flex size-12 shrink-0 items-center justify-center text-text-light dark:text-text-dark">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h1 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Notifications &amp; Habits</h1>
+<div class="size-12 shrink-0"></div> <!-- Spacer -->
+</div>
+<!-- Explanatory Text -->
+<p class="text-subtle-text-light dark:text-subtle-text-dark text-base font-normal leading-normal pb-3 pt-2 px-6 text-center">
+            Notifications are gentle suggestions to pause and reset, not demanding alarms. You are always in control of when and how you are reminded.
+        </p>
+<!-- Main Toggle -->
+<div class="px-4 py-4">
+<div class="flex items-center gap-4 bg-card-light dark:bg-card-dark px-4 py-3 min-h-14 justify-between rounded-lg">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-icon-bg-light dark:bg-icon-bg-dark shrink-0 size-10">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<p class="text-text-light dark:text-text-dark text-base font-normal leading-normal flex-1 truncate">Enable Vagal Break Reminders</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-icon-bg-light dark:bg-icon-bg-dark p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary">
+<input checked="" class="invisible absolute" type="checkbox"/>
+<div class="h-full w-[27px] rounded-full bg-white transition-transform" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Configuration Card -->
+<div class="p-4 pt-0 @container">
+<div class="flex flex-col items-stretch justify-start rounded-xl bg-card-light dark:bg-card-dark p-5">
+<p class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] mb-6">Schedule Your Gentle Reminders</p>
+<!-- Time of Day -->
+<div class="mb-6">
+<h3 class="text-subtle-text-light dark:text-subtle-text-dark text-sm font-semibold leading-normal mb-3">Time of Day</h3>
+<div class="grid grid-cols-3 gap-2 rounded-lg bg-segment-bg-light dark:bg-segment-bg-dark p-1">
+<button class="text-text-light dark:text-text-dark rounded-md bg-transparent px-3 py-2 text-sm font-medium transition-colors">Morning</button>
+<button class="rounded-md bg-primary/20 text-primary px-3 py-2 text-sm font-medium transition-colors">Afternoon</button>
+<button class="text-text-light dark:text-text-dark rounded-md bg-transparent px-3 py-2 text-sm font-medium transition-colors">Evening</button>
+</div>
+</div>
+<!-- Frequency -->
+<div class="mb-6">
+<h3 class="text-subtle-text-light dark:text-subtle-text-dark text-sm font-semibold leading-normal mb-3">How many reminders per day?</h3>
+<div class="flex items-center justify-between gap-4">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-icon-bg-light dark:bg-icon-bg-dark text-primary">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<p class="text-text-light dark:text-text-dark text-xl font-bold">2</p>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-icon-bg-light dark:bg-icon-bg-dark text-primary">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<!-- Reminder Types Title -->
+<h3 class="text-subtle-text-light dark:text-subtle-text-dark text-sm font-semibold leading-normal mb-1">Reminder Type</h3>
+<!-- Reminder List Items -->
+<div class="flex flex-col">
+<!-- Breathing Exercise -->
+<div class="flex items-center gap-4 py-4 min-h-14 justify-between border-b border-border-light dark:border-border-dark">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-icon-bg-light dark:bg-icon-bg-dark shrink-0 size-10">
+<span class="material-symbols-outlined">airwave</span>
+</div>
+<p class="text-text-light dark:text-text-dark text-base font-normal leading-normal flex-1 truncate">Breathing Exercise</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-icon-bg-light dark:bg-icon-bg-dark p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary">
+<input checked="" class="invisible absolute" type="checkbox"/>
+<div class="h-full w-[27px] rounded-full bg-white" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+</label>
+</div>
+</div>
+<!-- Mindful Moment -->
+<div class="flex items-center gap-4 py-4 min-h-14 justify-between border-b border-border-light dark:border-border-dark">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-icon-bg-light dark:bg-icon-bg-dark shrink-0 size-10">
+<span class="material-symbols-outlined">self_improvement</span>
+</div>
+<p class="text-text-light dark:text-text-dark text-base font-normal leading-normal flex-1 truncate">Mindful Moment</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-icon-bg-light dark:bg-icon-bg-dark p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary">
+<input checked="" class="invisible absolute" type="checkbox"/>
+<div class="h-full w-[27px] rounded-full bg-white" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+</label>
+</div>
+</div>
+<!-- Micro-Exercise -->
+<div class="flex items-center gap-4 py-4 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-lg bg-icon-bg-light dark:bg-icon-bg-dark shrink-0 size-10">
+<span class="material-symbols-outlined">exercise</span>
+</div>
+<p class="text-text-light dark:text-text-dark text-base font-normal leading-normal flex-1 truncate">Micro-Exercise</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-icon-bg-light dark:bg-icon-bg-dark p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary">
+<input class="invisible absolute" type="checkbox"/>
+<div class="h-full w-[27px] rounded-full bg-white" style="box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px, rgba(0, 0, 0, 0.06) 0px 3px 1px;"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

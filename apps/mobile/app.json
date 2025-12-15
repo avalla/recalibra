@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "VagoFlow",
+    "slug": "vagoflow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "vagoflow",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F1A19"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vagoflow.app",
+      "infoPlist": {
+        "NSHealthShareUsageDescription": "VagoFlow needs access to your health data to track HRV and stress levels.",
+        "NSHealthUpdateUsageDescription": "VagoFlow needs to write session data to Apple Health.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F1A19"
+      },
+      "package": "com.vagoflow.app",
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "com.android.vending.BILLING"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-font",
+      "expo-asset",
+      "react-native-health",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "61c87648-19f0-4e46-ae78-ea29d91e9841"
+      }
+    },
+    "owner": "avalla"
+  }
+}

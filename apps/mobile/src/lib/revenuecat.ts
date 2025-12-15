@@ -1,0 +1,160 @@
+import Purchases, { LOG_LEVEL, CustomerInfo, PurchasesOffering } from 'react-native-purchases';
+import { Platform } from 'react-native';
+import { AppConfig } from '../config';
+
+// RevenueCat Configuration
+// Get your API keys from RevenueCat Dashboard → Project Settings → API Keys
+
+// Get the correct API key based on platform
+const getApiKey = (): string => {
+  if (Platform.OS === 'ios') {
+    return AppConfig.REVENUECAT_IOS_KEY;
+  }
+  if (Platform.OS === 'android') {
+    return AppConfig.REVENUECAT_ANDROID_KEY;
+  }
+  // Fallback for web/other - won't work but prevents crash
+  return AppConfig.REVENUECAT_IOS_KEY;
+};
+
+// Entitlement ID - this should match what you configured in RevenueCat dashboard
+export const ENTITLEMENT_ID = 'VagoFlow Pro';
+
+// Product IDs - these should match your offerings in RevenueCat
+export const PRODUCT_IDS = {
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly', 
+  LIFETIME: 'lifetime',
+};
+
+/**
+ * Initialize RevenueCat SDK
+ * Should be called once when the app starts
+ */
+export const initializeRevenueCat = async (userId?: string): Promise<void> => {
+  try {
+    // Enable debug logs in development
+    if (__DEV__) {
+      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+    }
+
+    // Configure with API key
+    // Using the simpler configuration method for better compatibility
+    Purchases.configure({
+      apiKey: getApiKey(),
+      appUserID: userId || null,
+    });
+
+    console.log('[RevenueCat] Initialized successfully');
+  } catch (error) {
+    console.error('[RevenueCat] Initialization error:', error);
+    // Don't throw - let app continue without RevenueCat if it fails
+    console.warn('[RevenueCat] App will continue without subscription features');
+  }
+};
+
+/**
+ * Login user to RevenueCat (call when user authenticates)
+ */
+export const loginUser = async (userId: string): Promise<CustomerInfo> => {
+  try {
+    const { customerInfo } = await Purchases.logIn(userId);
+    console.log('[RevenueCat] User logged in:', userId);
+    return customerInfo;
+  } catch (error) {
+    console.error('[RevenueCat] Login error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Logout user from RevenueCat (call when user signs out)
+ */
+export const logoutUser = async (): Promise<CustomerInfo> => {
+  try {
+    const customerInfo = await Purchases.logOut();
+    console.log('[RevenueCat] User logged out');
+    return customerInfo;
+  } catch (error) {
+    console.error('[RevenueCat] Logout error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get current customer info
+ */
+export const getCustomerInfo = async (): Promise<CustomerInfo> => {
+  try {
+    const customerInfo = await Purchases.getCustomerInfo();
+    return customerInfo;
+  } catch (error) {
+    console.error('[RevenueCat] Error getting customer info:', error);
+    throw error;
+  }
+};
+
+/**
+ * Check if user has active premium entitlement
+ */
+export const checkPremiumStatus = (customerInfo: CustomerInfo): boolean => {
+  const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
+  return entitlement?.isActive === true;
+};
+
+/**
+ * Get subscription expiration date
+ */
+export const getExpirationDate = (customerInfo: CustomerInfo): Date | null => {
+  const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
+  if (entitlement?.expirationDate) {
+    return new Date(entitlement.expirationDate);
+  }
+  return null;
+};
+
+/**
+ * Get current offerings
+ */
+export const getOfferings = async (): Promise<PurchasesOffering | null> => {
+  try {
+    const offerings = await Purchases.getOfferings();
+    return offerings.current;
+  } catch (error) {
+    console.error('[RevenueCat] Error getting offerings:', error);
+    throw error;
+  }
+};
+
+/**
+ * Restore purchases
+ */
+export const restorePurchases = async (): Promise<CustomerInfo> => {
+  try {
+    const customerInfo = await Purchases.restorePurchases();
+    console.log('[RevenueCat] Purchases restored');
+    return customerInfo;
+  } catch (error) {
+    console.error('[RevenueCat] Error restoring purchases:', error);
+    throw error;
+  }
+};
+
+/**
+ * Add customer info update listener
+ */
+export const addCustomerInfoUpdateListener = (
+  callback: (customerInfo: CustomerInfo) => void
+): (() => void) => {
+  Purchases.addCustomerInfoUpdateListener(callback);
+  // RevenueCat RN SDK doesn't return a remove function, 
+  // listener persists for app lifecycle
+  return () => {};
+};
+
+/**
+ * Get subscription management URL (for iOS)
+ */
+export const getManagementURL = (customerInfo: CustomerInfo): string | null => {
+  return customerInfo.managementURL || null;
+};

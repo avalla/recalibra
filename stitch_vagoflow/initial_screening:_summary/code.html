@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Your Starting Profile - VagoFlow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ecc8",
+              "background-light": "#f6f8f8",
+              "background-dark": "#10221f",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden text-zinc-900 dark:text-zinc-50">
+<!-- Top App Bar -->
+<header class="flex items-center p-4 pb-2 justify-between sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<button class="flex size-10 shrink-0 items-center justify-center text-zinc-900 dark:text-white">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-zinc-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Your Starting Profile</h1>
+<div class="size-10 shrink-0"></div>
+</header>
+<main class="flex-grow flex flex-col px-4 pt-4 pb-6">
+<p class="text-zinc-600 dark:text-zinc-400 text-base font-normal leading-normal text-center pb-8">Please review your information below.</p>
+<div class="flex flex-col gap-4">
+<!-- Perceived Stress ListItem -->
+<div class="flex items-center gap-4 bg-zinc-200/50 dark:bg-zinc-800/50 p-4 min-h-[72px] rounded-xl">
+<div class="flex items-center gap-4 flex-grow">
+<div class="text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12 text-primary">
+<span class="material-symbols-outlined text-3xl">neurology</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-zinc-900 dark:text-white text-base font-medium leading-normal line-clamp-1">Perceived Stress</p>
+<p class="text-zinc-600 dark:text-zinc-400 text-sm font-normal leading-normal line-clamp-2">High</p>
+</div>
+</div>
+<button class="shrink-0 text-primary text-base font-medium leading-normal">Edit</button>
+</div>
+<!-- Health Conditions ListItem -->
+<div class="flex items-center gap-4 bg-zinc-200/50 dark:bg-zinc-800/50 p-4 min-h-[72px] rounded-xl">
+<div class="flex items-center gap-4 flex-grow">
+<div class="text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12 text-primary">
+<span class="material-symbols-outlined text-3xl">health_and_safety</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-zinc-900 dark:text-white text-base font-medium leading-normal line-clamp-1">Health Conditions</p>
+<p class="text-zinc-600 dark:text-zinc-400 text-sm font-normal leading-normal line-clamp-2">No conditions selected</p>
+</div>
+</div>
+<button class="shrink-0 text-primary text-base font-medium leading-normal">Edit</button>
+</div>
+<!-- Breathing & Meditation Experience ListItem -->
+<div class="flex items-center gap-4 bg-zinc-200/50 dark:bg-zinc-800/50 p-4 min-h-[72px] rounded-xl">
+<div class="flex items-center gap-4 flex-grow">
+<div class="text-white flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-12 text-primary">
+<span class="material-symbols-outlined text-3xl">self_improvement</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-zinc-900 dark:text-white text-base font-medium leading-normal line-clamp-1">Mindfulness Experience</p>
+<p class="text-zinc-600 dark:text-zinc-400 text-sm font-normal leading-normal line-clamp-2">Beginner</p>
+</div>
+</div>
+<button class="shrink-0 text-primary text-base font-medium leading-normal">Edit</button>
+</div>
+</div>
+<div class="flex-grow"></div>
+<div class="mt-8 flex flex-col items-center gap-4">
+<p class="text-zinc-600 dark:text-zinc-400 text-sm font-normal text-center max-w-xs">This profile will help us personalize your first exercises.</p>
+<button class="w-full bg-primary text-background-dark font-bold text-base py-4 px-6 rounded-full shadow-lg shadow-primary/20 hover:bg-opacity-90 transition-opacity">
+                    Complete Profile &amp; Start
+                </button>
+</div>
+</main>
+</div>
+</body></html>

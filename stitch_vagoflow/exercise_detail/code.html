@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VagoFlow - Exercise Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ecc8",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#10221f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark pb-32">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/80 dark:bg-background-dark/80 p-4 pb-2 backdrop-blur-sm">
+<button class="text-slate-800 dark:text-white flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Exercise</h2>
+</div>
+<!-- Header Image -->
+<div class="@container px-4">
+<div class="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden bg-slate-200 dark:bg-[#1c2725] rounded-xl min-h-[200px]" data-alt="Abstract blue and green waves representing water and calm" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBg1tSqjpzPvqRr6AjJjkRfA7m84kt8GSIjUJL3MAHxq9GjUylptk-WZM1BujAPPbU3O8VBBDaFVFkcrT3kfscwk2dFBbbfQVwiX4LHBoVXX91rP27JXgV6TPjZBR8PElvLTrCcU3avUmDtE7z3ug5eEvWZ3j1DQX2lChjxlnGvb4uLQVWmbGREQt503tkeD9VzF6BGNke7nFu5LjP-GR_JRQutfqCtq4s8yf4bOKgNPWNiityBPplrVtuRA82LWkNFToQTh00Fe1k");'></div>
+</div>
+<!-- Headline Text -->
+<h1 class="text-slate-900 dark:text-white text-[32px] font-bold leading-tight tracking-tight px-4 text-left pt-6 pb-2">Cold Water Facial Immersion</h1>
+<!-- Chips -->
+<div class="flex gap-3 px-4 py-2">
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 pl-3 pr-3">
+<p class="text-primary text-sm font-medium leading-normal">Diving Reflex</p>
+</div>
+<div class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 pl-3 pr-3">
+<p class="text-primary text-sm font-medium leading-normal">2 Minutes</p>
+</div>
+</div>
+<!-- Card: How it Works -->
+<div class="p-4 @container">
+<div class="flex flex-col items-stretch justify-start rounded-xl bg-slate-200/50 dark:bg-[#1c2725]">
+<div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-2 p-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">psychology</span>
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight tracking-[-0.015em]">How it Works</p>
+</div>
+<p class="text-slate-600 dark:text-[#9db9b4] text-base font-normal leading-normal">This exercise stimulates the vagus nerve through the diving reflex, a natural physiological response to cold water. This helps lower your heart rate and promote a state of deep calm.</p>
+</div>
+</div>
+</div>
+<!-- Instructions Section -->
+<div class="px-4 py-2">
+<h3 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight mb-3">Instructions</h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-4">
+<div class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary font-bold">1</div>
+<p class="text-slate-600 dark:text-[#9db9b4] text-base font-normal leading-relaxed pt-1">Fill a bowl with cold water. Add ice cubes for a more potent effect, but start with cool water if you're new to this.</p>
+</li>
+<li class="flex items-start gap-4">
+<div class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary font-bold">2</div>
+<p class="text-slate-600 dark:text-[#9db9b4] text-base font-normal leading-relaxed pt-1">Take a deep breath and hold it. Lean forward and gently submerge your face in the water, focusing on the area around your eyes and cheeks.</p>
+</li>
+<li class="flex items-start gap-4">
+<div class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary font-bold">3</div>
+<p class="text-slate-600 dark:text-[#9db9b4] text-base font-normal leading-relaxed pt-1">Keep your face submerged for 15-30 seconds. You can come up for air and repeat 2-3 times as comfortable.</p>
+</li>
+<li class="flex items-start gap-4">
+<div class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary font-bold">4</div>
+<p class="text-slate-600 dark:text-[#9db9b4] text-base font-normal leading-relaxed pt-1">After the final immersion, gently pat your face dry and take a few moments to notice the shift in your body and mind.</p>
+</li>
+</ul>
+</div>
+<!-- Safety Warning -->
+<div class="p-4">
+<div class="flex items-start gap-4 rounded-xl bg-yellow-400/20 dark:bg-yellow-800/20 p-4">
+<span class="material-symbols-outlined text-yellow-600 dark:text-yellow-400 mt-0.5">warning</span>
+<div>
+<h4 class="font-bold text-yellow-800 dark:text-yellow-300">Safety First</h4>
+<p class="text-yellow-700 dark:text-yellow-400 text-base mt-1">Consult your doctor before trying this exercise if you have a heart condition or low blood pressure. Do not force yourself to hold your breath.</p>
+</div>
+</div>
+</div>
+<!-- Sticky Footer with Actions -->
+<div class="fixed bottom-0 left-0 right-0 z-10 bg-background-light/80 dark:bg-background-dark/80 p-4 backdrop-blur-sm border-t border-slate-200 dark:border-white/10">
+<div class="flex items-center gap-4">
+<button class="flex h-14 flex-1 items-center justify-center rounded-full bg-primary">
+<span class="text-background-dark text-lg font-bold">Start Session</span>
+</button>
+<button class="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary/20">
+<span class="material-symbols-outlined text-primary">favorite</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

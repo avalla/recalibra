@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VagoFlow - Health &amp; Safety Check</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ecc8",
+              "background-light": "#f6f8f8",
+              "background-dark": "#10221f",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative mx-auto flex h-full min-h-screen w-full max-w-md flex-col" style="--checkbox-tick-svg: url('data:image/svg+xml,%3csvg viewBox=%270 0 16 16%27 fill=%27rgb(16,34,31)%27 xmlns=%27http://www.w3.org/2000/svg%27%3e%3cpath d=%27M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z%27/%3e%3c/svg%3e');">
+<!-- Main Content -->
+<main class="flex flex-grow flex-col px-6 pt-10">
+<!-- Header Section -->
+<div class="flex flex-col">
+<div class="flex w-full flex-row items-center justify-center gap-3 py-5">
+<div class="h-2 w-2 rounded-full bg-primary/20 dark:bg-primary/20"></div>
+<div class="h-2 w-2 rounded-full bg-primary"></div>
+<div class="h-2 w-2 rounded-full bg-primary/20 dark:bg-primary/20"></div>
+<div class="h-2 w-2 rounded-full bg-primary/20 dark:bg-primary/20"></div>
+</div>
+<h1 class="text-slate-800 dark:text-white tracking-tight text-[32px] font-bold leading-tight text-left pb-3 pt-6">Health &amp; Safety Check</h1>
+<p class="text-slate-600 dark:text-slate-300 text-base font-normal leading-normal pb-3 pt-1">Please review the list below. Select any conditions that apply to you to ensure our program is safe for your use.</p>
+</div>
+<!-- Checklist Section -->
+<div class="mt-8 flex-grow">
+<div class="space-y-2">
+<label class="flex items-center gap-x-4 rounded-lg bg-slate-200/50 dark:bg-white/5 p-4 transition-colors hover:bg-slate-200 dark:hover:bg-white/10">
+<input class="h-5 w-5 flex-shrink-0 appearance-none rounded border-2 border-slate-400 dark:border-slate-500 bg-transparent text-primary checked:border-primary checked:bg-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<p class="text-slate-700 dark:text-slate-200 text-base font-normal leading-normal">Pregnancy</p>
+</label>
+<label class="flex items-center gap-x-4 rounded-lg bg-slate-200/50 dark:bg-white/5 p-4 transition-colors hover:bg-slate-200 dark:hover:bg-white/10">
+<input class="h-5 w-5 flex-shrink-0 appearance-none rounded border-2 border-slate-400 dark:border-slate-500 bg-transparent text-primary checked:border-primary checked:bg-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<p class="text-slate-700 dark:text-slate-200 text-base font-normal leading-normal">Pace-maker or implanted electronic device</p>
+</label>
+<label class="flex items-center gap-x-4 rounded-lg bg-slate-200/50 dark:bg-white/5 p-4 transition-colors hover:bg-slate-200 dark:hover:bg-white/10">
+<input class="h-5 w-5 flex-shrink-0 appearance-none rounded border-2 border-slate-400 dark:border-slate-500 bg-transparent text-primary checked:border-primary checked:bg-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<p class="text-slate-700 dark:text-slate-200 text-base font-normal leading-normal">History of seizures or epilepsy</p>
+</label>
+<label class="flex items-center gap-x-4 rounded-lg bg-slate-200/50 dark:bg-white/5 p-4 transition-colors hover:bg-slate-200 dark:hover:bg-white/10">
+<input class="h-5 w-5 flex-shrink-0 appearance-none rounded border-2 border-slate-400 dark:border-slate-500 bg-transparent text-primary checked:border-primary checked:bg-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<p class="text-slate-700 dark:text-slate-200 text-base font-normal leading-normal">Active cancer diagnosis</p>
+</label>
+</div>
+<hr class="my-6 border-slate-300 dark:border-slate-700"/>
+<div class="space-y-1">
+<label class="flex items-center gap-x-4 rounded-lg bg-slate-200/50 dark:bg-white/5 p-4 transition-colors hover:bg-slate-200 dark:hover:bg-white/10">
+<input checked="" class="h-5 w-5 flex-shrink-0 appearance-none rounded border-2 border-slate-400 dark:border-slate-500 bg-transparent text-primary checked:border-primary checked:bg-primary checked:bg-[image:--checkbox-tick-svg] focus:ring-0 focus:ring-offset-0" type="checkbox"/>
+<p class="text-slate-700 dark:text-slate-200 text-base font-normal leading-normal">None of the above apply to me</p>
+</label>
+</div>
+<p class="text-primary/80 dark:text-primary/70 text-sm font-normal leading-normal pt-6 text-center underline cursor-pointer">Why do we ask this?</p>
+</div>
+</main>
+<!-- Footer / CTA -->
+<footer class="sticky bottom-0 bg-background-light dark:bg-background-dark pb-8 pt-4 px-6">
+<button class="w-full rounded-full bg-primary py-4 text-center text-base font-bold text-background-dark transition-opacity hover:opacity-90">Next</button>
+</footer>
+</div>
+</body></html>

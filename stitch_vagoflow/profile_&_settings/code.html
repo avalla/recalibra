@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VagoFlow - Profile &amp; Settings</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#13ecec",
+            "background-light": "#f6f8f8",
+            "background-dark": "#102222",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        font-size: 24px;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<!-- Top App Bar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 sticky top-0 z-10">
+<div class="flex size-12 shrink-0 items-center justify-start text-slate-800 dark:text-white">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="flex-1 text-center text-lg font-bold leading-tight tracking-[-0.015em] text-slate-900 dark:text-white -ml-6">Profile &amp; Settings</h2>
+</div>
+<div class="flex flex-col gap-8 px-4 py-2">
+<!-- User Info Card -->
+<div class="flex items-center gap-4 rounded-xl bg-white dark:bg-slate-900/40 p-4">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-16 w-16" data-alt="User avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCzYieJJbfaWjFt59_2202q5o7L_T1kK9FfdSF-lCVf0PN2KN16Z7rhCkURNrDPAHRbT-XV8OxfLgLEPf5PF2pEc9sM1yk5t6q2ApcpSvN6S7hoO8iz6pBtFyd95MP22F3k7b9IEYzXkUrOIIVfnsPjFRKy8-vzTvdPGUltKWwifA2FXk_hJHHYK59x0pOUbhjx_IG_Dv_fA6VSwuYAtuB58d6qoYjI4AxiLr0Txo9KcnMeVoNFeoYZdP7GNk0wtA9X1nBOvA3t7tI");'></div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal line-clamp-1">Alex Hudson</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal line-clamp-2">alex.hudson@email.com</p>
+</div>
+<div class="shrink-0">
+<div class="text-slate-800 dark:text-white flex size-7 items-center justify-center">
+<span class="material-symbols-outlined">edit</span>
+</div>
+</div>
+</div>
+<!-- Connections Section -->
+<div class="flex flex-col gap-2">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-2 pb-2">Connections</h3>
+<div class="flex flex-col gap-0.5 rounded-xl bg-white dark:bg-slate-900/40 p-2">
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-slate-800 dark:text-white flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 size-10">
+<span class="material-symbols-outlined">favorite</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Connect to Apple Health</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-slate-200 dark:bg-slate-800 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary">
+<div class="h-full w-[27px] rounded-full bg-white transition-all duration-300"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Preferences Section -->
+<div class="flex flex-col gap-2">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-2 pb-2">Preferences</h3>
+<div class="flex flex-col gap-0.5 rounded-xl bg-white dark:bg-slate-900/40 p-2">
+<!-- Units of Measurement -->
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-slate-800 dark:text-white flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 size-10">
+<span class="material-symbols-outlined">straighten</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Units of Measurement</p>
+</div>
+<div class="shrink-0 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Language -->
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-slate-800 dark:text-white flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 size-10">
+<span class="material-symbols-outlined">language</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Language</p>
+</div>
+<div class="shrink-0 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Sound Settings -->
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-slate-800 dark:text-white flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 size-10">
+<span class="material-symbols-outlined">volume_up</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Sound Settings</p>
+</div>
+<div class="shrink-0 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Vibration Settings -->
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-slate-800 dark:text-white flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 size-10">
+<span class="material-symbols-outlined">vibration</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Vibration Settings</p>
+</div>
+<div class="shrink-0 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Data & Privacy Section -->
+<div class="flex flex-col gap-2">
+<h3 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] px-2 pb-2">Data &amp; Privacy</h3>
+<div class="flex flex-col gap-0.5 rounded-xl bg-white dark:bg-slate-900/40 p-2">
+<!-- Export My Data -->
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-slate-800 dark:text-white flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 size-10">
+<span class="material-symbols-outlined">download</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Export My Data</p>
+</div>
+<div class="shrink-0 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Delete My Account -->
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-red-500 flex items-center justify-center rounded-lg bg-red-500/10 dark:bg-red-500/20 shrink-0 size-10">
+<span class="material-symbols-outlined">delete</span>
+</div>
+<p class="text-red-500 dark:text-red-400 text-base font-normal leading-normal flex-1 truncate">Delete My Account</p>
+</div>
+<div class="shrink-0 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Medical Disclaimer -->
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-slate-800 dark:text-white flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 size-10">
+<span class="material-symbols-outlined">medical_information</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Medical Disclaimer</p>
+</div>
+<div class="shrink-0 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Privacy Policy -->
+<div class="flex items-center gap-4 p-2 min-h-14 justify-between">
+<div class="flex items-center gap-4">
+<div class="text-slate-800 dark:text-white flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0 size-10">
+<span class="material-symbols-outlined">shield</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-normal leading-normal flex-1 truncate">Privacy Policy</p>
+</div>
+<div class="shrink-0 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Logout Button -->
+<div class="pt-4 pb-8">
+<button class="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-200 dark:bg-slate-800 px-4 py-3 text-base font-medium text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

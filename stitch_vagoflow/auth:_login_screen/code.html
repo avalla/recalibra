@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VagoFlow Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ecc8",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#10221f",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col items-center dark group/design-root overflow-x-hidden">
+<div class="flex w-full max-w-md grow flex-col justify-between p-6 sm:p-8">
+<div class="flex flex-col items-center pt-10">
+<svg class="h-12 w-12 text-primary" fill="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-9c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2zm0 4c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z"></path>
+</svg>
+<h1 class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight text-center pb-4 pt-4">Welcome Back</h1>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex w-full flex-wrap items-end gap-4">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-normal pb-2">Email</p>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-white dark:bg-background-dark/50 h-12 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 text-base font-normal leading-normal" placeholder="Enter your email" value=""/>
+</label>
+</div>
+<div class="flex w-full flex-wrap items-end gap-4">
+<label class="flex flex-col min-w-40 flex-1">
+<p class="text-gray-700 dark:text-gray-300 text-sm font-medium leading-normal pb-2">Password</p>
+<div class="relative flex w-full flex-1 items-stretch">
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-white dark:bg-background-dark/50 h-12 placeholder:text-gray-400 dark:placeholder:text-gray-500 px-4 pr-10 text-base font-normal leading-normal" placeholder="Enter your password" type="password" value=""/>
+<div class="absolute right-0 top-0 flex h-full items-center pr-3 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility_off</span>
+</div>
+</div>
+</label>
+</div>
+<div class="flex justify-end pt-1">
+<p class="text-primary text-sm font-medium leading-normal underline cursor-pointer">Forgot Password?</p>
+</div>
+<button class="flex items-center justify-center whitespace-nowrap h-12 px-6 mt-4 rounded-lg w-full text-base font-semibold tracking-wide text-background-dark bg-primary hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background-light dark:focus-visible:ring-offset-background-dark">
+                    Log In
+                </button>
+<div class="relative flex items-center py-4">
+<div class="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+<span class="flex-shrink mx-4 text-xs font-medium text-gray-400 dark:text-gray-500">OR</span>
+<div class="flex-grow border-t border-gray-300 dark:border-gray-700"></div>
+</div>
+<div class="flex flex-col gap-4">
+<button class="flex items-center justify-center whitespace-nowrap h-12 px-6 rounded-lg w-full text-base font-medium tracking-wide text-gray-900 dark:text-white bg-white dark:bg-background-dark/50 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-600 focus-visible:ring-offset-2 focus-visible:ring-offset-background-light dark:focus-visible:ring-offset-background-dark">
+<img alt="Google logo" class="h-5 w-5 mr-3" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNTPnPPU0xjTGQTzJN3GG4JHg48nMS_4O2p5XvABWkwmuPDoa6CzbhC3rejmS1WVVRUQNO1phryMPEow9LCIJrRLx1m8cXuoDKZRNAlHmuBjVQ9U79XDRdPZBSjm1X1MzvYTyOx57133oVeU0LXX0owI0IdDbJU3Ho1Tufe7H0AW6sHFLRcM-sb6QkIIUMZ-1i7z7RTB72Ig-XILjVas_lXe3ZrGi84R-HBYxFf9QKaSXzvHooxdxul2ffFnBuNx7BYPXyJArPShU"/>
+                        Continue with Google
+                    </button>
+<button class="flex items-center justify-center whitespace-nowrap h-12 px-6 rounded-lg w-full text-base font-medium tracking-wide text-gray-900 dark:text-white bg-white dark:bg-background-dark/50 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-600 focus-visible:ring-offset-2 focus-visible:ring-offset-background-light dark:focus-visible:ring-offset-background-dark">
+<img alt="Apple logo" class="h-5 w-5 mr-3 dark:invert" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTRvvzGNlXRthWfloFymg87Miq4P6s-5M7HKiZOwtLnOzYzp0YHavMOMkro3k_o5cOhx_kY--4nutyCD-5YizAX9Uo2kwb1zVUKhVlIVY-Wg8WyjhK1UDIb8jgn4CBCkmLoOm-z5WBJJR51D0-LKFNKr8IitG67pkzd8gzywGlSgzebmynzVoR3kp8l_HcdahW5wRx1UYsmYX_h1Mrbedd-g7DvP8Lq7CTiJzAH_PL6q-wVMzFL8L1kt-TNakc2DXxL2yXeQL8cWc"/>
+                        Continue with Apple
+                    </button>
+</div>
+</div>
+<div class="flex flex-col items-center gap-2 pb-2 pt-8">
+<p class="text-gray-600 dark:text-gray-400 text-sm font-normal">
+                    Don't have an account? <a class="font-medium text-primary underline" href="#">Sign Up</a>
+</p>
+<p class="text-gray-500 dark:text-gray-500 text-xs font-normal underline cursor-pointer pt-4">Privacy &amp; Medical Disclaimer</p>
+</div>
+</div>
+</div>
+</body></html>

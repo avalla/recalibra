@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Post-Session Check-in</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#40E0D0",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#0D1B2A",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+<!-- TopAppBar -->
+<div class="flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between">
+<div class="flex size-12 shrink-0 items-center justify-start">
+<span class="material-symbols-outlined text-white/80">close</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Post-Session</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-white/80 gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="flex-grow flex flex-col px-4 pt-4 pb-8">
+<!-- HeadlineText -->
+<h1 class="text-white tracking-tight text-[28px] font-bold leading-tight text-center pb-2 pt-5">How stressed do you feel now?</h1>
+<!-- BodyText -->
+<p class="text-white/70 text-base font-normal leading-normal pb-8 pt-1 text-center">Rate your stress level from 1 to 10.</p>
+<!-- Custom Emoji Slider -->
+<div class="w-full pb-10">
+<div class="flex justify-between text-2xl px-2">
+<span>😥</span>
+<span>😟</span>
+<span class="p-2 bg-primary/20 rounded-full">😌</span>
+<span>😊</span>
+<span>😇</span>
+</div>
+<div class="relative w-full h-2 bg-white/10 rounded-full mt-4">
+<div class="absolute h-2 bg-primary rounded-full" style="width: 60%;"></div>
+<div class="absolute -top-1/2" style="left: 60%; transform: translateX(-50%);">
+<div class="w-4 h-4 bg-primary rounded-full border-2 border-background-dark ring-2 ring-primary"></div>
+</div>
+</div>
+<div class="flex justify-between text-sm text-white/50 mt-2 px-1">
+<span>High</span>
+<span>Low</span>
+</div>
+</div>
+<!-- Card -->
+<div class="w-full mb-8">
+<div class="flex items-center justify-between gap-4 rounded-xl bg-white/5 p-4">
+<div class="flex flex-col gap-1 flex-[2_2_0px]">
+<p class="text-primary text-xl font-bold leading-tight">-2 points</p>
+<p class="text-white/70 text-sm font-normal leading-normal">Your stress level has decreased since the start of your session.</p>
+</div>
+<div class="flex-shrink-0 flex items-center justify-center size-14 bg-primary/20 rounded-full">
+<span class="material-symbols-outlined text-primary" style="font-size: 32px;">trending_down</span>
+</div>
+</div>
+</div>
+<!-- Notes Section -->
+<div class="w-full mb-8">
+<label class="text-white font-medium mb-2 block" for="session-notes">What did you notice?</label>
+<textarea class="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white placeholder:text-white/40 focus:ring-primary focus:border-primary transition duration-200" id="session-notes" placeholder="Add any observations during your session..." rows="4"></textarea>
+</div>
+<div class="flex-grow"></div>
+<!-- CTAs -->
+<div class="space-y-4">
+<button class="w-full flex items-center justify-center rounded-full h-14 px-6 bg-primary text-background-dark text-base font-bold transition-opacity hover:opacity-90">
+                    Save session
+                </button>
+<button class="w-full flex items-center justify-center rounded-full h-14 px-6 bg-transparent text-primary text-base font-bold transition-colors hover:bg-primary/10">
+                    See your progress
+                </button>
+</div>
+</div>
+</div>
+</body></html>
