@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts';
 import { useSessions } from './useSessions';
+import { getGoals as getGoalsFromDb, setGoals as setGoalsInDb } from '../db';
 
 export interface WeeklyGoals {
   sessionGoal: number;
@@ -14,52 +13,32 @@ const DEFAULT_GOALS: WeeklyGoals = {
 };
 
 export const useGoals = () => {
-  const { user } = useAuth();
   const { sessions } = useSessions();
   const [goals, setGoals] = useState<WeeklyGoals>(DEFAULT_GOALS);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load goals from Supabase
+  // Load goals from local storage
   const loadGoals = useCallback(async () => {
-    if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from('user_settings')
-        .select('weekly_session_goal, weekly_minutes_goal')
-        .eq('user_id', user.id)
-        .single();
-
-      if (data) {
-        setGoals({
-          sessionGoal: data.weekly_session_goal ?? 3,
-          minutesGoal: data.weekly_minutes_goal ?? 30,
-        });
-      }
+      const data = await getGoalsFromDb();
+      setGoals({
+        sessionGoal: data.sessionGoal,
+        minutesGoal: data.minutesGoal,
+      });
     } catch (err) {
       console.log('[Goals] No settings found, using defaults');
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
-  // Save goals to Supabase
+  // Save goals to local storage
   const saveGoals = async (newGoals: Partial<WeeklyGoals>) => {
-    if (!user) return;
-
     const updatedGoals = { ...goals, ...newGoals };
     setGoals(updatedGoals);
 
     try {
-      await supabase
-        .from('user_settings')
-        .upsert({
-          user_id: user.id,
-          weekly_session_goal: updatedGoals.sessionGoal,
-          weekly_minutes_goal: updatedGoals.minutesGoal,
-        }, {
-          onConflict: 'user_id',
-        });
+      await setGoalsInDb({ sessionGoal: updatedGoals.sessionGoal, minutesGoal: updatedGoals.minutesGoal });
     } catch (err) {
       console.error('[Goals] Error saving goals:', err);
     }

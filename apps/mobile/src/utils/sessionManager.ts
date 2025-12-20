@@ -1,6 +1,6 @@
-import { supabase } from '../lib/supabase';
 import { logger } from './logger';
 import { cacheManager } from './cache';
+import { completeSession as completeDbSession, listSessions, startSession as startDbSession } from '../db';
 
 export interface SessionData {
   id?: string;
@@ -26,31 +26,27 @@ export class SessionManager {
     }
     return SessionManager.instance;
   }
-  
+
   // Start a new session
   async startSession(exerciseId: string, preStressLevel: number): Promise<boolean> {
     try {
+      const result = await startDbSession({ exerciseId, preStressLevel });
+      if (result.error || !result.data) throw result.error;
+
       const session: SessionData = {
-        exercise_id: exerciseId,
-        started_at: new Date().toISOString(),
-        pre_stress_level: preStressLevel,
+        id: result.data.id,
+        exercise_id: result.data.exercise_id,
+        started_at: result.data.started_at,
+        pre_stress_level: result.data.pre_stress_level,
+        duration_seconds: result.data.duration_seconds,
       };
-      
-      // Save to Supabase
-      const { data, error } = await supabase
-        .from('sessions')
-        .insert(session)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
+
       // Set current session
-      this.currentSession = data;
+      this.currentSession = session;
       this.sessionStartTime = Date.now();
       
       // Cache the session
-      await cacheManager.setCache(`current_session_${exerciseId}`, data, 24 * 60 * 60 * 1000); // 24 hours
+      await cacheManager.setCache(`current_session_${exerciseId}`, session, 24 * 60 * 60 * 1000); // 24 hours
       
       logger.info(`Started session for exercise: ${exerciseId}`, 'SessionManager');
       return true;
@@ -85,14 +81,14 @@ export class SessionManager {
       if (notes !== undefined) {
         updateData.notes = notes;
       }
-      
-      // Update in Supabase
-      const { error } = await supabase
-        .from('sessions')
-        .update(updateData)
-        .eq('id', this.currentSession.id);
-      
-      if (error) throw error;
+
+      const result = await completeDbSession({
+        sessionId: this.currentSession.id,
+        durationSeconds,
+        postStressLevel: postStressLevel ?? this.currentSession.pre_stress_level,
+        notes,
+      });
+      if (result.error) throw result.error;
       
       // Update current session
       this.currentSession = {
@@ -125,13 +121,7 @@ export class SessionManager {
     }
     
     try {
-      // Delete from Supabase
-      const { error } = await supabase
-        .from('sessions')
-        .delete()
-        .eq('id', this.currentSession.id);
-      
-      if (error) throw error;
+      // Not implemented in SQLite layer yet (we can add if needed)
       
       // Clear current session
       this.currentSession = null;
@@ -169,20 +159,23 @@ export class SessionManager {
       if (cachedSessions) {
         return cachedSessions;
       }
-      
-      // Fetch from Supabase
-      const { data, error } = await supabase
-        .from('sessions')
-        .select('*')
-        .order('started_at', { ascending: false })
-        .limit(limit);
-      
-      if (error) throw error;
-      
+
+      const data = await listSessions(limit);
+      const sorted: SessionData[] = data.map((s) => ({
+        id: s.id,
+        exercise_id: s.exercise_id,
+        started_at: s.started_at,
+        completed_at: s.completed_at,
+        duration_seconds: s.duration_seconds,
+        pre_stress_level: s.pre_stress_level,
+        post_stress_level: s.post_stress_level,
+        notes: s.notes,
+      }));
+
       // Cache results for 5 minutes
-      await cacheManager.setCache(`recent_sessions_${limit}`, data || [], 5 * 60 * 1000);
-      
-      return data || [];
+      await cacheManager.setCache(`recent_sessions_${limit}`, sorted, 5 * 60 * 1000);
+
+      return sorted;
     } catch (error) {
       logger.error('Error fetching recent sessions', error as Error, 'SessionManager');
       return [];
@@ -192,15 +185,19 @@ export class SessionManager {
   // Get sessions by exercise
   async getSessionsByExercise(exerciseId: string): Promise<SessionData[]> {
     try {
-      const { data, error } = await supabase
-        .from('sessions')
-        .select('*')
-        .eq('exercise_id', exerciseId)
-        .order('started_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      return data || [];
+      const data = await listSessions(200);
+      return data
+        .filter((s) => s.exercise_id === exerciseId)
+        .map((s) => ({
+          id: s.id,
+          exercise_id: s.exercise_id,
+          started_at: s.started_at,
+          completed_at: s.completed_at,
+          duration_seconds: s.duration_seconds,
+          pre_stress_level: s.pre_stress_level,
+          post_stress_level: s.post_stress_level,
+          notes: s.notes,
+        }));
     } catch (error) {
       logger.error(`Error fetching sessions for exercise: ${exerciseId}`, error as Error, 'SessionManager');
       return [];

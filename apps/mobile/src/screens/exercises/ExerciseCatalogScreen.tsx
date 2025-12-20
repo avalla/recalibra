@@ -7,13 +7,19 @@ import {
   TouchableOpacity,
   SectionList,
   ActivityIndicator,
+  TextInput,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Card } from '../../components';
+import { OriginIcon } from '../../components/OriginIcon';
+import { MoodSelector } from '../../components/MoodSelector';
 import { useExercises, useSubscription } from '../../hooks';
+import { getExerciseBackground } from '../../constants/backgrounds';
 import type { ExerciseWithFavorite, ExerciseCategory, ExerciseOrigin } from '../../types';
 
 // View modes
@@ -63,9 +69,71 @@ export const ExerciseCatalogScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { exercises, isLoading, toggleFavorite } = useExercises();
   const { isPremium, canAccessExercise, presentPaywall } = useSubscription();
-  const [viewMode, setViewMode] = useState<ViewMode>('tradition');
-  const [selectedTradition, setSelectedTradition] = useState<ExerciseOrigin | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | null>(null);
+  const [showCatalog, setShowCatalog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Handle mood selection - find best exercise for this mood
+  const handleMoodSelect = (mood: any) => {
+    const moodExercises = exercises.filter(e => e && e.category === mood.exerciseCategory);
+    if (moodExercises.length === 0) {
+      // No exercises found for this mood, show feedback
+      console.warn('No exercises found for mood:', mood.id);
+      return;
+    }
+    
+    // Pick the first matching exercise (could be improved with recommendation logic)
+    const exercise = moodExercises[0];
+    if (!exercise) {
+      console.warn('First exercise is undefined');
+      return;
+    }
+    
+    navigation.navigate('ExerciseSession', {
+      exerciseId: exercise.id,
+      exerciseName: exercise.name,
+      durationMinutes: exercise.duration_minutes,
+      audioPreset: exercise.audio_preset,
+      exerciseCategory: exercise.category,
+      breathingPattern: exercise.breathing_pattern,
+      origin: exercise.origin || 'universal',
+      history: exercise.history || '',
+      benefits: exercise.benefits || '',
+      tips: exercise.tips || '',
+      instructions: exercise.instructions || '',
+    });
+  };
+
+  // Handle time-based selection
+  const handleTimeSelect = (minutes: number) => {
+    // Find exercises matching the time preference
+    const timeExercises = exercises.filter(e => 
+      e && e.duration_minutes <= minutes
+    );
+    
+    if (timeExercises.length === 0) {
+      console.warn('No exercises found for time:', minutes);
+      return;
+    }
+    
+    // Pick the longest exercise that fits the time
+    const exercise = timeExercises.reduce((longest, current) => 
+      current.duration_minutes > longest.duration_minutes ? current : longest
+    );
+    
+    navigation.navigate('ExerciseSession', {
+      exerciseId: exercise.id,
+      exerciseName: exercise.name,
+      durationMinutes: exercise.duration_minutes,
+      audioPreset: exercise.audio_preset,
+      exerciseCategory: exercise.category,
+      breathingPattern: exercise.breathing_pattern,
+      origin: exercise.origin || 'universal',
+      history: exercise.history || '',
+      benefits: exercise.benefits || '',
+      tips: exercise.tips || '',
+      instructions: exercise.instructions || '',
+    });
+  };
 
   // Get tradition info
   const getTradition = (origin?: ExerciseOrigin) => {
@@ -86,16 +154,15 @@ export const ExerciseCatalogScreen: React.FC = () => {
     }
   };
 
-  // Filter exercises based on selection
+  // Filter exercises based on search query
   const filteredExercises = useMemo(() => {
-    if (selectedTradition) {
-      return exercises.filter(e => (e.origin || 'universal') === selectedTradition);
-    }
-    if (selectedCategory) {
-      return exercises.filter(e => e.category === selectedCategory);
-    }
-    return exercises;
-  }, [exercises, selectedTradition, selectedCategory]);
+    if (!searchQuery) return exercises;
+    
+    return exercises.filter(e => 
+      e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [exercises, searchQuery]);
 
   // Group exercises by tradition for section list
   const sectionsByTradition = useMemo(() => {
@@ -109,7 +176,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
     return TRADITIONS
       .filter(t => groups[t.id]?.length > 0)
       .map(tradition => ({
-        title: `${tradition.flag} ${tradition.name}`,
+        title: tradition.name,
         subtitle: tradition.description,
         data: groups[tradition.id] || [],
       }));
@@ -148,13 +215,8 @@ export const ExerciseCatalogScreen: React.FC = () => {
     });
   };
 
-  const handleBack = () => {
-    setSelectedTradition(null);
-    setSelectedCategory(null);
-  };
-
   // Render exercise card
-  const renderExerciseCard = ({ item }: { item: ExerciseWithFavorite }) => {
+  const renderExerciseCard = (item: ExerciseWithFavorite) => {
     const tradition = getTradition(item.origin);
     const isLocked = !canAccessExercise(item.name, item.is_premium);
     
@@ -162,7 +224,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
       <Card style={isLocked ? { ...styles.exerciseCard, ...styles.exerciseCardLocked } : styles.exerciseCard} onPress={() => handleExercisePress(item)}>
         <View style={styles.exerciseTags}>
           <View style={styles.originBadge}>
-            <Text style={styles.originFlag}>{tradition.flag}</Text>
+            <OriginIcon origin={tradition.id} size={16} />
           </View>
           <View style={styles.tag}>
             <Text style={styles.tagText}>{item.duration_minutes} min</Text>
@@ -191,53 +253,8 @@ export const ExerciseCatalogScreen: React.FC = () => {
           )}
         </View>
         <Text style={[styles.exerciseName, isLocked && styles.exerciseNameLocked]}>{item.name}</Text>
-        <Text style={styles.exerciseDescription} numberOfLines={2}>{item.description}</Text>
+        <Text style={styles.exerciseDescription} numberOfLines={3}>{item.description}</Text>
       </Card>
-    );
-  };
-
-  // Render tradition card for discovery
-  const renderTraditionCard = (tradition: typeof TRADITIONS[0]) => {
-    // Handle exercises without origin - count them as 'universal'
-    const count = exercises.filter(e => {
-      const origin = e.origin || 'universal';
-      return origin === tradition.id;
-    }).length;
-    if (count === 0) return null;
-    
-    return (
-      <TouchableOpacity
-        key={tradition.id}
-        style={styles.traditionCard}
-        onPress={() => setSelectedTradition(tradition.id)}
-      >
-        <Text style={styles.traditionFlag}>{tradition.flag}</Text>
-        <Text style={styles.traditionName}>{tradition.name}</Text>
-        <Text style={styles.traditionDescription}>{tradition.description}</Text>
-        <Text style={styles.traditionCount}>{count} exercises</Text>
-      </TouchableOpacity>
-    );
-  };
-
-  // Render category card
-  const renderCategoryCard = (category: typeof CATEGORIES[0]) => {
-    const count = exercises.filter(e => e.category === category.id).length;
-    
-    return (
-      <TouchableOpacity
-        key={category.id}
-        style={[styles.categoryCard, { borderLeftColor: category.color }]}
-        onPress={() => setSelectedCategory(category.id)}
-      >
-        <View style={[styles.categoryIcon, { backgroundColor: category.color + '20' }]}>
-          <Ionicons name={category.icon} size={24} color={category.color} />
-        </View>
-        <View style={styles.categoryInfo}>
-          <Text style={styles.categoryName}>{category.label}</Text>
-          <Text style={styles.categoryCount}>{count} exercises</Text>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
-      </TouchableOpacity>
     );
   };
 
@@ -251,100 +268,112 @@ export const ExerciseCatalogScreen: React.FC = () => {
     );
   }
 
-  // Show filtered list when tradition or category is selected
-  if (selectedTradition || selectedCategory) {
-    const title = selectedTradition 
-      ? `${getTradition(selectedTradition).flag} ${getTradition(selectedTradition).name}`
-      : getCategory(selectedCategory!).label;
-      
-    return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{title}</Text>
-          <View style={{ width: 40 }} />
-        </View>
-        <SectionList
-          sections={[{ title: '', data: filteredExercises }]}
-          renderItem={renderExerciseCard}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.exerciseList}
-          showsVerticalScrollIndicator={false}
-          renderSectionHeader={() => null}
-        />
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Discover</Text>
-        <View style={styles.viewToggle}>
-          <TouchableOpacity
-            style={[styles.toggleButton, viewMode === 'tradition' && styles.toggleButtonActive]}
-            onPress={() => setViewMode('tradition')}
-          >
-            <Ionicons name="flag-outline" size={18} color={viewMode === 'tradition' ? Colors.background : Colors.textMuted} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.toggleButton, viewMode === 'category' && styles.toggleButtonActive]}
-            onPress={() => setViewMode('category')}
-          >
-            <Ionicons name="grid-outline" size={18} color={viewMode === 'category' ? Colors.background : Colors.textMuted} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.toggleButton, viewMode === 'list' && styles.toggleButtonActive]}
-            onPress={() => setViewMode('list')}
-          >
-            <Ionicons name="list-outline" size={18} color={viewMode === 'list' ? Colors.background : Colors.textMuted} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {viewMode === 'tradition' && (
-        <ScrollView 
-          contentContainerStyle={styles.discoveryGrid}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.sectionTitle}>Explore by Tradition</Text>
-          <Text style={styles.sectionSubtitle}>
-            Discover breathing practices from ancient cultures around the world
-          </Text>
-          <View style={styles.traditionsGrid}>
-            {TRADITIONS.map(renderTraditionCard)}
-          </View>
-        </ScrollView>
-      )}
-
-      {viewMode === 'category' && (
-        <ScrollView 
-          contentContainerStyle={styles.categoryList}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.sectionTitle}>Browse by Type</Text>
-          {CATEGORIES.map(renderCategoryCard)}
-        </ScrollView>
-      )}
-
-      {viewMode === 'list' && (
-        <SectionList
-          sections={sectionsByTradition}
-          renderItem={renderExerciseCard}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.exerciseList}
-          showsVerticalScrollIndicator={false}
-          renderSectionHeader={({ section }) => (
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionHeaderTitle}>{section.title}</Text>
-              <Text style={styles.sectionHeaderSubtitle}>{section.subtitle}</Text>
+      {!showCatalog ? (
+        // Premium minimal flow
+        <ScrollView style={styles.simpleFlow} showsVerticalScrollIndicator={false}>
+          {/* Hero Card - Today's Exercise */}
+          <View style={styles.heroCard}>
+            {/* @ts-ignore - LinearGradient type issue with React 19 */}
+            <LinearGradient
+              colors={['#667EEA', '#764BA2'] as any}
+              style={styles.heroGradient}
+            />
+            <View style={styles.heroContent}>
+              <Text style={styles.heroLabel}>Today's Exercise</Text>
+              <Text style={styles.heroTitle}>
+                {exercises.length > 0 && exercises[0] ? exercises[0].name : 'Loading...'}
+              </Text>
+              <Text style={styles.heroSubtitle}>
+                {exercises.length > 0 && exercises[0] ? exercises[0].description : 'Preparing your daily practice...'}
+              </Text>
+              
+              {exercises.length > 0 && exercises[0] ? (
+                <TouchableOpacity
+                  style={styles.heroButton}
+                  onPress={() => handleExercisePress(exercises[0])}
+                >
+                  <Text style={styles.heroButtonText}>Start Now</Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.heroButton}>
+                  <ActivityIndicator size="small" color={Colors.background} />
+                </View>
+              )}
             </View>
-          )}
-          stickySectionHeadersEnabled={false}
-        />
+          </View>
+
+          {/* Quick Time Options */}
+          <View style={styles.timeSection}>
+            <Text style={styles.timeTitle}>How much time do you have?</Text>
+            <View style={styles.timeButtons}>
+              <TouchableOpacity
+                style={styles.timeButton}
+                onPress={() => handleTimeSelect(3)}
+              >
+                <Text style={styles.timeButtonText}>3 min</Text>
+                <Text style={styles.timeButtonSubtext}>Quick</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.timeButton, styles.timeButtonPrimary]}
+                onPress={() => handleTimeSelect(5)}
+              >
+                <Text style={[styles.timeButtonText, styles.timeButtonTextPrimary]}>5 min</Text>
+                <Text style={[styles.timeButtonSubtext, styles.timeButtonSubtextPrimary]}>Standard</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={styles.timeButton}
+                onPress={() => handleTimeSelect(10)}
+              >
+                <Text style={styles.timeButtonText}>10 min</Text>
+                <Text style={styles.timeButtonSubtext}>Deep</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Browse all link */}
+          <TouchableOpacity
+            style={styles.browseButton}
+            onPress={() => setShowCatalog(true)}
+          >
+            <Text style={styles.browseText}>Browse All Exercises</Text>
+            <Ionicons name="arrow-forward" size={20} color={Colors.primary} />
+          </TouchableOpacity>
+        </ScrollView>
+      ) : (
+        // Full catalog (previous implementation)
+        <View>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => setShowCatalog(false)}
+          >
+            <Ionicons name="arrow-back" size={24} color={Colors.primary} />
+            <Text style={styles.backText}>Back to Quick Start</Text>
+          </TouchableOpacity>
+          
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <Ionicons name="search" size={20} color={Colors.textMuted} style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search exercises..."
+                placeholderTextColor={Colors.textMuted}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                clearButtonMode="while-editing"
+              />
+            </View>
+          </View>
+
+          {/* Exercise list */}
+          <ScrollView contentContainerStyle={styles.exerciseList}>
+            {filteredExercises.map(renderExerciseCard)}
+          </ScrollView>
+        </View>
       )}
     </SafeAreaView>
   );
@@ -354,6 +383,200 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  // Simple flow styles
+  simpleFlow: {
+    flex: 1,
+  },
+  // Hero card
+  heroCard: {
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    overflow: 'hidden',
+    minHeight: 360,
+    position: 'relative',
+  },
+  heroGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  heroContent: {
+    flex: 1,
+    padding: Spacing.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 360,
+  },
+  heroLabel: {
+    fontSize: FontSize.sm,
+    color: Colors.background + 'CC',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: Spacing.sm,
+  },
+  heroTitle: {
+    fontSize: FontSize.xxxl,
+    fontWeight: FontWeight.bold,
+    color: Colors.background,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+    fontFamily: FontFamily.heading,
+  },
+  heroSubtitle: {
+    fontSize: FontSize.md,
+    color: Colors.background + 'CC',
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+    lineHeight: 22,
+    paddingHorizontal: Spacing.md,
+  },
+  heroButton: {
+    backgroundColor: Colors.background,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 140,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  heroButtonText: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.semibold,
+    color: '#667EEA',
+    textAlign: 'center',
+  },
+  // Time selection
+  timeSection: {
+    marginTop: Spacing.xxl,
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+  timeTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+  },
+  timeButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: Spacing.md,
+  },
+  timeButton: {
+    flex: 1,
+    backgroundColor: Colors.backgroundCard,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  timeButtonPrimary: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  timeButtonText: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.xs,
+  },
+  timeButtonTextPrimary: {
+    color: Colors.background,
+  },
+  timeButtonSubtext: {
+    fontSize: FontSize.sm,
+    color: Colors.textMuted,
+  },
+  timeButtonSubtextPrimary: {
+    color: Colors.background + 'CC',
+  },
+  browseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  browseText: {
+    fontSize: FontSize.md,
+    color: Colors.primary,
+    fontWeight: FontWeight.medium,
+  },
+  // Catalog mode styles
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    gap: Spacing.sm,
+  },
+  backText: {
+    fontSize: FontSize.md,
+    color: Colors.primary,
+    fontWeight: FontWeight.medium,
+  },
+  // Search bar
+  searchContainer: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.background,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.backgroundCard,
+    borderRadius: BorderRadius.full,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  searchIcon: {
+    marginRight: Spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
+  },
+  filterButton: {
+    marginLeft: Spacing.sm,
+    padding: Spacing.xs,
+  },
+  // Active filters
+  activeFilters: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary + '20',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
+    gap: Spacing.xs,
+  },
+  filterChipText: {
+    color: Colors.primary,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.medium,
   },
   loadingContainer: {
     flex: 1,
@@ -372,9 +595,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xl,
     fontWeight: FontWeight.bold,
     fontStyle: 'italic',
-  },
-  backButton: {
-    padding: Spacing.xs,
+    fontFamily: FontFamily.heading,
   },
   // View toggle
   viewToggle: {
@@ -399,6 +620,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xl,
     fontWeight: FontWeight.bold,
     marginBottom: Spacing.xs,
+    fontFamily: FontFamily.heading,
   },
   sectionSubtitle: {
     color: Colors.textMuted,
@@ -412,32 +634,57 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   traditionCard: {
-    width: '47%',
-    backgroundColor: Colors.backgroundCard,
+    width: 160,
+    height: 200,
+    marginHorizontal: Spacing.sm,
     borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  traditionCardSelected: {
+    borderWidth: 2,
+    borderColor: Colors.primary,
+  },
+  traditionCardGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.9,
+  },
+  traditionCardContent: {
+    flex: 1,
     padding: Spacing.md,
     alignItems: 'center',
-  },
-  traditionFlag: {
-    fontSize: 40,
-    marginBottom: Spacing.sm,
+    justifyContent: 'center',
   },
   traditionName: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
+    color: Colors.background,
+    fontSize: FontSize.lg,
     fontWeight: FontWeight.bold,
-    marginBottom: Spacing.xs,
+    marginTop: Spacing.sm,
+    textAlign: 'center',
   },
   traditionDescription: {
-    color: Colors.textMuted,
+    color: Colors.background + 'CC',
     fontSize: FontSize.xs,
+    marginTop: Spacing.xs,
     textAlign: 'center',
-    marginBottom: Spacing.xs,
   },
   traditionCount: {
-    color: Colors.primary,
-    fontSize: FontSize.xs,
+    color: Colors.background,
+    fontSize: FontSize.sm,
     fontWeight: FontWeight.medium,
+    marginTop: Spacing.sm,
+  },
+  selectedIndicator: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.full,
+    padding: 2,
   },
   // Category list
   categoryList: {
@@ -484,6 +731,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: FontWeight.bold,
     marginBottom: 2,
+    fontFamily: FontFamily.heading,
   },
   sectionHeaderSubtitle: {
     color: Colors.textMuted,

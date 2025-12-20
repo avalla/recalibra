@@ -1,5 +1,5 @@
 /**
- * VagoFlow Design System
+ * Recalibra Design System
  * Based on prototype screenshots
  */
 
@@ -73,6 +73,15 @@ export const FontWeight = {
   semibold: '600' as const,
   bold: '700' as const,
 };
+
+export const FontFamily = {
+  regular: 'Poppins-Regular',
+  medium: 'Poppins-Medium',
+  semibold: 'Poppins-SemiBold',
+  bold: 'Poppins-Bold',
+  heading: 'DMSerifDisplay-Regular',
+  headingItalic: 'DMSerifDisplay-Italic',
+} as const;
 
 export const Shadow = {
   sm: {

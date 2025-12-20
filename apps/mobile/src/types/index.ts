@@ -1,7 +1,7 @@
 export * from './navigation';
 
 // ============================================
-// Database Types (matching Supabase schema)
+// Database Types
 // ============================================
 
 // Enums

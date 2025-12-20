@@ -8,6 +8,7 @@ export type AuthStackParamList = {
   Login: undefined;
   SignUp: undefined;
   ForgotPassword: undefined;
+  AccountUpgrade: undefined;
 };
 
 // Screening Stack
@@ -80,6 +81,8 @@ export type RootStackParamList = {
   Screening: NavigatorScreenParams<ScreeningStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
   Paywall: undefined;
+  AccountUpgrade: undefined;
+  QuickStartPreferences: { from?: 'home' | 'settings' } | undefined;
 };
 
 // Screen Props Types

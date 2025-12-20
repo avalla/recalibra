@@ -37,7 +37,7 @@ export const PostSessionScreen: React.FC = () => {
   const handleSave = async () => {
     setIsSaving(true);
     
-    // Save to Supabase
+    // Save session
     const { error } = await completeSession(sessionId, durationSeconds, postStressLevel, notes || undefined);
 
     if (error) {

@@ -1,12 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts';
-import type { NotificationSettings } from '../types';
 import { logger } from '../utils/logger';
 import { permissionManager } from '../utils/permissions';
+import { getReminders as getRemindersFromDb, setReminders as setRemindersInDb } from '../db';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -32,7 +29,6 @@ const DEFAULT_REMINDER: ReminderSettings = {
 };
 
 export const useNotifications = () => {
-  const { user } = useAuth();
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(DEFAULT_REMINDER);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,49 +65,25 @@ export const useNotifications = () => {
     }
   }, []);
 
-  // Load reminder settings from Supabase
+  // Load reminder settings from local storage
   const loadSettings = useCallback(async () => {
-    if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from('user_settings')
-        .select('reminder_enabled, reminder_time, reminder_days')
-        .eq('user_id', user.id)
-        .single();
-
-      if (data) {
-        setReminderSettings({
-          enabled: data.reminder_enabled ?? false,
-          time: data.reminder_time ?? '09:00',
-          days: data.reminder_days ?? [1, 2, 3, 4, 5],
-        });
-      }
+      const data = await getRemindersFromDb();
+      setReminderSettings(data);
     } catch (err) {
       console.log('[Notifications] No settings found, using defaults');
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
-  // Save reminder settings to Supabase
+  // Save reminder settings to local storage
   const saveSettings = async (settings: Partial<ReminderSettings>) => {
-    if (!user) return;
-
     const newSettings = { ...reminderSettings, ...settings };
     setReminderSettings(newSettings);
 
     try {
-      await supabase
-        .from('user_settings')
-        .upsert({
-          user_id: user.id,
-          reminder_enabled: newSettings.enabled,
-          reminder_time: newSettings.time,
-          reminder_days: newSettings.days,
-        }, {
-          onConflict: 'user_id',
-        });
+      await setRemindersInDb(newSettings);
 
       // Reschedule notifications
       await scheduleReminders(newSettings);
@@ -167,7 +139,7 @@ export const useNotifications = () => {
   const sendTestNotification = async () => {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'VagoFlow 🧘',
+        title: 'Recalibra 🧘',
         body: 'Your reminders are working!',
         sound: true,
       },

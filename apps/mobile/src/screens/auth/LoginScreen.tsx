@@ -9,11 +9,10 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { Button, Input } from '../../components';
+import { GradientButton, Input, Screen } from '../../components';
 import { useAuth } from '../../contexts';
 import type { AuthStackScreenProps } from '../../types';
 
@@ -49,7 +48,7 @@ export const LoginScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen style={styles.container} edges={['top']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -96,7 +95,7 @@ export const LoginScreen: React.FC = () => {
 
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-            <Button
+            <GradientButton
               label="Log In"
               onPress={handleLogin}
               loading={isLoading}
@@ -143,7 +142,7 @@ export const LoginScreen: React.FC = () => {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </Screen>
   );
 };
 

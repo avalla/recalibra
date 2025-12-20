@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const HAPTICS_ENABLED_KEY = '@vagoflow:haptics_enabled';
+const HAPTICS_ENABLED_KEY = '@recalibra:haptics_enabled';
 
 export const useHaptics = () => {
   const [isEnabled, setIsEnabled] = useState(true);

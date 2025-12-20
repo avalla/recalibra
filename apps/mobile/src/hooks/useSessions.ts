@@ -1,44 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts';
-import type { Session, SessionInsert, SessionWithExercise } from '../types';
+import type { Session, SessionWithExercise } from '../types';
+import { listSessions, startSession as startDbSession, updateSessionStatus as updateDbSessionStatus, completeSession as completeDbSession } from '../db';
 
 export const useSessions = () => {
-  const { user } = useAuth();
   const [sessions, setSessions] = useState<SessionWithExercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSessions = useCallback(async (limit = 20) => {
-    if (!user) {
-      setSessions([]);
-      setIsLoading(false);
-      return;
-    }
+  const log = (...args: unknown[]) => {
+    if (!__DEV__) return;
+    // eslint-disable-next-line no-console
+    console.log('[useSessions:local]', ...args);
+  };
 
+  const fetchSessions = useCallback(async (limit = 20) => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await supabase
-        .from('sessions')
-        .select(`
-          *,
-          exercise:exercises(name, category, duration_minutes)
-        `)
-        .eq('user_id', user.id)
-        .order('started_at', { ascending: false })
-        .limit(limit);
-
-      if (fetchError) throw fetchError;
-
-      setSessions(data || []);
+      const data = await listSessions(limit);
+      log('fetch:ok', { returned: data.length });
+      setSessions(data);
     } catch (err) {
+      log('fetch:error', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch sessions');
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchSessions();
@@ -46,39 +35,19 @@ export const useSessions = () => {
 
   const startSession = async (
     exerciseId: string,
-    preStressLevel: number
+    preStressLevel: number,
+    _exerciseMeta?: { name: string; category?: unknown; durationMinutes: number }
   ): Promise<{ data: Session | null; error: Error | null }> => {
-    if (!user) {
-      return { data: null, error: new Error('User not authenticated') };
-    }
-
     try {
-      const sessionData: SessionInsert = {
-        user_id: user.id,
-        exercise_id: exerciseId,
-        started_at: new Date().toISOString(),
-        pre_stress_level: preStressLevel,
-        duration_seconds: 0,
-      };
-
-      console.log('[startSession] Creating session:', sessionData);
-
-      const { data, error } = await supabase
-        .from('sessions')
-        .insert(sessionData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('[startSession] Supabase error:', error);
-        throw error;
-      }
-
-      console.log('[startSession] Session created:', data);
-      return { data, error: null };
+      log('startSession:start', { exerciseId, preStressLevel });
+      const result = await startDbSession({ exerciseId, preStressLevel });
+      if (result.error) return { data: null, error: result.error };
+      await fetchSessions();
+      return { data: result.data, error: null };
     } catch (err) {
-      console.error('[startSession] Error:', err);
-      return { data: null, error: err as Error };
+      log('startSession:error', err);
+      if (err instanceof Error) return { data: null, error: err };
+      return { data: null, error: new Error(typeof err === 'string' ? err : 'Failed to start session') };
     }
   };
 
@@ -88,19 +57,14 @@ export const useSessions = () => {
     durationSeconds?: number
   ): Promise<{ error: Error | null }> => {
     try {
-      const updateData: Record<string, unknown> = { status };
-      if (durationSeconds !== undefined) {
-        updateData.duration_seconds = durationSeconds;
-      }
-
-      const { error } = await supabase
-        .from('sessions')
-        .update(updateData)
-        .eq('id', sessionId);
-
-      if (error) throw error;
+      log('updateSessionStatus:start', { sessionId, status, durationSeconds });
+      const result = await updateDbSessionStatus({ sessionId, status, durationSeconds });
+      if (result.error) return { error: result.error };
+      await fetchSessions();
+      log('updateSessionStatus:ok');
       return { error: null };
     } catch (err) {
+      log('updateSessionStatus:error', err);
       return { error: err as Error };
     }
   };
@@ -112,24 +76,14 @@ export const useSessions = () => {
     notes?: string
   ): Promise<{ error: Error | null }> => {
     try {
-      const { error } = await supabase
-        .from('sessions')
-        .update({
-          completed_at: new Date().toISOString(),
-          duration_seconds: durationSeconds,
-          post_stress_level: postStressLevel,
-          notes,
-          status: 'completed',
-        })
-        .eq('id', sessionId);
-
-      if (error) throw error;
-
-      // Refresh sessions list
+      log('completeSession:start', { sessionId, durationSeconds, postStressLevel, hasNotes: !!notes });
+      const result = await completeDbSession({ sessionId, durationSeconds, postStressLevel, notes });
+      if (result.error) return { error: result.error };
       await fetchSessions();
-
+      log('completeSession:ok');
       return { error: null };
     } catch (err) {
+      log('completeSession:error', err);
       return { error: err as Error };
     }
   };

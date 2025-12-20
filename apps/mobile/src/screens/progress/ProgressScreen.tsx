@@ -8,10 +8,9 @@ import {
   Dimensions,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { Card } from '../../components';
+import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { Card, Screen } from '../../components';
 import { useSessions } from '../../hooks';
 
 const { width } = Dimensions.get('window');
@@ -182,7 +181,7 @@ export const ProgressScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <Screen style={styles.container} edges={['top']}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -341,7 +340,7 @@ export const ProgressScreen: React.FC = () => {
           ))
         )}
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
@@ -367,6 +366,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
+    fontFamily: FontFamily.heading,
   },
   timeRangeTabs: {
     flexDirection: 'row',
@@ -466,6 +466,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
     marginBottom: Spacing.xs,
+    fontFamily: FontFamily.heading,
   },
   hrvSubtitle: {
     color: Colors.textMuted,
@@ -476,6 +477,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.lg,
     fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.heading,
     marginBottom: Spacing.md,
   },
   sessionCard: {
@@ -566,6 +568,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: FontWeight.semibold,
+    fontFamily: FontFamily.heading,
     marginBottom: Spacing.md,
   },
   calendarGrid: {

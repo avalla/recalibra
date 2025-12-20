@@ -2,7 +2,7 @@
 
 export const APP_CONSTANTS = {
   // App Information
-  NAME: 'VagoFlow',
+  NAME: 'Recalibra',
   VERSION: '1.0.0',
   
   // Session Constants
@@ -56,17 +56,10 @@ export const APP_CONSTANTS = {
   
   // Storage Keys
   STORAGE_KEYS: {
-    HAPTICS_ENABLED: '@vagoflow:haptics_enabled',
-    HEALTH_SYNC_ENABLED: '@vagoflow:health_sync_enabled',
-    ONBOARDING_COMPLETED: '@vagoflow:onboarding_completed',
-    LAST_SESSION_TIMESTAMP: '@vagoflow:last_session_timestamp',
-  },
-  
-  // API Endpoints
-  API_ENDPOINTS: {
-    // These will be configured through environment variables
-    SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL || '',
-    SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
+    HAPTICS_ENABLED: '@recalibra:haptics_enabled',
+    HEALTH_SYNC_ENABLED: '@recalibra:health_sync_enabled',
+    ONBOARDING_COMPLETED: '@recalibra:onboarding_completed',
+    LAST_SESSION_TIMESTAMP: '@recalibra:last_session_timestamp',
   },
   
   // Feature Flags

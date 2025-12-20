@@ -18,7 +18,7 @@ const getApiKey = (): string => {
 };
 
 // Entitlement ID - this should match what you configured in RevenueCat dashboard
-export const ENTITLEMENT_ID = 'VagoFlow Pro';
+export const ENTITLEMENT_ID = 'Recalibra Pro';
 
 // Product IDs - these should match your offerings in RevenueCat
 export const PRODUCT_IDS = {
@@ -31,7 +31,7 @@ export const PRODUCT_IDS = {
  * Initialize RevenueCat SDK
  * Should be called once when the app starts
  */
-export const initializeRevenueCat = async (userId?: string): Promise<void> => {
+export const initializeRevenueCat = async (userId?: string, isAnonymous?: boolean): Promise<void> => {
   try {
     // Enable debug logs in development
     if (__DEV__) {
@@ -42,10 +42,10 @@ export const initializeRevenueCat = async (userId?: string): Promise<void> => {
     // Using the simpler configuration method for better compatibility
     Purchases.configure({
       apiKey: getApiKey(),
-      appUserID: userId || null,
+      appUserID: isAnonymous ? userId || null : userId || null,
     });
 
-    console.log('[RevenueCat] Initialized successfully');
+    console.log('[RevenueCat] Initialized successfully', { userId, isAnonymous });
   } catch (error) {
     console.error('[RevenueCat] Initialization error:', error);
     // Don't throw - let app continue without RevenueCat if it fails
@@ -55,9 +55,16 @@ export const initializeRevenueCat = async (userId?: string): Promise<void> => {
 
 /**
  * Login user to RevenueCat (call when user authenticates)
+ * For anonymous users upgrading to real account
  */
-export const loginUser = async (userId: string): Promise<CustomerInfo> => {
+export const loginUser = async (userId: string, previousAnonymousId?: string): Promise<CustomerInfo> => {
   try {
+    // If upgrading from anonymous, identify with the same anonymous ID first
+    if (previousAnonymousId) {
+      await Purchases.logIn(previousAnonymousId);
+    }
+    
+    // Then log in with the new user ID
     const { customerInfo } = await Purchases.logIn(userId);
     console.log('[RevenueCat] User logged in:', userId);
     return customerInfo;

@@ -1,12 +1,14 @@
 {
   "expo": {
-    "name": "VagoFlow",
-    "slug": "vagoflow",
+    "name": "Recalibra",
+    "slug": "recalibra",
     "version": "1.0.0",
+    "jsEngine": "hermes",
+    "newArchEnabled": true,
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "scheme": "vagoflow",
+    "scheme": "recalibra",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -14,10 +16,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.vagoflow.app",
+      "bundleIdentifier": "com.recalibra.app",
       "infoPlist": {
-        "NSHealthShareUsageDescription": "VagoFlow needs access to your health data to track HRV and stress levels.",
-        "NSHealthUpdateUsageDescription": "VagoFlow needs to write session data to Apple Health.",
+        "NSHealthShareUsageDescription": "Recalibra needs access to your health data to track HRV and stress levels.",
+        "NSHealthUpdateUsageDescription": "Recalibra needs to write session data to Apple Health.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -26,7 +28,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F1A19"
       },
-      "package": "com.vagoflow.app",
+      "package": "com.recalibra.app",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -54,7 +56,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "61c87648-19f0-4e46-ae78-ea29d91e9841"
+        "projectId": "36c38949-bce5-4ae9-ab65-b2798766ae9b"
       }
     },
     "owner": "avalla"

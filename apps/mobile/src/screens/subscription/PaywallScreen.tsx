@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { useSubscription, PREMIUM_FEATURES } from '../../hooks/useSubscription';
+import { Screen } from '../../components';
 
 /**
  * PaywallScreen - Wrapper that presents RevenueCat's native paywall
@@ -47,12 +47,12 @@ export const PaywallScreen: React.FC = () => {
 
   // Show loading state while RevenueCat paywall is being prepared
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen style={styles.container} edges={['top']}>
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
         <Text style={styles.loadingText}>Loading subscription options...</Text>
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
@@ -70,5 +70,6 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontSize: FontSize.md,
     marginTop: Spacing.md,
+    fontFamily: FontFamily.regular,
   },
 });

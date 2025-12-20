@@ -10,15 +10,15 @@ import {
   Platform,
   Linking,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { Screen } from '../../components';
 import { useAppleHealth, useSubscription } from '../../hooks';
 import { useAuth } from '../../contexts/AuthContext';
 
-const HEALTH_SYNC_KEY = '@vagoflow:health_sync_enabled';
+const HEALTH_SYNC_KEY = '@recalibra:health_sync_enabled';
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -68,7 +68,7 @@ export const SettingsScreen: React.FC = () => {
       if (!success) {
         Alert.alert(
           'Authorization Required',
-          'Please allow VagoFlow to access Health data in Settings.',
+          'Please allow Recalibra to access Health data in Settings.',
           [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Open Settings', onPress: () => Linking.openSettings() },
@@ -94,7 +94,7 @@ export const SettingsScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
@@ -186,6 +186,21 @@ export const SettingsScreen: React.FC = () => {
         {/* App Info Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>App</Text>
+
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => navigation.navigate('QuickStartPreferences', { from: 'settings' })}
+            activeOpacity={0.8}
+          >
+            <View style={styles.settingInfo}>
+              <Ionicons name="flash-outline" size={24} color={Colors.primary} />
+              <View style={styles.settingText}>
+                <Text style={styles.settingLabel}>Quick Start</Text>
+                <Text style={styles.settingDescription}>Configure your shortcut</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+          </TouchableOpacity>
           
           <TouchableOpacity style={styles.settingRow}>
             <View style={styles.settingInfo}>
@@ -226,7 +241,7 @@ export const SettingsScreen: React.FC = () => {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 };
 

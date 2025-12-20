@@ -1,10 +1,6 @@
 import { APP_CONSTANTS } from '../constants/app';
 
 export const AppConfig = {
-  // API Configuration
-  SUPABASE_URL: APP_CONSTANTS.API_ENDPOINTS.SUPABASE_URL,
-  SUPABASE_ANON_KEY: APP_CONSTANTS.API_ENDPOINTS.SUPABASE_ANON_KEY,
-  
   // RevenueCat Configuration
   REVENUECAT_IOS_KEY: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '',
   REVENUECAT_ANDROID_KEY: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '',

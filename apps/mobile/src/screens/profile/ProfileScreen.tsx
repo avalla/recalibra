@@ -11,10 +11,10 @@ import {
   Linking,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { Screen } from '../../components';
 import { useAuth } from '../../contexts';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useSubscription } from '../../hooks/useSubscription';
@@ -73,10 +73,10 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 );
 
 export const ProfileScreen: React.FC = () => {
+  const { user, signOut, isAnonymous, userMetadata } = useAuth();
   const navigation = useNavigation<any>();
-  const { user, userMetadata, signOut } = useAuth();
-  const { reminderSettings, saveSettings, sendTestNotification } = useNotifications();
   const { isPremium, subscription, presentPaywall, presentCustomerCenter } = useSubscription();
+  const { reminderSettings, saveSettings, sendTestNotification } = useNotifications();
   const { 
     isAvailable: healthAvailable, 
     isAuthorized: healthAuthorized, 
@@ -111,7 +111,7 @@ export const ProfileScreen: React.FC = () => {
       if (!success) {
         Alert.alert(
           'Authorization Required',
-          'Please allow VagoFlow to access Health data in Settings.',
+          'Please allow Recalibra to access Health data in Settings.',
           [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Open Settings', onPress: () => Linking.openSettings() },
@@ -144,10 +144,10 @@ export const ProfileScreen: React.FC = () => {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     if (reminderSettings.days.length === 7) return 'Every day';
     if (reminderSettings.days.length === 5 && 
-        reminderSettings.days.every(d => d >= 1 && d <= 5)) return 'Weekdays';
+        reminderSettings.days.every((d: number) => d >= 1 && d <= 5)) return 'Weekdays';
     if (reminderSettings.days.length === 2 && 
         reminderSettings.days.includes(0) && reminderSettings.days.includes(6)) return 'Weekends';
-    return reminderSettings.days.map(d => dayNames[d]).join(', ');
+    return reminderSettings.days.map((n: number) => dayNames[n]).join(', ');
   };
 
   const handleLogout = () => {
@@ -214,7 +214,7 @@ export const ProfileScreen: React.FC = () => {
               'Type DELETE to confirm account deletion.',
               [
                 { text: 'Cancel', style: 'cancel' },
-                // TODO: Implement actual account deletion with Supabase
+                // TODO: Implement actual account deletion
               ]
             );
           }
@@ -226,13 +226,13 @@ export const ProfileScreen: React.FC = () => {
   const handleMedicalDisclaimer = () => {
     Alert.alert(
       'Medical Disclaimer',
-      'VagoFlow is designed for general wellness and relaxation purposes only. It is not intended to diagnose, treat, cure, or prevent any disease or medical condition.\n\nThe breathing exercises provided should not replace professional medical advice. If you have any respiratory conditions, cardiovascular issues, or other health concerns, please consult your healthcare provider before using this app.\n\nIf you experience any discomfort, dizziness, or adverse effects during exercises, stop immediately and seek medical attention if necessary.',
+      'Recalibra is designed for general wellness and relaxation purposes only. It is not intended to diagnose, treat, cure, or prevent any disease or medical condition.\n\nThe breathing exercises provided should not replace professional medical advice. If you have any respiratory conditions, cardiovascular issues, or other health concerns, please consult your healthcare provider before using this app.\n\nIf you experience any discomfort, dizziness, or adverse effects during exercises, stop immediately and seek medical attention if necessary.',
       [{ text: 'I Understand', style: 'default' }]
     );
   };
 
   const handlePrivacyPolicy = () => {
-    Linking.openURL('https://vagoflow.com/privacy');
+    Linking.openURL('https://recalibra.com/privacy');
   };
 
   const handleEditProfile = () => {
@@ -257,13 +257,13 @@ export const ProfileScreen: React.FC = () => {
   };
 
   const handleSaveGoals = () => {
-    // TODO: Persist goals to Supabase
+    // TODO: Persist goals
     setShowGoalsModal(false);
     Alert.alert('Goals Updated', `Weekly goal: ${weeklySessionGoal} sessions, ${weeklyMinutesGoal} minutes`);
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <Screen style={styles.container} edges={['top']}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -289,6 +289,23 @@ export const ProfileScreen: React.FC = () => {
             <Ionicons name="pencil" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
+
+        {/* Anonymous User Banner */}
+        {isAnonymous && (
+          <TouchableOpacity 
+            style={styles.upgradeCard}
+            onPress={() => navigation.navigate('AccountUpgrade')}
+          >
+            <View style={styles.upgradeContent}>
+              <Ionicons name="cloud-upload-outline" size={24} color={Colors.primary} />
+              <View style={styles.upgradeInfo}>
+                <Text style={styles.upgradeTitle}>Create Account</Text>
+                <Text style={styles.upgradeSubtitle}>Save your progress and sync across devices</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
+          </TouchableOpacity>
+        )}
 
         {/* Premium Section */}
         {isPremium ? (
@@ -406,6 +423,13 @@ export const ProfileScreen: React.FC = () => {
         {/* Preferences */}
         <Text style={styles.sectionTitle}>Preferences</Text>
         <View style={styles.settingsSection}>
+          <SettingsItem
+            icon="flash-outline"
+            iconColor={Colors.primary}
+            label="Quick Start"
+            value="Configure"
+            onPress={() => navigation.navigate('QuickStartPreferences', { from: 'settings' })}
+          />
           <SettingsItem
             icon="volume-high-outline"
             label="Sound Settings"
@@ -576,7 +600,7 @@ export const ProfileScreen: React.FC = () => {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </Screen>
   );
 };
 
@@ -601,6 +625,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
+    fontFamily: FontFamily.heading,
   },
   profileCard: {
     flexDirection: 'row',
@@ -630,7 +655,8 @@ const styles = StyleSheet.create({
   profileName: {
     color: Colors.textPrimary,
     fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
+    fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.heading,
     marginBottom: 2,
   },
   profileEmail: {
@@ -641,6 +667,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.heading,
     marginBottom: Spacing.sm,
     marginTop: Spacing.md,
   },
@@ -709,6 +736,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.lg,
     fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.heading,
     textAlign: 'center',
     marginBottom: Spacing.lg,
   },
@@ -837,6 +865,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.lg,
     fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.heading,
   },
   premiumSubtitle: {
     color: Colors.textMuted,
@@ -868,6 +897,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.heading,
   },
   upgradeSubtitle: {
     color: Colors.textMuted,

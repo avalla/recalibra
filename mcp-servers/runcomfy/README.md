@@ -19,7 +19,7 @@ bun install
   "mcpServers": {
     "runcomfy": {
       "command": "node",
-      "args": ["/Users/andrea/dev/node/vagoflow/mcp-servers/runcomfy/index.js"],
+      "args": ["/Users/andrea/dev/node/recalibra/mcp-servers/runcomfy/index.js"],
       "env": {
         "RUNCOMFY_API_KEY": "YOUR_API_KEY_HERE"
       }

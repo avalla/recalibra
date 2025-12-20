@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native';
-import { Colors } from '../constants';
+import { Colors, FontFamily } from '../constants';
 import { logger } from '../utils/logger';
 
 interface ErrorBoundaryProps {
@@ -157,6 +157,6 @@ const styles = StyleSheet.create({
   debugText: {
     fontSize: 12,
     color: Colors.textSecondary,
-    fontFamily: 'monospace',
+    fontFamily: FontFamily.regular,
   },
 });

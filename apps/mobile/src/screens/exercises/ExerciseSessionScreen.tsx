@@ -1,40 +1,33 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
   TouchableOpacity,
-  Dimensions,
-  Animated,
-  Alert,
+  Pressable,
+  Animated, 
   ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  Dimensions,
+  Alert
+ } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { useSessions, useAudio, AUDIO_PRESETS, getAudioRecommendation, useHaptics } from '../../hooks';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { useSessions, useAudio, getAudioRecommendation, useHaptics } from '../../hooks';
 import type { AudioPresetKey, ExerciseCategory } from '../../hooks';
 import type { ExerciseStackParamList } from '../../types';
-import { AudioSelector, ExerciseInstructions } from '../../components';
+import { Screen } from '../../components';
+import { TutorialOverlay } from '../../components/TutorialOverlay';
+import { OriginIcon } from '../../components/OriginIcon';
+import { getExerciseBackground } from '../../constants/backgrounds';
+import { AUDIO_OPTIONS, type AudioOption, AudioSelector } from '../../components/AudioSelector';
 
 const { width } = Dimensions.get('window');
 const CIRCLE_SIZE = width * 0.7;
-
-// Helper to get flag emoji from origin
-const getOriginFlag = (origin?: string): string => {
-  const flags: Record<string, string> = {
-    'usa': '🇺🇸',
-    'india': '🇮🇳',
-    'china': '🇨🇳',
-    'japan': '🇯🇵',
-    'tibet': '🏔️',
-    'sufi': '☪️',
-    'hawaii': '🌺',
-    'universal': '🌍',
-  };
-  return flags[origin?.toLowerCase() || ''] || '🌍';
-};
+const BOTTOM_BAR_HEIGHT = 76;
 
 // Default fallback values when database data is not available
 const DEFAULT_EXERCISE_INFO = {
@@ -70,12 +63,14 @@ type SessionRouteProps = RouteProp<ExerciseStackParamList, 'ExerciseSession'>;
 export const ExerciseSessionScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<SessionRouteProps>();
-  const { 
-    exerciseId, 
-    exerciseName, 
-    durationMinutes, 
-    audioPreset, 
-    exerciseCategory, 
+  const insets = useSafeAreaInsets();
+  
+  const {
+    exerciseId,
+    exerciseName,
+    durationMinutes,
+    audioPreset,
+    exerciseCategory,
     breathingPattern: routePattern,
     origin: dbOrigin,
     history: dbHistory,
@@ -84,55 +79,388 @@ export const ExerciseSessionScreen: React.FC = () => {
     instructions: dbInstructions,
   } = route.params;
   const { startSession, updateSessionStatus } = useSessions();
-  const { breathingPhase: hapticBreathingPhase, success: hapticSuccess } = useHaptics();
-  
+  const {
+    breathingPhase: hapticBreathingPhase,
+    success: hapticSuccess,
+    selection: hapticSelection,
+  } = useHaptics();
+
   // Use pattern from database or fallback to default
   const pattern: BreathingPattern = routePattern || DEFAULT_PATTERN;
-  
+
   // Use data from database, fallback to defaults
   const exerciseInfo = {
     origin: dbOrigin || DEFAULT_EXERCISE_INFO.origin,
-    flag: getOriginFlag(dbOrigin),
+    originKey: dbOrigin?.toLowerCase() || 'universal',
     history: dbHistory || DEFAULT_EXERCISE_INFO.history,
     benefits: dbBenefits || DEFAULT_EXERCISE_INFO.benefits,
   };
-  
+
   // Default steps and tips if not in database
   const defaultSteps = ['Follow the circle animation on screen', 'Inhale when the circle expands', 'Exhale when the circle contracts', 'Hold when indicated'];
   const defaultTips = ['Find a quiet, comfortable place', 'Practice regularly for best results', 'Stop if you feel dizzy'];
-  
+
   const exerciseSteps = dbInstructions?.map(i => i.instruction) || defaultSteps;
   const exerciseTips = dbTips || defaultTips;
-  
+
   // Audio selection state - user can override the default from exercise
   const [selectedAudioId, setSelectedAudioId] = useState<string>(audioPreset || 'silence');
   const [audioRecommendation, setAudioRecommendation] = useState<{
     primary: AudioPresetKey;
     reason: string;
   } | null>(null);
-  
+
   // Audio hook - use the user-selected audio
   const audioPresetKey = selectedAudioId as AudioPresetKey;
   console.log('[ExerciseSession] Selected audio:', selectedAudioId, '-> key:', audioPresetKey);
-  
+
   const [audioVolume, setAudioVolume] = useState(0.7);
   const [showVolumeControl, setShowVolumeControl] = useState(false);
   const [showExerciseInfo, setShowExerciseInfo] = useState(false);
-  
-  const { play: playAudio, stop: stopAudio, pause: pauseAudio, setVolume, isPlaying: isAudioPlaying, presetInfo } = useAudio({ 
+
+  // Onboarding state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(true);
+
+  const onboardingPages = useMemo(() => {
+    const pages: Array<Record<string, any>> = [
+      {
+        title: 'Welcome to ' + exerciseName,
+        subtitle: 'Let\'s prepare your mind and body for this breathing exercise',
+        description:
+          'This practice will help you reduce stress and find inner calm through controlled breathing techniques.',
+        icon: 'leaf-outline',
+      },
+      {
+        title: 'Benefits',
+        subtitle: 'What you\'ll experience',
+        description: exerciseInfo.benefits
+          .map((benefit, index) => `${index + 1}. ${benefit}`)
+          .join('\n'),
+        icon: 'heart-outline',
+      },
+      {
+        title: 'Getting Ready',
+        subtitle: 'Find a comfortable position',
+        description:
+          '• Sit comfortably with your back straight\n• Close your eyes or soften your gaze\n• Place your hands on your lap\n• Take a few deep breaths to settle in',
+        icon: 'checkmark-circle-outline',
+      },
+      {
+        title: 'Breathing Pattern',
+        subtitle: 'Your rhythm for this session',
+        customContent: 'breathingPattern',
+        icon: 'time-outline',
+      },
+      {
+        title: exerciseInfo.origin,
+        subtitle: 'A short story behind this practice',
+        customContent: 'originStory',
+        icon: 'compass-outline',
+      },
+    ];
+
+    exerciseSteps.forEach((step: string, index: number) => {
+      pages.push({
+        title: `Step ${index + 1}`,
+        subtitle: 'Follow along',
+        customContent: 'singleStep',
+        payload: { text: step },
+        icon: 'list-outline',
+      });
+    });
+
+    exerciseTips.forEach((tip: string, index: number) => {
+      pages.push({
+        title: `Tip ${index + 1}`,
+        subtitle: 'Small details that help',
+        customContent: 'singleTip',
+        payload: { text: tip },
+        icon: 'bulb-outline',
+      });
+    });
+
+    pages.push({
+      title: 'Ready to Begin',
+      subtitle: 'Set your intention and start',
+      customContent: 'startSession',
+      icon: 'play-circle-outline',
+    });
+
+    return pages;
+  }, [exerciseName, exerciseInfo.benefits, exerciseInfo.history, exerciseInfo.origin, exerciseSteps, exerciseTips]);
+
+  const handleNextPage = async () => {
+    if (currentPage < onboardingPages.length - 1) {
+      setCurrentPage(currentPage + 1);
+    } else {
+      // Mark onboarding as seen for this exercise
+      await AsyncStorage.setItem(`onboarding_${exerciseId}`, 'seen');
+      setShowOnboarding(false);
+      // Start the exercise immediately after onboarding
+      handleStartSession();
+    }
+  };
+
+  const handleSkipOnboarding = async () => {
+    // Mark onboarding as seen for this exercise
+    await AsyncStorage.setItem(`onboarding_${exerciseId}`, 'seen');
+    setShowOnboarding(false);
+  };
+
+  // Render custom content for onboarding pages
+  const renderCustomContent = () => {
+    const currentPageData = onboardingPages[currentPage];
+    if (!currentPageData) return null;
+    
+    switch (currentPageData.customContent) {
+      case 'breathingPattern':
+        return (
+          <View style={styles.customContentContainer}>
+            <Ionicons 
+              name={currentPageData.icon as any} 
+              size={60} 
+              color={Colors.primary} 
+              style={styles.customContentIcon}
+            />
+            <Text style={styles.onboardingTitle}>
+              {currentPageData.title}
+            </Text>
+            <Text style={styles.onboardingSubtitle}>
+              {currentPageData.subtitle}
+            </Text>
+            
+            {/* Breathing Pattern Preview */}
+            <View style={styles.patternPreview}>
+              <View style={styles.patternCircle}>
+                <Animated.View
+                  style={[
+                    styles.patternInnerCircle,
+                    {
+                      transform: [
+                        {
+                          scale: scaleAnim.interpolate({
+                            inputRange: [0, 1, 2, 3],
+                            outputRange: [1, 1.3, 1, 0.8],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                />
+                <Text style={styles.patternText}>{pattern.inhale}-{pattern.hold}-{pattern.exhale}</Text>
+              </View>
+              <View style={styles.patternIndicators}>
+                <View style={styles.indicator}>
+                  <Text style={styles.indicatorLabel}>Inhale</Text>
+                  <Text style={styles.indicatorTime}>{pattern.inhale}s</Text>
+                </View>
+                <View style={styles.indicator}>
+                  <Text style={styles.indicatorLabel}>Hold</Text>
+                  <Text style={styles.indicatorTime}>{pattern.hold}s</Text>
+                </View>
+                <View style={styles.indicator}>
+                  <Text style={styles.indicatorLabel}>Exhale</Text>
+                  <Text style={styles.indicatorTime}>{pattern.exhale}s</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        );
+
+      case 'originStory':
+        return (
+          <View style={styles.customContentContainer}>
+            <Ionicons
+              name={currentPageData.icon as any}
+              size={60}
+              color={Colors.primary}
+              style={styles.customContentIcon}
+            />
+            <Text style={styles.onboardingTitle}>{currentPageData.title}</Text>
+            <Text style={styles.onboardingSubtitle}>{currentPageData.subtitle}</Text>
+            <Text style={styles.onboardingDescription}>{exerciseInfo.history}</Text>
+          </View>
+        );
+        
+      case 'singleStep':
+        return (
+          <View style={styles.customContentContainer}>
+            <Ionicons 
+              name={currentPageData.icon as any} 
+              size={60} 
+              color={Colors.primary} 
+              style={styles.customContentIcon}
+            />
+            <Text style={styles.onboardingTitle}>
+              {currentPageData.title}
+            </Text>
+            <Text style={styles.onboardingSubtitle}>
+              {currentPageData.subtitle}
+            </Text>
+
+            <View style={styles.stepItem}>
+              <Text style={styles.stepText}>{currentPageData.payload?.text}</Text>
+            </View>
+          </View>
+        );
+        
+      case 'singleTip':
+        return (
+          <View style={styles.customContentContainer}>
+            <Ionicons 
+              name={currentPageData.icon as any} 
+              size={60} 
+              color={Colors.primary} 
+              style={styles.customContentIcon}
+            />
+            <Text style={styles.onboardingTitle}>
+              {currentPageData.title}
+            </Text>
+            <Text style={styles.onboardingSubtitle}>
+              {currentPageData.subtitle}
+            </Text>
+
+            <View style={styles.tipItem}>
+              <Ionicons name="bulb" size={20} color="#FFA500" style={styles.tipItemIcon} />
+              <Text style={styles.tipItemText}>{currentPageData.payload?.text}</Text>
+            </View>
+          </View>
+        );
+        
+      case 'startSession':
+        return (
+          <View style={styles.customContentContainer}>
+            <Ionicons 
+              name={currentPageData.icon as any} 
+              size={60} 
+              color={Colors.primary} 
+              style={styles.customContentIcon}
+            />
+            <Text style={styles.onboardingTitle}>
+              {currentPageData.title}
+            </Text>
+            <Text style={styles.onboardingSubtitle}>
+              {currentPageData.subtitle}
+            </Text>
+            
+            {/* Exercise Info */}
+            <View style={styles.sessionInfo}>
+              <View style={styles.originDurationRow}>
+                <View style={styles.originBadge}>
+                  <OriginIcon origin={exerciseInfo.originKey} size={20} />
+                  <Text style={styles.originLabel}>{exerciseInfo.origin}</Text>
+                </View>
+                <View style={styles.dividerDot} />
+                <View style={styles.durationBadgeMinimal}>
+                  <Ionicons name="time-outline" size={14} color={Colors.textMuted} />
+                  <Text style={styles.durationLabel}>{durationMinutes} min</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Stress Level Selector */}
+            <Text style={styles.stressQuestion}>How are you feeling now?</Text>
+            <View style={styles.stressList}>
+              {[
+                { level: 1, emoji: '😌', label: 'Calm', description: 'Relaxed and grounded' },
+                { level: 5, emoji: '😐', label: 'Okay', description: 'Neutral / manageable' },
+                { level: 9, emoji: '😰', label: 'Stressed', description: 'Tense or overwhelmed' },
+              ].map((item) => {
+                const isSelected = preStressLevel === item.level;
+                return (
+                  <Pressable
+                    key={item.level}
+                    style={({ pressed }) => [
+                      styles.stressRow,
+                      isSelected && styles.stressRowActive,
+                      pressed && styles.stressRowPressed,
+                      pressed && isSelected && styles.stressRowPressedActive,
+                    ]}
+                    android_ripple={{ color: 'rgba(102, 126, 234, 0.18)' }}
+                    onPressIn={() => {
+                      hapticSelection();
+                    }}
+                    onPress={() => handleStressLevelChange(item.level)}
+                    hitSlop={12}
+                  >
+                    <View style={[styles.stressEmojiWrap, isSelected && styles.stressEmojiWrapActive]}>
+                      <Text style={styles.stressEmoji}>{item.emoji}</Text>
+                    </View>
+                    <View style={styles.stressTextCol}>
+                      <Text style={[styles.stressRowTitle, isSelected && styles.stressRowTitleActive]}>
+                        {item.label}
+                      </Text>
+                      <Text style={[styles.stressRowSubtitle, isSelected && styles.stressRowSubtitleActive]}>
+                        {item.description}
+                      </Text>
+                    </View>
+                    <View style={[styles.stressRadioOuter, isSelected && styles.stressRadioOuterActive]}>
+                      {isSelected && <View style={styles.stressRadioInner} />}
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Text style={styles.stressHint}>This helps personalize your session</Text>
+
+            {/* Audio Selector */}
+            <AudioSelector
+              selectedAudioId={selectedAudioId}
+              onSelect={setSelectedAudioId}
+              recommendedId={audioRecommendation?.primary}
+            />
+          </View>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  const { play: playAudio, stop: stopAudio, pause: pauseAudio, setVolume, isPlaying: isAudioPlaying, presetInfo } = useAudio({
     preset: audioPresetKey,
     volume: audioVolume,
-    loop: true 
+    loop: true
   });
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [preStressLevel, setPreStressLevel] = useState(5);
+  const [preSessionStep, setPreSessionStep] = useState<1 | 2 | 3>(1);
   const [sessionState, setSessionState] = useState<'stress_prompt' | 'countdown' | 'playing' | 'paused'>('stress_prompt');
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Get background info for this exercise
+  const exerciseBackground = getExerciseBackground(exerciseCategory || 'default');
+
+  const activeOnboardingPage = onboardingPages[currentPage];
+
+  // Check if tutorial should be shown
+  useEffect(() => {
+    const checkTutorialStatus = async () => {
+      const tutorialSeen = await AsyncStorage.getItem('tutorial_seen');
+      if (!tutorialSeen) {
+        setShowTutorial(true);
+      }
+    };
+    checkTutorialStatus();
+  }, []);
+
+  // Check if onboarding should be shown for this exercise
+  useEffect(() => {
+    const checkOnboardingStatus = async () => {
+      const onboardingSeen = await AsyncStorage.getItem(`onboarding_${exerciseId}`);
+      if (onboardingSeen) {
+        setShowOnboarding(false);
+      }
+    };
+    checkOnboardingStatus();
+  }, [exerciseId]);
 
   // Update audio recommendation when stress level changes
   const handleStressLevelChange = (level: number) => {
     setPreStressLevel(level);
-    
+
     if (exerciseCategory) {
       const recommendation = getAudioRecommendation(exerciseCategory as ExerciseCategory, level);
       setAudioRecommendation({
@@ -163,11 +491,10 @@ export const ExerciseSessionScreen: React.FC = () => {
   const [phaseTime, setPhaseTime] = useState(pattern.inhale);
   const [elapsedTime, setElapsedTime] = useState(0);
   const sessionDuration = durationMinutes * 60;
-  
+
   const isPlaying = sessionState === 'playing';
 
   const scaleAnim = useRef(new Animated.Value(0.6)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
 
   // Get label for current phase (with special pattern support)
   const getPhaseLabel = (phase: BreathingPhase): string => {
@@ -181,7 +508,7 @@ export const ExerciseSessionScreen: React.FC = () => {
     if (pattern.special === 'ha_sound' && phase === 'exhale') {
       return 'HA! 🌺';
     }
-    
+
     switch (phase) {
       case 'inhale':
         return 'Inhale';
@@ -217,7 +544,7 @@ export const ExerciseSessionScreen: React.FC = () => {
           return 'inhale';
       }
     }
-    
+
     // Wim Hof pattern (rapid cycles + retention)
     if (pattern.special === 'wim_hof') {
       switch (phase) {
@@ -231,7 +558,7 @@ export const ExerciseSessionScreen: React.FC = () => {
           return 'inhale';
       }
     }
-    
+
     // Standard pattern
     switch (phase) {
       case 'inhale':
@@ -256,11 +583,11 @@ export const ExerciseSessionScreen: React.FC = () => {
       if (phase === 'exhale') return 8; // Long exhale
       if (phase === 'rest') return pattern.rest;
     }
-    
+
     if (pattern.special === 'wim_hof') {
       if (phase === 'retention') return pattern.retention_seconds || 60;
     }
-    
+
     // Map phase to pattern property
     switch (phase) {
       case 'inhale':
@@ -381,18 +708,47 @@ export const ExerciseSessionScreen: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const [isStartingSession, setIsStartingSession] = useState(false);
+
   const handleStartSession = async () => {
-    // Create session in database
-    const { data, error } = await startSession(exerciseId, preStressLevel);
-    if (error) {
-      Alert.alert('Error', 'Failed to start session. Please try again.');
+    if (isStartingSession) return;
+    if (!exerciseId) {
+      Alert.alert('Error', 'Missing exercise id. Please go back and try again.');
       return;
     }
-    if (data) {
-      setSessionId(data.id);
+
+    setIsStartingSession(true);
+    try {
+      // Start the session
+      const { data: sessionData, error } = await startSession(exerciseId, preStressLevel, {
+        name: exerciseName,
+        category: exerciseCategory,
+        durationMinutes,
+      });
+      if (error) {
+        console.error('[ExerciseSessionScreen] Failed to start session:', error);
+        Alert.alert('Error', error.message || 'Failed to start session. Please try again.');
+        return;
+      }
+
+      if (!sessionData) {
+        console.error('[ExerciseSessionScreen] Failed to start session: empty response');
+        Alert.alert('Error', 'Failed to start session. Please try again.');
+        return;
+      }
+
+      setSessionId(sessionData.id);
       // Start countdown
       setCountdownValue(3);
       setSessionState('countdown');
+    } catch (error) {
+      console.error('[ExerciseSessionScreen] Unexpected startSession error:', error);
+      Alert.alert(
+        'Error',
+        error instanceof Error ? error.message : 'Failed to start session. Please try again.'
+      );
+    } finally {
+      setIsStartingSession(false);
     }
   };
 
@@ -411,14 +767,37 @@ export const ExerciseSessionScreen: React.FC = () => {
   const handleClose = async () => {
     // Stop audio before leaving
     await stopAudio();
-    
+
     // Mark session as abandoned if it was started
     if (sessionId && sessionState !== 'stress_prompt') {
       await updateSessionStatus(sessionId, 'abandoned', elapsedTime);
     }
-    
+
     navigation.goBack();
   };
+
+  const handleHeaderLeft = async () => {
+    if (sessionState === 'stress_prompt' && preSessionStep > 1) {
+      setPreSessionStep((prev) => (prev > 1 ? ((prev - 1) as 1 | 2 | 3) : prev));
+      return;
+    }
+
+    await handleClose();
+  };
+
+  const headerTitle = useMemo(() => {
+    if (sessionState !== 'stress_prompt') return exerciseName;
+    if (preSessionStep === 1) return exerciseName;
+    if (preSessionStep === 2) return 'Before we start';
+    return 'Audio';
+  }, [exerciseName, preSessionStep, sessionState]);
+
+  const headerSubtitle = useMemo(() => {
+    if (sessionState !== 'stress_prompt') return `${exerciseInfo.origin} · ${durationMinutes} min`;
+    if (preSessionStep === 1) return `${exerciseInfo.origin} - ${durationMinutes} min`;
+    if (preSessionStep === 2) return 'How are you feeling right now?';
+    return 'Choose a background sound';
+  }, [durationMinutes, exerciseInfo.origin, preSessionStep, sessionState]);
 
   const progress = elapsedTime / sessionDuration;
 
@@ -429,289 +808,415 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   const volumeLevels = [0, 0.25, 0.5, 0.75, 1];
 
+  const bottomBarPaddingBottom = Math.max(Math.min(insets.bottom, Spacing.md), Spacing.xs);
+  const bottomBarHeight = BOTTOM_BAR_HEIGHT + bottomBarPaddingBottom;
+
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleClose}>
-          <Ionicons name="close" size={28} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{exerciseName}</Text>
-        <View style={{ width: 28 }} />
-      </View>
+    <Screen edges={['top']} disableGradient>
+      <View style={styles.container}>
+        {showOnboarding ? (
+          <View style={styles.onboardingContainer}>
+            <View style={styles.onboardingHeader}>
+              <TouchableOpacity onPress={handleSkipOnboarding}>
+                <Text style={styles.skipText}>Skip</Text>
+              </TouchableOpacity>
+            </View>
 
-      {/* Progress Bar - only show during active session */}
-      {sessionState !== 'stress_prompt' && (
-        <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+          {/* Content */}
+          <View style={styles.onboardingContent}>
+            {!activeOnboardingPage ? null : activeOnboardingPage.customContent ? (
+              renderCustomContent()
+            ) : (
+              // Standard content pages
+              <>
+                <Ionicons 
+                  name={activeOnboardingPage.icon as any} 
+                  size={80} 
+                  color={Colors.primary} 
+                  style={styles.onboardingIcon}
+                />
+                <Text style={styles.onboardingTitle}>
+                  {activeOnboardingPage.title}
+                </Text>
+                <Text style={styles.onboardingSubtitle}>
+                  {activeOnboardingPage.subtitle}
+                </Text>
+                <Text style={styles.onboardingDescription}>
+                  {activeOnboardingPage.description}
+                </Text>
+              </>
+            )}
           </View>
-          <View style={styles.timeLabels}>
-            <Text style={styles.timeLabel}>{formatTime(elapsedTime)}</Text>
-            <Text style={styles.timeLabel}>{formatTime(sessionDuration)}</Text>
+
+          <View style={styles.onboardingProgressContainer}>
+            <View style={styles.onboardingProgressTrack}>
+              <View
+                style={[
+                  styles.onboardingProgressFill,
+                  { width: `${((currentPage + 1) / onboardingPages.length) * 100}%` },
+                ]}
+              />
+            </View>
+            <Text style={styles.onboardingProgressText}>
+              {currentPage + 1}/{onboardingPages.length}
+            </Text>
           </View>
-        </View>
-      )}
 
-      {/* Breathing Circle */}
-      <View style={styles.circleContainer}>
-        {sessionState === 'countdown' ? (
-          <>
-            <Text style={styles.countdownLabel}>Get Ready</Text>
-            <Text style={styles.countdownValue}>{countdownValue}</Text>
-          </>
-        ) : sessionState === 'stress_prompt' ? (
-          <ScrollView 
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.stressPromptContent}
-          >
-            {/* Exercise Info */}
-            <View style={styles.exerciseInfoSection}>
-              {/* Origin & Duration Row */}
-              <View style={styles.originDurationRow}>
-                <View style={styles.originBadge}>
-                  <Text style={styles.originFlag}>{exerciseInfo.flag}</Text>
-                  <Text style={styles.originLabel}>{exerciseInfo.origin}</Text>
-                </View>
-                <View style={styles.dividerDot} />
-                <View style={styles.durationBadgeMinimal}>
-                  <Ionicons name="time-outline" size={14} color={Colors.textMuted} />
-                  <Text style={styles.durationLabel}>{durationMinutes} min</Text>
-                </View>
-              </View>
-              
-              {/* History */}
-              <Text style={styles.exerciseHistory}>{exerciseInfo.history}</Text>
-              
-              {/* Benefits */}
-              <View style={styles.benefitsList}>
-                {exerciseInfo.benefits.map((benefit: string, idx: number) => (
-                  <View key={idx} style={styles.benefitItem}>
-                    <Text style={styles.benefitCheck}>✓</Text>
-                    <Text style={styles.benefitLabel}>{benefit}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-
-            <Text style={styles.phaseLabel}>How stressed are you?</Text>
-            <View style={styles.stressSlider}>
-              {[
-                { level: 1, emoji: '😌' },
-                { level: 3, emoji: '🙂' },
-                { level: 5, emoji: '😐' },
-                { level: 7, emoji: '😟' },
-                { level: 9, emoji: '😰' },
-              ].map((item) => (
-                <TouchableOpacity
-                  key={item.level}
-                  style={[
-                    styles.stressButton,
-                    preStressLevel === item.level && styles.stressButtonActive,
-                  ]}
-                  onPress={() => handleStressLevelChange(item.level)}
-                >
-                  <Text style={styles.stressEmoji}>{item.emoji}</Text>
-                  <Text style={[
-                    styles.stressButtonText,
-                    preStressLevel === item.level && styles.stressButtonTextActive,
-                  ]}>{item.level}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <Text style={styles.stressHint}>1 = Calm, 9 = Very stressed</Text>
-
-            {/* Exercise Instructions */}
-            <ExerciseInstructions 
-              exerciseId={exerciseId}
-              exerciseName={exerciseName}
-              steps={exerciseSteps}
-              tips={exerciseTips}
-            />
-
-            {/* Audio Selector */}
-            <AudioSelector
-              selectedAudioId={selectedAudioId}
-              onSelect={setSelectedAudioId}
-              recommendedId={audioRecommendation?.primary}
-            />
-          </ScrollView>
-        ) : (
-          <>
-            <Text style={styles.phaseLabel}>{getPhaseLabel(currentPhase)}</Text>
-            <Text style={styles.phaseTime}>{phaseTime}s</Text>
-          </>
-        )}
-
-        {/* Only show breathing circle during active session */}
-        {sessionState !== 'stress_prompt' && (
-          <View style={styles.circleWrapper}>
-            {/* Outer ring */}
-            <View style={styles.outerRing}>
-              {/* Progress arc would go here - simplified for now */}
-              <View style={[styles.progressArc, { transform: [{ rotate: `${progress * 360}deg` }] }]} />
-            </View>
-
-            {/* Animated breathing circle */}
-            <Animated.View
-              style={[
-                styles.breathingCircle,
-                {
-                  transform: [{ scale: scaleAnim }],
-                },
-              ]}
+          {/* Navigation Buttons */}
+          <View style={styles.onboardingFooter}>
+            <TouchableOpacity
+              style={styles.nextButton}
+              onPress={handleNextPage}
             >
-              <View style={styles.innerCircle} />
-            </Animated.View>
-          </View>
-        )}
-
-        {sessionState === 'playing' && (
-          <View style={styles.sessionHints}>
-            <Text style={styles.motivationalText}>Be present in this moment.</Text>
-            <Text style={styles.helpHint}>Tap ❓ for instructions</Text>
-          </View>
-        )}
-      </View>
-
-      {/* Volume Control Panel */}
-      {showVolumeControl && sessionState !== 'stress_prompt' && (
-        <View style={styles.volumePanel}>
-          <View style={styles.volumeHeader}>
-            <Text style={styles.volumePanelTitle}>Volume</Text>
-            <TouchableOpacity onPress={() => setShowVolumeControl(false)}>
-              <Ionicons name="close" size={20} color={Colors.textMuted} />
+              <LinearGradient
+                colors={['#667EEA', '#764BA2'] as any}
+                style={styles.nextButtonGradient}
+              >
+                <Text style={styles.nextButtonText}>
+                  {currentPage === onboardingPages.length - 1 ? 'Get Started' : 'Next'}
+                </Text>
+                <Ionicons
+                  name={currentPage === onboardingPages.length - 1 ? 'checkmark' : 'arrow-forward'}
+                  size={20}
+                  color={Colors.background}
+                />
+              </LinearGradient>
             </TouchableOpacity>
           </View>
-          <View style={styles.volumeButtons}>
-            {volumeLevels.map((level) => (
-              <TouchableOpacity
-                key={level}
-                style={[
-                  styles.volumeButton,
-                  audioVolume === level && styles.volumeButtonActive,
-                ]}
-                onPress={() => handleVolumeChange(level)}
-              >
-                <Ionicons 
-                  name={level === 0 ? 'volume-mute' : level < 0.5 ? 'volume-low' : 'volume-high'} 
-                  size={20} 
-                  color={audioVolume === level ? Colors.background : Colors.textPrimary} 
-                />
-                <Text style={[
-                  styles.volumeButtonText,
-                  audioVolume === level && styles.volumeButtonTextActive,
-                ]}>
-                  {Math.round(level * 100)}%
+        </View>
+      ) : (
+        <View style={styles.mainContent}>
+          <TutorialOverlay
+            visible={showTutorial}
+            exerciseName={exerciseName}
+            exerciseCategory={exerciseCategory || 'default'}
+            origin={exerciseInfo.origin}
+            onClose={() => setShowTutorial(false)}
+            onStart={() => {
+              setShowTutorial(false);
+              if (sessionState === 'stress_prompt') {
+                handleStartSession();
+              }
+            }}
+          />
+
+          <View style={styles.header}>
+            <TouchableOpacity onPress={handleHeaderLeft} style={styles.headerIconButton}>
+              <Ionicons
+                name={sessionState === 'stress_prompt' && preSessionStep > 1 ? 'chevron-back' : 'close'}
+                size={22}
+                color={Colors.textPrimary}
+              />
+            </TouchableOpacity>
+            <View style={styles.headerTitleContainer}>
+              <Text style={styles.headerTitle} numberOfLines={1}>
+                {headerTitle}
+              </Text>
+              <View style={styles.headerMetaRow}>
+                <Text style={styles.headerSubtitle} numberOfLines={1}>
+                  {headerSubtitle}
                 </Text>
+              </View>
+            </View>
+            {sessionState === 'stress_prompt' ? (
+              <View style={styles.headerIconSpacer} />
+            ) : (
+              <TouchableOpacity
+                onPress={() => setShowExerciseInfo(true)}
+                style={styles.headerIconButton}
+                accessibilityLabel="Show instructions"
+              >
+                <Ionicons name="help-circle-outline" size={22} color={Colors.textPrimary} />
               </TouchableOpacity>
-            ))}
+            )}
           </View>
-          {presetInfo && (
-            <Text style={styles.volumePresetName}>
-              Playing: {presetInfo.name}
-            </Text>
+
+          <View
+            style={[
+              styles.content,
+              sessionState === 'stress_prompt' && styles.contentPreSession,
+              { paddingBottom: bottomBarHeight },
+            ]}
+          >
+            {sessionState === 'stress_prompt' ? (
+              <View style={styles.setupFullContainer}>
+                {preSessionStep === 1 ? (
+                  <View style={styles.preSessionStepContainer}>
+                    <ScrollView
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={styles.preSessionInfoContent}
+                    >
+                      <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
+
+                      <Text style={styles.infoSectionTitle}>How to do it</Text>
+                      {exerciseSteps.map((step: string, index: number) => (
+                        <View key={index} style={styles.infoStepRow}>
+                          <View style={styles.infoStepNumber}>
+                            <Text style={styles.infoStepNumberText}>{index + 1}</Text>
+                          </View>
+                          <Text style={styles.infoStepText}>{step}</Text>
+                        </View>
+                      ))}
+
+                      {exerciseTips && exerciseTips.length > 0 && (
+                        <>
+                          <Text style={styles.infoSectionTitle}>💡 Tips</Text>
+                          {exerciseTips.map((tip: string, index: number) => (
+                            <Text key={index} style={styles.infoTip}>
+                              • {tip}
+                            </Text>
+                          ))}
+                        </>
+                      )}
+
+                      <Text style={styles.infoSectionTitle}>✓ Benefits</Text>
+                      <View style={styles.infoBenefits}>
+                        {exerciseInfo.benefits.map((benefit: string, idx: number) => (
+                          <View key={idx} style={styles.infoBenefitBadge}>
+                            <Text style={styles.infoBenefitText}>{benefit}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </ScrollView>
+
+                    <View style={styles.preSessionSpacer} />
+                  </View>
+                ) : preSessionStep === 2 ? (
+                  <View style={styles.preSessionStepContainer}>
+                    <View style={styles.stressList}>
+                      {[
+                        { level: 1, emoji: '😌', label: 'Calm', description: 'Relaxed and grounded' },
+                        { level: 5, emoji: '😐', label: 'Okay', description: 'Neutral / manageable' },
+                        { level: 9, emoji: '😰', label: 'Stressed', description: 'Tense or overwhelmed' },
+                      ].map((item) => {
+                        const isSelected = preStressLevel === item.level;
+                        return (
+                          <Pressable
+                            key={item.level}
+                            style={({ pressed }) => [
+                              styles.stressRow,
+                              isSelected && styles.stressRowActive,
+                              pressed && styles.stressRowPressed,
+                              pressed && isSelected && styles.stressRowPressedActive,
+                            ]}
+                            android_ripple={{ color: 'rgba(102, 126, 234, 0.18)' }}
+                            onPressIn={() => {
+                              hapticSelection();
+                            }}
+                            onPress={() => handleStressLevelChange(item.level)}
+                            hitSlop={12}
+                          >
+                            <View style={[styles.stressEmojiWrap, isSelected && styles.stressEmojiWrapActive]}>
+                              <Text style={styles.stressEmoji}>{item.emoji}</Text>
+                            </View>
+                            <View style={styles.stressTextCol}>
+                              <Text style={[styles.stressRowTitle, isSelected && styles.stressRowTitleActive]}>
+                                {item.label}
+                              </Text>
+                              <Text style={[styles.stressRowSubtitle, isSelected && styles.stressRowSubtitleActive]}>
+                                {item.description}
+                              </Text>
+                            </View>
+                            <View style={[styles.stressRadioOuter, isSelected && styles.stressRadioOuterActive]}>
+                              {isSelected && <View style={styles.stressRadioInner} />}
+                            </View>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                    <Text style={styles.stressHint}>This helps personalize your session</Text>
+
+                    <View style={styles.preSessionSpacer} />
+                  </View>
+                ) : (
+                  <View style={styles.preSessionStepContainer}>
+                    <ScrollView
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={styles.preSessionAudioContent}
+                    >
+                      <View style={styles.audioSelectorContainer}>
+                        <AudioSelector
+                          selectedAudioId={selectedAudioId}
+                          onSelect={setSelectedAudioId}
+                          recommendedId={audioRecommendation?.primary}
+                          showPreviewButton
+                        />
+                      </View>
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            ) : (
+              <View style={styles.circleContainer}>
+                {sessionState === 'countdown' ? (
+                  <>
+                    <Text style={styles.countdownLabel}>Get Ready</Text>
+                    <Text style={styles.countdownValue}>{countdownValue}</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.phaseLabel}>{getPhaseLabel(currentPhase)}</Text>
+                    <Text style={styles.phaseTime}>{phaseTime}s</Text>
+                  </>
+                )}
+
+              <View style={styles.circleWrapper}>
+                <View style={styles.outerRing}>
+                  <View style={[styles.progressArc, { transform: [{ rotate: `${progress * 360}deg` }] }]} />
+                </View>
+                <Animated.View style={[styles.breathingCircle, { transform: [{ scale: scaleAnim }] }]}>
+                  <View style={styles.innerCircle} />
+                </Animated.View>
+              </View>
+
+                <View style={styles.progressContainerInline}>
+                  <View style={styles.progressBar}>
+                    <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+                  </View>
+                  <View style={styles.timeLabels}>
+                    <Text style={styles.timeLabel}>{formatTime(elapsedTime)}</Text>
+                    <Text style={styles.timeLabel}>{formatTime(sessionDuration)}</Text>
+                  </View>
+                </View>
+            </View>
+            )}
+          </View>
+
+          {showVolumeControl && sessionState !== 'stress_prompt' && (
+            <View style={[styles.volumePanel, { bottom: bottomBarHeight + Spacing.md }]}>
+              <View style={styles.volumeHeader}>
+                <Text style={styles.volumePanelTitle}>Volume</Text>
+                <TouchableOpacity onPress={() => setShowVolumeControl(false)}>
+                  <Ionicons name="close" size={20} color={Colors.textMuted} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.volumeButtons}>
+                {volumeLevels.map((level) => (
+                  <TouchableOpacity
+                    key={level}
+                    style={[styles.volumeButton, audioVolume === level && styles.volumeButtonActive]}
+                    onPress={() => handleVolumeChange(level)}
+                  >
+                    <Ionicons
+                      name={level === 0 ? 'volume-mute' : level < 0.5 ? 'volume-low' : 'volume-high'}
+                      size={20}
+                      color={audioVolume === level ? Colors.background : Colors.textPrimary}
+                    />
+                    <Text
+                      style={[
+                        styles.volumeButtonText,
+                        audioVolume === level && styles.volumeButtonTextActive,
+                      ]}
+                    >
+                      {Math.round(level * 100)}%
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {presetInfo && <Text style={styles.volumePresetName}>Playing: {presetInfo.name}</Text>}
+            </View>
+          )}
+
+          <View style={[styles.bottomControls, { paddingBottom: bottomBarPaddingBottom }]}>
+            {sessionState === 'stress_prompt' ? (
+              <TouchableOpacity
+                style={styles.primaryCta}
+                onPress={() => {
+                  if (preSessionStep < 3) {
+                    setPreSessionStep((prev) => ((prev + 1) as 1 | 2 | 3));
+                    return;
+                  }
+                  handleStartSession();
+                }}
+              >
+                {/* @ts-ignore - LinearGradient type issue with React 19 */}
+                <LinearGradient colors={['#667EEA', '#764BA2'] as any} style={styles.primaryCtaGradient}>
+                  <Ionicons
+                    name={preSessionStep < 3 ? 'chevron-forward' : 'play'}
+                    size={20}
+                    color={Colors.background}
+                  />
+                  <Text style={styles.primaryCtaText}>{preSessionStep < 3 ? 'Next' : 'Start'}</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.controlRow}>
+                <TouchableOpacity
+                  style={[styles.controlButton, showVolumeControl && styles.controlButtonActive]}
+                  onPress={() => setShowVolumeControl(!showVolumeControl)}
+                >
+                  <Ionicons
+                    name={audioVolume === 0 ? 'volume-mute-outline' : 'volume-high-outline'}
+                    size={22}
+                    color={showVolumeControl ? Colors.primary : Colors.textPrimary}
+                  />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.playButton} onPress={handlePlayPause}>
+                  <Ionicons name={isPlaying ? 'pause' : 'play'} size={28} color={Colors.background} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.controlButton, showExerciseInfo && styles.controlButtonActive]}
+                  onPress={() => setShowExerciseInfo(true)}
+                >
+                  <Ionicons name="information-circle-outline" size={22} color={Colors.textPrimary} />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {showExerciseInfo && (
+            <View style={styles.infoModalOverlay}>
+              <View style={styles.infoModalContent}>
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  <View style={styles.infoModalHeader}>
+                    <Text style={styles.infoModalTitle}>{exerciseName}</Text>
+                    <View style={styles.infoOriginBadge}>
+                      <OriginIcon origin={exerciseInfo.originKey} size={18} />
+                      <Text style={styles.originLabel}>{exerciseInfo.origin}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
+                  <Text style={styles.infoSectionTitle}>How to do it</Text>
+                  {exerciseSteps.map((step: string, index: number) => (
+                    <View key={index} style={styles.infoStepRow}>
+                      <View style={styles.infoStepNumber}>
+                        <Text style={styles.infoStepNumberText}>{index + 1}</Text>
+                      </View>
+                      <Text style={styles.infoStepText}>{step}</Text>
+                    </View>
+                  ))}
+                  {exerciseTips && exerciseTips.length > 0 && (
+                    <>
+                      <Text style={styles.infoSectionTitle}>💡 Tips</Text>
+                      {exerciseTips.map((tip: string, index: number) => (
+                        <Text key={index} style={styles.infoTip}>
+                          • {tip}
+                        </Text>
+                      ))}
+                    </>
+                  )}
+                  <Text style={styles.infoSectionTitle}>✓ Benefits</Text>
+                  <View style={styles.infoBenefits}>
+                    {exerciseInfo.benefits.map((benefit: string, idx: number) => (
+                      <View key={idx} style={styles.infoBenefitBadge}>
+                        <Text style={styles.infoBenefitText}>{benefit}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </ScrollView>
+
+                <TouchableOpacity style={styles.infoModalClose} onPress={() => setShowExerciseInfo(false)}>
+                  <Text style={styles.infoModalCloseText}>Got it!</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           )}
         </View>
       )}
-
-      {/* Controls */}
-      <View style={styles.controls}>
-        {sessionState !== 'stress_prompt' ? (
-          <>
-            <TouchableOpacity 
-              style={[styles.controlButton, showVolumeControl && styles.controlButtonActive]}
-              onPress={() => setShowVolumeControl(!showVolumeControl)}
-            >
-              <Ionicons 
-                name={audioVolume === 0 ? 'volume-mute-outline' : 'volume-high-outline'} 
-                size={24} 
-                color={showVolumeControl ? Colors.primary : Colors.textPrimary} 
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.playButton} onPress={handlePlayPause}>
-              <Ionicons
-                name={isPlaying ? 'pause' : 'play'}
-                size={32}
-                color={Colors.background}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.controlButton, showExerciseInfo && styles.controlButtonActive]}
-              onPress={() => setShowExerciseInfo(true)}
-            >
-              <Ionicons name="help-circle-outline" size={24} color={Colors.primary} />
-            </TouchableOpacity>
-          </>
-        ) : (
-          <TouchableOpacity style={styles.startButton} onPress={handlePlayPause}>
-            <Ionicons name="play" size={20} color={Colors.background} />
-            <Text style={styles.startButtonText}>Start Session</Text>
-          </TouchableOpacity>
-        )}
       </View>
-
-      {/* Exercise Info Modal */}
-      {showExerciseInfo && (
-        <View style={styles.infoModalOverlay}>
-          <View style={styles.infoModalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Header */}
-              <View style={styles.infoModalHeader}>
-                <Text style={styles.infoModalTitle}>{exerciseName}</Text>
-                <View style={styles.infoOriginBadge}>
-                  <Text style={styles.infoOriginFlag}>{exerciseInfo.flag}</Text>
-                  <Text style={styles.infoOriginText}>{exerciseInfo.origin}</Text>
-                </View>
-              </View>
-              
-              {/* History */}
-              <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
-              
-              {/* Steps */}
-              <Text style={styles.infoSectionTitle}>How to do it</Text>
-              {exerciseSteps.map((step: string, index: number) => (
-                <View key={index} style={styles.infoStepRow}>
-                  <View style={styles.infoStepNumber}>
-                    <Text style={styles.infoStepNumberText}>{index + 1}</Text>
-                  </View>
-                  <Text style={styles.infoStepText}>{step}</Text>
-                </View>
-              ))}
-              
-              {/* Tips */}
-              {exerciseTips && exerciseTips.length > 0 && (
-                <>
-                  <Text style={styles.infoSectionTitle}>💡 Tips</Text>
-                  {exerciseTips.map((tip: string, index: number) => (
-                    <Text key={index} style={styles.infoTip}>• {tip}</Text>
-                  ))}
-                </>
-              )}
-              
-              {/* Benefits */}
-              <Text style={styles.infoSectionTitle}>✓ Benefits</Text>
-              <View style={styles.infoBenefits}>
-                {exerciseInfo.benefits.map((benefit: string, idx: number) => (
-                  <View key={idx} style={styles.infoBenefitBadge}>
-                    <Text style={styles.infoBenefitText}>{benefit}</Text>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-            
-            <TouchableOpacity 
-              style={styles.infoModalClose}
-              onPress={() => setShowExerciseInfo(false)}
-            >
-              <Text style={styles.infoModalCloseText}>Got it!</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-    </SafeAreaView>
+    </Screen>
   );
 };
 
@@ -720,6 +1225,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  backgroundOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -727,14 +1247,81 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
   },
+  headerIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(16, 28, 27, 0.55)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.md,
+  },
   headerTitle: {
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: FontWeight.semibold,
   },
+  headerMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+    gap: Spacing.sm,
+  },
+  headerSubtitle: {
+    color: Colors.textMuted,
+    fontSize: FontSize.xs,
+    fontFamily: FontFamily.medium,
+    maxWidth: '100%',
+  },
+  headerIconSpacer: {
+    width: 40,
+    height: 40,
+  },
+  originBadgeCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  originLabelCompact: {
+    color: Colors.textMuted,
+    fontSize: FontSize.xs,
+    fontFamily: FontFamily.medium,
+  },
+  durationBadgeCompact: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  durationLabelCompact: {
+    color: Colors.textMuted,
+    fontSize: FontSize.xs,
+    fontFamily: FontFamily.medium,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+    paddingBottom: BOTTOM_BAR_HEIGHT,
+  },
+  contentPreSession: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
+  },
   progressContainer: {
     paddingHorizontal: Spacing.lg,
     marginBottom: Spacing.xl,
+  },
+  progressContainerInline: {
+    width: '100%',
+    marginTop: Spacing.xl,
+    paddingHorizontal: Spacing.sm,
   },
   progressBar: {
     height: 4,
@@ -760,6 +1347,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  circleContainerPre: {
+    justifyContent: 'flex-start',
+    paddingTop: Spacing.xl,
   },
   phaseLabel: {
     color: Colors.textPrimary,
@@ -810,27 +1401,482 @@ const styles = StyleSheet.create({
     borderRadius: CIRCLE_SIZE * 0.25,
     backgroundColor: Colors.backgroundCard,
   },
-  sessionHints: {
+  // Split screen styles
+  splitScreen: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  mainContent: {
+    flex: 1,
+  },
+  topSection: {
+    flex: 1,
+    backgroundColor: Colors.backgroundCard,
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  bottomSection: {
+    flex: 1.5,
+    backgroundColor: Colors.background,
+  },
+  instructionsScroll: {
+    flex: 1,
+  },
+  instructionsContent: {
+    padding: Spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.md,
+  },
+  // Breathing preview
+  breathingPreview: {
     alignItems: 'center',
-    marginTop: Spacing.lg,
-    gap: Spacing.xs,
+    marginTop: Spacing.md,
   },
-  motivationalText: {
-    color: Colors.textSecondary,
+  previewCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.primary + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+  },
+  previewInnerCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.primary,
+  },
+  previewText: {
+    position: 'absolute',
     fontSize: FontSize.md,
-    fontStyle: 'italic',
+    fontWeight: FontWeight.bold,
+    color: Colors.primary,
   },
-  helpHint: {
+  patternIndicators: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  indicator: {
+    alignItems: 'center',
+  },
+  indicatorLabel: {
+    fontSize: FontSize.sm,
     color: Colors.textMuted,
-    fontSize: FontSize.xs,
-    marginTop: Spacing.xs,
+    marginBottom: Spacing.xs,
   },
-  controls: {
+  indicatorTime: {
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.bold,
+    color: Colors.primary,
+  },
+  // Steps section
+  stepsSection: {
+    marginBottom: Spacing.xl,
+  },
+  stepCard: {
+    flexDirection: 'row',
+    backgroundColor: Colors.backgroundCard,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.sm,
+    alignItems: 'flex-start',
+  },
+  stepNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  stepNumberText: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.bold,
+    color: Colors.background,
+  },
+  stepText: {
+    flex: 1,
+    fontSize: FontSize.md,
+    color: Colors.textPrimary,
+    lineHeight: 20,
+  },
+  // Tips section
+  tipsSection: {
+    marginBottom: Spacing.xl,
+  },
+  tipCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFF8DC',
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.sm,
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#FFA50030',
+  },
+  tipIcon: {
+    marginRight: Spacing.md,
+    marginTop: 2,
+  },
+  tipText: {
+    flex: 1,
+    fontSize: FontSize.md,
+    color: Colors.textPrimary,
+    lineHeight: 20,
+  },
+  // Start button
+  startButton: {
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.xl,
+  },
+  startButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.full,
+    gap: Spacing.sm,
+  },
+  startButtonText: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: Colors.background,
+  },
+
+  setupScroll: {
+    width: '100%',
+    marginTop: Spacing.md,
+    maxHeight: 320,
+  },
+  setupScrollContent: {
     paddingBottom: Spacing.md,
+    gap: Spacing.md,
+  },
+  setupCard: {
+    backgroundColor: Colors.backgroundCard,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  setupTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    marginBottom: Spacing.xs,
+    fontFamily: FontFamily.heading,
+  },
+  setupSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    marginBottom: Spacing.md,
+  },
+  audioSelectorContainer: {
+    marginTop: Spacing.md,
+  },
+  setupFullContainer: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  preSessionStepContainer: {
+    flex: 1,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+  },
+  preSessionInfoContent: {
+    paddingBottom: Spacing.xxl,
+  },
+  preSessionAudioContent: {
+    paddingBottom: Spacing.xxl,
+    gap: Spacing.lg,
+  },
+  preSessionAudioIntro: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    lineHeight: 20,
+    fontFamily: FontFamily.regular,
+  },
+  preSessionSpacer: {
+    flex: 1,
+  },
+  setupFullScroll: {
+    flex: 1,
+  },
+  setupFullScrollContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xxl,
+    gap: Spacing.lg,
+  },
+  setupSecondaryCard: {
+    backgroundColor: Colors.backgroundElevated,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  setupSecondaryTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+    marginBottom: Spacing.xs,
+  },
+  setupSecondaryText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    lineHeight: 20,
+  },
+
+  bottomControls: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    paddingTop: Spacing.md,
+    minHeight: BOTTOM_BAR_HEIGHT,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    backgroundColor: Colors.background,
+  },
+  primaryCta: {
+    borderRadius: BorderRadius.full,
+    overflow: 'hidden',
+  },
+  primaryCtaGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.md,
+    gap: Spacing.sm,
+    minHeight: 56,
+  },
+  primaryCtaText: {
+    color: Colors.background,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.bold,
+  },
+  controlRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  // Onboarding styles
+  onboardingContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.xl,
+  },
+  onboardingHeader: {
+    alignItems: 'flex-end',
+  },
+  skipText: {
+    fontSize: FontSize.md,
+    color: Colors.textMuted,
+    fontWeight: FontWeight.medium,
+    fontFamily: FontFamily.medium,
+  },
+  onboardingContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  onboardingIcon: {
+    marginBottom: Spacing.xl,
+  },
+  onboardingTitle: {
+    fontSize: FontSize.xxxl,
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+    fontFamily: FontFamily.heading,
+  },
+  onboardingSubtitle: {
+    fontSize: FontSize.lg,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+    fontFamily: FontFamily.semibold,
+  },
+  onboardingDescription: {
+    fontSize: FontSize.md,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 26, // Increased line height for better readability
+    fontFamily: FontFamily.regular,
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: Spacing.xl,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.border,
+    marginHorizontal: 4,
+  },
+  dotActive: {
+    backgroundColor: Colors.primary,
+    width: 24,
+  },
+  onboardingProgressContainer: {
+    alignItems: 'center',
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  onboardingProgressTrack: {
+    width: '70%',
+    height: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    overflow: 'hidden',
+  },
+  onboardingProgressFill: {
+    height: '100%',
+    borderRadius: 999,
+    backgroundColor: Colors.primary,
+  },
+  onboardingProgressText: {
+    fontSize: FontSize.sm,
+    color: Colors.textMuted,
+    fontFamily: FontFamily.medium,
+  },
+  onboardingFooter: {
+    paddingBottom: Spacing.lg,
+  },
+  nextButton: {
+    borderRadius: BorderRadius.full,
+    overflow: 'hidden',
+  },
+  nextButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.sm,
+    minHeight: 56, // Ensure consistent height
+  },
+  nextButtonText: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: Colors.background,
+    fontFamily: FontFamily.bold,
+    lineHeight: 20, // Consistent line height
+  },
+  // Custom content styles
+  customContentContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+  },
+  customContentIcon: {
+    marginBottom: Spacing.lg,
+  },
+  patternPreview: {
+    alignItems: 'center',
+    marginTop: Spacing.lg,
+  },
+  patternCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: Colors.backgroundCard,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+    borderWidth: 2,
+    borderColor: Colors.border,
+  },
+  patternInnerCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.primary,
+  },
+  patternText: {
+    position: 'absolute',
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: Colors.textPrimary,
+    fontFamily: FontFamily.bold,
+  },
+  stepsScroll: {
+    flex: 1,
+    width: '100%',
+    marginTop: Spacing.lg,
+  },
+  stepItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.backgroundCard,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  tipsScroll: {
+    flex: 1,
+    width: '100%',
+    marginTop: Spacing.lg,
+  },
+  tipItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.backgroundCard,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  tipItemIcon: {
+    marginRight: Spacing.md,
+    marginTop: 2,
+  },
+  tipItemText: {
+    flex: 1,
+    fontSize: FontSize.md,
+    color: Colors.textPrimary,
+    lineHeight: 20,
+    fontFamily: FontFamily.regular,
+  },
+  sessionInfo: {
+    width: '100%',
+    marginBottom: Spacing.xl,
+  },
+  // Missing styles
+  stressQuestion: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  stressHint: {
+    color: Colors.textMuted,
+    fontSize: FontSize.xs,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  volumePanel: {
+    position: 'absolute',
+    left: Spacing.lg,
+    right: Spacing.lg,
     gap: Spacing.xl,
     backgroundColor: Colors.background,
   },
@@ -867,71 +1913,88 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.bold,
     marginBottom: Spacing.sm,
   },
-  stressSlider: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: Spacing.xs,
-    marginBottom: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+  stressList: {
+    marginTop: Spacing.lg,
+    gap: Spacing.sm,
   },
-  stressButton: {
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.xs,
-    borderRadius: BorderRadius.md,
+  stressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.backgroundElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    minHeight: 64,
+    gap: Spacing.md,
+  },
+  stressRowPressed: {
+    opacity: 0.9,
+  },
+  stressRowPressedActive: {
+    opacity: 0.95,
+  },
+  stressRowActive: {
+    borderColor: Colors.primary,
     backgroundColor: Colors.backgroundCard,
+  },
+  stressEmojiWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 48,
+    backgroundColor: Colors.backgroundCard,
   },
-  stressButtonActive: {
+  stressEmojiWrapActive: {
     backgroundColor: Colors.primary,
   },
   stressEmoji: {
-    fontSize: 20,
-    marginBottom: 2,
+    fontSize: 22,
   },
-  stressButtonText: {
-    color: Colors.textMuted,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.medium,
+  stressTextCol: {
+    flex: 1,
   },
-  stressButtonTextActive: {
-    color: Colors.background,
+  stressRowTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
+    fontFamily: FontFamily.semibold,
+  },
+  stressRowTitleActive: {
+    color: Colors.textPrimary,
+  },
+  stressRowSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    marginTop: 2,
+  },
+  stressRowSubtitleActive: {
+    color: Colors.textSecondary,
+  },
+  stressRadioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stressRadioOuterActive: {
+    borderColor: Colors.primary,
+  },
+  stressRadioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.primary,
   },
   stressPromptContent: {
     alignItems: 'center',
     paddingBottom: 120,
     paddingTop: Spacing.sm,
     flexGrow: 1,
-  },
-  stressHint: {
-    color: Colors.textMuted,
-    fontSize: FontSize.xs,
-    marginBottom: Spacing.md,
-  },
-  startButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xxl,
-    borderRadius: BorderRadius.full,
-  },
-  startButtonText: {
-    color: Colors.background,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.bold,
-  },
-  // Volume panel styles
-  volumePanel: {
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
   },
   volumeHeader: {
     flexDirection: 'row',

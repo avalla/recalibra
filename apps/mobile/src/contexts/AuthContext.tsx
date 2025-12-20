@@ -1,19 +1,35 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import * as Linking from 'expo-linking';
-import { supabase, getAuthRedirectUrl } from '../lib/supabase';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import type { UserMetadata } from '../types';
-import { appStateManager } from '../utils/appState';
+import { getDeviceUUID, isFirstLaunch } from '../utils/device';
+
+interface LocalUser {
+  id: string;
+  email?: string;
+  is_anonymous?: boolean;
+  user_metadata?: UserMetadata;
+}
+
+interface LocalSession {
+  user: LocalUser;
+}
 
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+  session: LocalSession | null;
+  user: LocalUser | null;
   userMetadata: UserMetadata | null;
   isLoading: boolean;
+  isAnonymous: boolean;
+  onboardingCompleted: boolean;
+  deviceUUID: string | null;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  signInAnonymously: () => Promise<{ error: Error | null }>;
+  upgradeAccount: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   updateUserMetadata: (metadata: Partial<UserMetadata>) => Promise<{ error: Error | null }>;
+  completeOnboarding: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,86 +47,107 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<LocalSession | null>(null);
+  const [user, setUser] = useState<LocalUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [deviceUUID, setDeviceUUID] = useState<string | null>(null);
 
+  console.log('🔍 AuthProvider render - onboardingCompleted:', onboardingCompleted);
+
+  const USER_STORAGE_KEY = '@recalibra:local_user_v1';
+  const CREDENTIALS_EMAIL_KEY = '@recalibra:credentials_email_v1';
+  const CREDENTIALS_PASSWORD_KEY = '@recalibra:credentials_password_v1';
+
+  const generateUserId = (uuid: string) => `local_${uuid}`;
+
+  const persistUser = async (nextUser: LocalUser) => {
+    await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUser));
+  };
+
+  const loadPersistedUser = async (): Promise<LocalUser | null> => {
+    const raw = await AsyncStorage.getItem(USER_STORAGE_KEY);
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw) as LocalUser;
+      if (!parsed?.id) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  };
+
+  const setAuthenticatedUser = async (nextUser: LocalUser) => {
+    const nextSession: LocalSession = { user: nextUser };
+    setUser(nextUser);
+    setSession(nextSession);
+    setIsAnonymous(!!nextUser.is_anonymous);
+    await persistUser(nextUser);
+  };
+
+  // Initialize anonymous user on first launch
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    // Handle deeplinks (email confirmation, magic links, etc.)
-    const handleDeepLink = async (event: { url: string }) => {
-      const url = event.url;
-      if (url.includes('access_token') || url.includes('refresh_token')) {
-        // Extract tokens from URL and set session
-        const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1]);
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
+    const initializeAuth = async () => {
+      try {
+        // Check onboarding status first
+        const onboardingStatus = await AsyncStorage.getItem('onboarding_completed');
+        setOnboardingCompleted(onboardingStatus === 'true');
         
-        if (accessToken && refreshToken) {
-          await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
+        // Get device UUID
+        const uuid = await getDeviceUUID();
+        setDeviceUUID(uuid);
+
+        const persistedUser = await loadPersistedUser();
+        if (persistedUser) {
+          await setAuthenticatedUser(persistedUser);
+          return;
         }
+
+        // No stored user, create anonymous local user
+        const anonymousUser: LocalUser = {
+          id: generateUserId(uuid),
+          is_anonymous: true,
+          user_metadata: {
+            onboarding_completed: onboardingStatus === 'true',
+          },
+        };
+        await setAuthenticatedUser(anonymousUser);
+      } catch (error) {
+        console.error('[Auth] Initialization error:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    // Listen for deeplinks
-    const linkingSubscription = Linking.addEventListener('url', handleDeepLink);
-
-    // Check if app was opened via deeplink
-    Linking.getInitialURL().then((url) => {
-      if (url) {
-        handleDeepLink({ url });
-      }
-    });
-
-    // Refresh session when app comes to foreground
-    const unsubscribeAppState = appStateManager.addListener((state) => {
-      if (state === 'active') {
-        supabase.auth.startAutoRefresh();
-      } else {
-        supabase.auth.stopAutoRefresh();
-      }
-    });
-
+    initializeAuth();
     return () => {
-      subscription.unsubscribe();
-      linkingSubscription.remove();
-      unsubscribeAppState();
+      // no-op
     };
   }, []);
 
-  const userMetadata = user?.user_metadata as UserMetadata | null;
+  const userMetadata = (user?.user_metadata as UserMetadata | null) ?? null;
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      const redirectUrl = getAuthRedirectUrl();
-      const { error } = await supabase.auth.signUp({
+      if (!deviceUUID) {
+        return { error: new Error('Device UUID not available') };
+      }
+
+      await SecureStore.setItemAsync(CREDENTIALS_EMAIL_KEY, email);
+      await SecureStore.setItemAsync(CREDENTIALS_PASSWORD_KEY, password);
+
+      const nextUser: LocalUser = {
+        id: generateUserId(deviceUUID),
         email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            onboarding_completed: false,
-          },
-          emailRedirectTo: redirectUrl,
+        is_anonymous: false,
+        user_metadata: {
+          full_name: fullName,
+          onboarding_completed: false,
         },
-      });
-      return { error };
+      };
+      await setAuthenticatedUser(nextUser);
+      return { error: null };
     } catch (error) {
       return { error: error as Error };
     }
@@ -118,28 +155,136 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const storedEmail = await SecureStore.getItemAsync(CREDENTIALS_EMAIL_KEY);
+      const storedPassword = await SecureStore.getItemAsync(CREDENTIALS_PASSWORD_KEY);
+
+      if (!storedEmail || !storedPassword) {
+        return { error: new Error('No local account found') };
+      }
+
+      if (storedEmail !== email || storedPassword !== password) {
+        return { error: new Error('Invalid email or password') };
+      }
+
+      if (!deviceUUID) {
+        return { error: new Error('Device UUID not available') };
+      }
+
+      const persisted = await loadPersistedUser();
+      const nextUser: LocalUser = {
+        id: persisted?.id ?? generateUserId(deviceUUID),
         email,
-        password,
-      });
-      return { error };
+        is_anonymous: false,
+        user_metadata: {
+          ...(persisted?.user_metadata ?? {}),
+        },
+      };
+      await setAuthenticatedUser(nextUser);
+      return { error: null };
     } catch (error) {
       return { error: error as Error };
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+    } finally {
+      setSession(null);
+      setUser(null);
+      setIsAnonymous(false);
+    }
+  };
+
+  const signInAnonymously = async () => {
+    if (!deviceUUID) {
+      return { error: new Error('Device UUID not available') };
+    }
+    return await signInAnonymouslyInternal(deviceUUID);
+  };
+
+  const signInAnonymouslyInternal = async (uuid: string) => {
+    try {
+      const nextUser: LocalUser = {
+        id: generateUserId(uuid),
+        is_anonymous: true,
+        user_metadata: {
+          onboarding_completed: onboardingCompleted,
+        },
+      };
+      await setAuthenticatedUser(nextUser);
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const upgradeAccount = async (email: string, password: string, fullName: string) => {
+    if (!isAnonymous || !user) {
+      return { error: new Error('No anonymous session to upgrade') };
+    }
+
+    try {
+      await SecureStore.setItemAsync(CREDENTIALS_EMAIL_KEY, email);
+      await SecureStore.setItemAsync(CREDENTIALS_PASSWORD_KEY, password);
+
+      const nextUser: LocalUser = {
+        id: user.id,
+        email,
+        is_anonymous: false,
+        user_metadata: {
+          ...(user.user_metadata ?? {}),
+          full_name: fullName,
+          onboarding_completed: false,
+        },
+      };
+      await setAuthenticatedUser(nextUser);
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const updateUserMetadata = async (metadata: Partial<UserMetadata>) => {
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: metadata,
-      });
-      return { error };
+      if (!user) {
+        return { error: new Error('Auth session missing!') };
+      }
+
+      const nextUser: LocalUser = {
+        ...user,
+        user_metadata: {
+          ...(user.user_metadata ?? {}),
+          ...metadata,
+        },
+      };
+
+      await setAuthenticatedUser(nextUser);
+
+      if (metadata.onboarding_completed === true) {
+        await AsyncStorage.setItem('onboarding_completed', 'true');
+        setOnboardingCompleted(true);
+      }
+
+      return { error: null };
     } catch (error) {
       return { error: error as Error };
+    }
+  };
+
+  const completeOnboarding = async () => {
+    console.log('🔍 completeOnboarding called');
+    try {
+      await AsyncStorage.setItem('onboarding_completed', 'true');
+      console.log('🔍 AsyncStorage updated');
+      // Force a re-render by using a functional update
+      setOnboardingCompleted(prev => {
+        console.log('🔍 setOnboardingCompleted called with prev:', prev);
+        return true;
+      });
+      console.log('🔍 onboardingCompleted state set to true');
+    } catch (error) {
+      console.error('🔍 Error in completeOnboarding:', error);
     }
   };
 
@@ -150,10 +295,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         user,
         userMetadata,
         isLoading,
+        isAnonymous,
+        onboardingCompleted,
+        deviceUUID,
         signUp,
         signIn,
         signOut,
+        signInAnonymously,
+        upgradeAccount,
         updateUserMetadata,
+        completeOnboarding,
       }}
     >
       {children}

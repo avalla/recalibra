@@ -7,12 +7,13 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, FontSize, FontWeight, Spacing } from '../../constants';
-import { Button } from '../../components';
-import type { AuthStackScreenProps } from '../../types';
+import { GradientButton, Screen } from '../../components';
+import type { AuthStackScreenProps, RootStackParamList } from '../../types';
+import { useAuth } from '../../contexts';
 
 const { width } = Dimensions.get('window');
 
@@ -27,7 +28,7 @@ const slides: OnboardingSlide[] = [
   {
     id: '1',
     icon: 'leaf-outline',
-    title: 'Welcome to VagoFlow',
+    title: 'Welcome to Recalibra',
     description: '5 minutes a day to recalibrate your nervous system.',
   },
   {
@@ -46,18 +47,74 @@ const slides: OnboardingSlide[] = [
 
 export const OnboardingScreen: React.FC = () => {
   const navigation = useNavigation<AuthStackScreenProps<'Onboarding'>['navigation']>();
+  const rootNavigation = useNavigation<any>();
+  const { completeOnboarding } = useAuth();
+  const { isAnonymous, isLoading } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isCompleting, setIsCompleting] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  const handleSkip = () => {
-    navigation.navigate('Login');
+  const handleSkip = async () => {
+    if (isCompleting) return;
+    
+    setIsCompleting(true);
+    console.log('🔍 Skip button pressed');
+    try {
+      // Mark onboarding as completed locally
+      await AsyncStorage.setItem('onboarding_completed', 'true');
+      console.log('🔍 AsyncStorage updated directly');
+      
+      // Force app reload by triggering a navigation to Auth stack first
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+      
+      // Small delay then navigate to Main
+      setTimeout(() => {
+        rootNavigation.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+      }, 100);
+    } catch (err) {
+      console.error('Unexpected error:', err);
+    } finally {
+      setIsCompleting(false);
+    }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentIndex < slides.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
-      navigation.navigate('Login');
+      if (isCompleting) return;
+      
+      setIsCompleting(true);
+      console.log('🔍 Get Started button pressed');
+      try {
+        // Mark onboarding as completed locally
+        await AsyncStorage.setItem('onboarding_completed', 'true');
+        console.log('🔍 AsyncStorage updated directly');
+        
+        // Force app reload by triggering a navigation to Auth stack first
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+        
+        // Small delay then navigate to Main
+        setTimeout(() => {
+          rootNavigation.reset({
+            index: 0,
+            routes: [{ name: 'Main' }],
+          });
+        }, 100);
+      } catch (err) {
+        console.error('Unexpected error:', err);
+      } finally {
+        setIsCompleting(false);
+      }
     }
   };
 
@@ -86,7 +143,7 @@ export const OnboardingScreen: React.FC = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen style={styles.container} edges={['top']}>
       <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
@@ -108,12 +165,13 @@ export const OnboardingScreen: React.FC = () => {
       {renderDots()}
 
       <View style={styles.footer}>
-        <Button
-          label={currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}
+        <GradientButton
+          label={isCompleting ? 'Loading...' : (currentIndex === slides.length - 1 ? 'Get Started' : 'Next')}
           onPress={handleNext}
+          disabled={isCompleting}
         />
       </View>
-    </SafeAreaView>
+    </Screen>
   );
 };
 

@@ -1,4 +1,4 @@
-# VagoFlow Mobile App
+# Recalibra Mobile App
 
 React Native Expo mobile application for vagus nerve stimulation and stress management.
 
@@ -162,4 +162,4 @@ eas build --platform android
 
 ## 📄 License
 
-Private - VagoFlow © 2024
+Private - Recalibra © 2024

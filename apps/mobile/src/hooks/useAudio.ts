@@ -764,8 +764,21 @@ export const useAudio = (options: UseAudioOptions = {}) => {
   useEffect(() => {
     return () => {
       stopPositionMonitor();
-      playerARef.current?.release();
-      playerBRef.current?.release();
+      try {
+        playerARef.current?.release();
+      } catch (e) {
+        // ignore - native object might already be gone
+      } finally {
+        playerARef.current = null;
+      }
+
+      try {
+        playerBRef.current?.release();
+      } catch (e) {
+        // ignore - native object might already be gone
+      } finally {
+        playerBRef.current = null;
+      }
     };
   }, [stopPositionMonitor]);
 
@@ -816,6 +829,7 @@ export const useAudio = (options: UseAudioOptions = {}) => {
     } catch (e) {
       // Player may not be in a valid state
       logger.error('Error stopping player A', e as Error, 'useAudio');
+      playerARef.current = null;
     }
     
     try {
@@ -827,6 +841,7 @@ export const useAudio = (options: UseAudioOptions = {}) => {
     } catch (e) {
       // Player may not be in a valid state
       logger.error('Error stopping player B', e as Error, 'useAudio');
+      playerBRef.current = null;
     }
     
     activePlayerRef.current = 'A';

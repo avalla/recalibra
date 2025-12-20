@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts';
-import type { Exercise, ExerciseWithFavorite, ExerciseCategory } from '../types';
+import type { ExerciseWithFavorite, ExerciseCategory } from '../types';
 import { getCache, setCache } from '../utils/cache';
 import { logger } from '../utils/logger';
+import { getExercisesWithFavorites, toggleFavorite as toggleFavoriteInDb } from '../db';
 
 export const useExercises = () => {
-  const { user } = useAuth();
   const [exercises, setExercises] = useState<ExerciseWithFavorite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,8 +14,8 @@ export const useExercises = () => {
     setError(null);
 
     try {
-      // Try to get from cache first (only if user hasn't changed)
-      const cacheKey = user ? `exercises_${user.id}` : 'exercises';
+      // Try to get from cache first
+      const cacheKey = 'exercises_local_v1';
       const cachedExercises = await getCache<ExerciseWithFavorite[]>(cacheKey);
       if (cachedExercises) {
         logger.info('Loaded exercises from cache', 'useExercises');
@@ -26,31 +24,7 @@ export const useExercises = () => {
         return;
       }
 
-      // Fetch exercises
-      const { data: exercisesData, error: exercisesError } = await supabase
-        .from('exercises')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (exercisesError) throw exercisesError;
-
-      // Fetch user's favorites if logged in
-      let userFavoriteIds: string[] = [];
-      if (user) {
-        const { data: favoritesData } = await supabase
-          .from('favorites')
-          .select('exercise_id')
-          .eq('user_id', user.id);
-        
-        userFavoriteIds = (favoritesData || []).map((f) => f.exercise_id);
-      }
-
-      // Merge exercises with favorite status
-      const exercisesWithFavorites: ExerciseWithFavorite[] = (exercisesData || []).map((exercise) => ({
-        ...exercise,
-        is_favorite: userFavoriteIds.includes(exercise.id),
-      }));
+      const exercisesWithFavorites = await getExercisesWithFavorites();
 
       setExercises(exercisesWithFavorites);
 
@@ -62,15 +36,13 @@ export const useExercises = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchExercises();
   }, [fetchExercises]);
 
   const toggleFavorite = async (exerciseId: string) => {
-    if (!user) return;
-
     const exercise = exercises.find((e) => e.id === exerciseId);
     if (!exercise) return;
 
@@ -84,19 +56,7 @@ export const useExercises = () => {
     );
 
     try {
-      if (isFavorite) {
-        // Remove from favorites
-        await supabase
-          .from('favorites')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('exercise_id', exerciseId);
-      } else {
-        // Add to favorites
-        await supabase
-          .from('favorites')
-          .insert({ user_id: user.id, exercise_id: exerciseId });
-      }
+      await toggleFavoriteInDb(exerciseId, !isFavorite);
     } catch (err) {
       // Revert optimistic update on error
       setExercises((prev) =>
