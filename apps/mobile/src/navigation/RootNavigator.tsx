@@ -40,15 +40,13 @@ export const RootNavigator: React.FC = () => {
 
   return (
     <Stack.Navigator
+      initialRouteName={onboardingCompleted ? 'Main' : 'Onboarding'}
       screenOptions={{
         headerShown: false,
       }}
     >
-      {!onboardingCompleted ? (
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-      ) : (
-        <Stack.Screen name="Main" component={MainTabNavigator} />
-      )}
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="Main" component={MainTabNavigator} />
 
       <Stack.Screen name="Screening" component={ScreeningNavigator} />
       <Stack.Screen 

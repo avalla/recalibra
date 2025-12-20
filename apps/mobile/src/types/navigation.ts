@@ -13,7 +13,7 @@ export type ScreeningStackParamList = {
 // Main Tab Navigator
 export type MainTabParamList = {
   HomeTab: undefined;
-  ExercisesTab: undefined;
+  ExercisesTab: NavigatorScreenParams<ExerciseStackParamList>;
   ProgressTab: undefined;
   ProfileTab: undefined;
 };

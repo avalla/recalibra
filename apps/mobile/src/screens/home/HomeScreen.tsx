@@ -156,9 +156,12 @@ export const HomeScreen: React.FC = () => {
       return;
     }
 
-    navigation.navigate('ExercisesTab', {
-      screen: 'ExerciseSession',
-      params: toExerciseSessionParams(exercise),
+    navigation.navigate('Main', {
+      screen: 'ExercisesTab',
+      params: {
+        screen: 'ExerciseSession',
+        params: toExerciseSessionParams(exercise),
+      },
     });
   };
 
@@ -324,9 +327,14 @@ export const HomeScreen: React.FC = () => {
           <Animated.View style={[animatedButtonStyle, styles.startButtonContainer]}>
             <TouchableOpacity
               style={styles.startButton}
-              onPress={() => navigation.navigate('ExercisesTab', {
-                screen: 'ExerciseCatalog',
-              })}
+              onPress={() =>
+                navigation.navigate('Main', {
+                  screen: 'ExercisesTab',
+                  params: {
+                    screen: 'ExerciseCatalog',
+                  },
+                })
+              }
               activeOpacity={0.8}
             >
               <View style={styles.startButtonContent}>
@@ -344,17 +352,27 @@ export const HomeScreen: React.FC = () => {
           {suggestedExercise && (
             <TouchableOpacity
               style={styles.suggestedCardWrapper}
-              onPress={() => navigation.navigate('ExercisesTab', {
-                screen: 'ExerciseSession',
-                params: { 
-                  exerciseId: suggestedExercise.id,
-                  exerciseName: suggestedExercise.name,
-                  durationMinutes: suggestedExercise.duration_minutes,
-                  audioPreset: suggestedExercise.audio_preset || 'silence',
-                  exerciseCategory: suggestedExercise.category,
-                }
-              })}
-              activeOpacity={0.7}
+              onPress={() =>
+                navigation.navigate('Main', {
+                  screen: 'ExercisesTab',
+                  params: {
+                    screen: 'ExerciseSession',
+                    params: {
+                      exerciseId: suggestedExercise.id,
+                      exerciseName: suggestedExercise.name,
+                      durationMinutes: suggestedExercise.duration_minutes,
+                      audioPreset: suggestedExercise.audio_preset || 'silence',
+                      exerciseCategory: suggestedExercise.category,
+                      breathingPattern: suggestedExercise.breathing_pattern,
+                      origin: suggestedExercise.origin || 'universal',
+                      history: suggestedExercise.history || '',
+                      benefits: suggestedExercise.benefits || [],
+                      tips: suggestedExercise.tips || [],
+                      instructions: suggestedExercise.instructions || [],
+                    },
+                  },
+                })
+              }
             >
               <Card style={styles.suggestedCard}>
                 <View style={styles.suggestedContent}>

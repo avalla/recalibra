@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Colors, FontSize, FontWeight, Spacing } from '../../constants';
 import { GradientButton, Screen } from '../../components';
 import { useAuth } from '../../contexts';
+import type { RootStackScreenProps } from '../../types';
 
 const { width } = Dimensions.get('window');
 
@@ -44,7 +45,7 @@ const slides: OnboardingSlide[] = [
 ];
 
 export const OnboardingScreen: React.FC = () => {
-  const rootNavigation = useNavigation<any>();
+  const rootNavigation = useNavigation<RootStackScreenProps<'Onboarding'>['navigation']>();
   const { completeOnboarding } = useAuth();
   const { isAnonymous, isLoading } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);

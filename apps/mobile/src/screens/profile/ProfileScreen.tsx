@@ -48,8 +48,16 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 }) => (
   <TouchableOpacity
     style={styles.settingsItem}
-    onPress={onPress}
-    disabled={hasSwitch}
+    onPress={() => {
+      if (hasSwitch && onSwitchChange) {
+        onSwitchChange(!switchValue);
+        return;
+      }
+      onPress?.();
+    }}
+    accessibilityRole="button"
+    accessibilityLabel={label}
+    accessibilityHint={hasSwitch ? 'Double tap to toggle' : undefined}
   >
     <View style={[styles.settingsIcon, { backgroundColor: Colors.backgroundLight }]}>
       <Ionicons name={icon} size={20} color={iconColor} />
@@ -73,7 +81,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 );
 
 export const ProfileScreen: React.FC = () => {
-  const { user, signOut, isAnonymous, userMetadata } = useAuth();
+  const { signOut } = useAuth();
   const navigation = useNavigation<any>();
   const { isPremium, subscription, presentPaywall, presentCustomerCenter } = useSubscription();
   const { reminderSettings, saveSettings, sendTestNotification } = useNotifications();
@@ -106,6 +114,17 @@ export const ProfileScreen: React.FC = () => {
   }, [healthAuthorized, getLatestHRV, getAverageHRV]);
   
   const handleHealthToggle = async (value: boolean) => {
+    if (!value) {
+      Alert.alert(
+        'Apple Health Connection',
+        'To manage Apple Health permissions, please use iOS Settings.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+        ]
+      );
+      return;
+    }
     if (value && !healthAuthorized) {
       const success = await requestAuthorization();
       if (!success) {
@@ -124,9 +143,11 @@ export const ProfileScreen: React.FC = () => {
   const [tempTime, setTempTime] = useState(reminderSettings.time);
   const [tempDays, setTempDays] = useState<number[]>(reminderSettings.days);
 
-  // User data from auth
-  const userName = userMetadata?.full_name || 'User';
-  const userEmail = user?.email || '';
+  useEffect(() => {
+    if (!showReminderModal) return;
+    setTempTime(reminderSettings.time);
+    setTempDays(reminderSettings.days);
+  }, [showReminderModal, reminderSettings.days, reminderSettings.time]);
 
   const handleReminderToggle = async (enabled: boolean) => {
     await saveSettings({ enabled });
@@ -235,14 +256,6 @@ export const ProfileScreen: React.FC = () => {
     Linking.openURL('https://recalibra.com/privacy');
   };
 
-  const handleEditProfile = () => {
-    Alert.alert(
-      'Edit Profile',
-      'Profile editing coming soon!',
-      [{ text: 'OK' }]
-    );
-  };
-
   const handleSaveReminder = async () => {
     await saveSettings({ time: tempTime, days: tempDays });
     setShowReminderModal(false);
@@ -250,7 +263,7 @@ export const ProfileScreen: React.FC = () => {
 
   const toggleDay = (day: number) => {
     if (tempDays.includes(day)) {
-      setTempDays(tempDays.filter(d => d !== day));
+      setTempDays(tempDays.filter((d) => d !== day));
     } else {
       setTempDays([...tempDays, day].sort());
     }
@@ -271,41 +284,8 @@ export const ProfileScreen: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile & Settings</Text>
+          <Text style={styles.headerTitle}>Settings</Text>
         </View>
-
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {userName.split(' ').map((n) => n[0]).join('')}
-            </Text>
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{userName}</Text>
-            <Text style={styles.profileEmail}>{userEmail}</Text>
-          </View>
-          <TouchableOpacity onPress={handleEditProfile}>
-            <Ionicons name="pencil" size={20} color={Colors.textPrimary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Anonymous User Banner */}
-        {isAnonymous && (
-          <TouchableOpacity 
-            style={styles.upgradeCard}
-            onPress={() => navigation.navigate('AccountUpgrade')}
-          >
-            <View style={styles.upgradeContent}>
-              <Ionicons name="cloud-upload-outline" size={24} color={Colors.primary} />
-              <View style={styles.upgradeInfo}>
-                <Text style={styles.upgradeTitle}>Create Account</Text>
-                <Text style={styles.upgradeSubtitle}>Save your progress and sync across devices</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
-          </TouchableOpacity>
-        )}
 
         {/* Premium Section */}
         {isPremium ? (
@@ -626,42 +606,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
     fontFamily: FontFamily.heading,
-  },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-  avatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.warning,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
-  },
-  avatarText: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.bold,
-    fontFamily: FontFamily.heading,
-    marginBottom: 2,
-  },
-  profileEmail: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
   },
   sectionTitle: {
     color: Colors.textPrimary,

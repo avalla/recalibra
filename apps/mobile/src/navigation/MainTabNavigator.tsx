@@ -15,7 +15,17 @@ const HIDDEN_TAB_BAR_SCREENS = ['ExerciseSession', 'PostSession'];
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-type TabIconName = 'home' | 'home-outline' | 'fitness' | 'fitness-outline' | 'bar-chart' | 'bar-chart-outline' | 'person' | 'person-outline';
+type TabIconName =
+  | 'home'
+  | 'home-outline'
+  | 'fitness'
+  | 'fitness-outline'
+  | 'bar-chart'
+  | 'bar-chart-outline'
+  | 'person'
+  | 'person-outline'
+  | 'settings'
+  | 'settings-outline';
 
 const getTabIcon = (routeName: keyof MainTabParamList, focused: boolean): TabIconName => {
   switch (routeName) {
@@ -26,7 +36,7 @@ const getTabIcon = (routeName: keyof MainTabParamList, focused: boolean): TabIco
     case 'ProgressTab':
       return focused ? 'bar-chart' : 'bar-chart-outline';
     case 'ProfileTab':
-      return focused ? 'person' : 'person-outline';
+      return focused ? 'settings' : 'settings-outline';
     default:
       return 'home-outline';
   }
@@ -41,7 +51,7 @@ const getTabLabel = (routeName: keyof MainTabParamList): string => {
     case 'ProgressTab':
       return 'Progress';
     case 'ProfileTab':
-      return 'Profile';
+      return 'Settings';
     default:
       return '';
   }

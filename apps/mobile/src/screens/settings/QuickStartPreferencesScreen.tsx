@@ -79,9 +79,12 @@ export const QuickStartPreferencesScreen: React.FC = () => {
         return;
       }
 
-      navigation.navigate('ExercisesTab', {
-        screen: 'ExerciseSession',
-        params: toExerciseSessionParams(exercise),
+      navigation.navigate('Main', {
+        screen: 'ExercisesTab',
+        params: {
+          screen: 'ExerciseSession',
+          params: toExerciseSessionParams(exercise),
+        },
       });
       return;
     }
