@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert, Linking, Platform } from 'react-native';
-import { CustomerInfo, PurchasesPackage, PurchasesOffering } from 'react-native-purchases';
+import type { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 import {
   getCustomerInfo,

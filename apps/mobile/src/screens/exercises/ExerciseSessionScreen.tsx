@@ -180,13 +180,6 @@ export const ExerciseSessionScreen: React.FC = () => {
       });
     });
 
-    pages.push({
-      title: 'Ready to Begin',
-      subtitle: 'Set your intention and start',
-      customContent: 'startSession',
-      icon: 'play-circle-outline',
-    });
-
     return pages;
   }, [exerciseName, exerciseInfo.benefits, exerciseInfo.history, exerciseInfo.origin, exerciseSteps, exerciseTips]);
 
@@ -197,8 +190,7 @@ export const ExerciseSessionScreen: React.FC = () => {
       // Mark onboarding as seen for this exercise
       await AsyncStorage.setItem(`onboarding_${exerciseId}`, 'seen');
       setShowOnboarding(false);
-      // Start the exercise immediately after onboarding
-      handleStartSession();
+      setPreSessionStep(2);
     }
   };
 
@@ -810,6 +802,8 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   const bottomBarPaddingBottom = Math.max(Math.min(insets.bottom, Spacing.md), Spacing.xs);
   const bottomBarHeight = BOTTOM_BAR_HEIGHT + bottomBarPaddingBottom;
+  const onboardingContentPaddingBottom = 140 + insets.bottom;
+  const onboardingFooterPaddingBottom = Spacing.lg + insets.bottom;
 
   return (
     <Screen edges={['top']} disableGradient>
@@ -823,7 +817,14 @@ export const ExerciseSessionScreen: React.FC = () => {
             </View>
 
           {/* Content */}
-          <View style={styles.onboardingContent}>
+          <ScrollView
+            style={styles.onboardingContent}
+            contentContainerStyle={[
+              styles.onboardingContentInner,
+              { paddingBottom: onboardingContentPaddingBottom },
+            ]}
+            showsVerticalScrollIndicator={false}
+          >
             {!activeOnboardingPage ? null : activeOnboardingPage.customContent ? (
               renderCustomContent()
             ) : (
@@ -846,7 +847,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                 </Text>
               </>
             )}
-          </View>
+          </ScrollView>
 
           <View style={styles.onboardingProgressContainer}>
             <View style={styles.onboardingProgressTrack}>
@@ -863,7 +864,7 @@ export const ExerciseSessionScreen: React.FC = () => {
           </View>
 
           {/* Navigation Buttons */}
-          <View style={styles.onboardingFooter}>
+          <View style={[styles.onboardingFooter, { paddingBottom: onboardingFooterPaddingBottom }]}>
             <TouchableOpacity
               style={styles.nextButton}
               onPress={handleNextPage}
@@ -1690,9 +1691,12 @@ const styles = StyleSheet.create({
   },
   onboardingContent: {
     flex: 1,
+    paddingHorizontal: Spacing.lg,
+  },
+  onboardingContentInner: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
   },
   onboardingIcon: {
     marginBottom: Spacing.xl,

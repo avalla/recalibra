@@ -15,13 +15,10 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { GradientButton, Screen } from '../../components';
 import { useAuth } from '../../contexts';
-import type { AuthStackScreenProps } from '../../types';
-
-type Route = AuthStackScreenProps<'AccountUpgrade'>['route'];
 
 export const AccountUpgradeScreen: React.FC = () => {
-  const navigation = useNavigation<AuthStackScreenProps<'AccountUpgrade'>['navigation']>();
-  const route = useRoute<Route>();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const { upgradeAccount } = useAuth();
   
   const [email, setEmail] = useState('');

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { createAudioPlayer, setAudioModeAsync, AudioPlayer } from 'expo-audio';
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
 import { logger } from '../utils/logger';
 import { AppConfig } from '../config';
 
@@ -111,12 +111,13 @@ const generateNoiseDataUri = (
     const endIdx = samples - crossfadeLength + i;
     const startIdx = i;
     
-    rawSamples[endIdx] = rawSamples[endIdx] * fadeOut + rawSamples[samples + i] * fadeIn;
+    rawSamples[endIdx] = (rawSamples[endIdx] ?? 0) * fadeOut + (rawSamples[samples + i] ?? 0) * fadeIn;
   }
 
   // Write to buffer (only the main samples, crossfaded)
   for (let i = 0; i < samples; i++) {
-    const value = Math.floor(Math.max(-1, Math.min(1, rawSamples[i])) * 32767 * 0.4);
+    const sample = rawSamples[i] ?? 0;
+    const value = Math.floor(Math.max(-1, Math.min(1, sample)) * 32767 * 0.4);
     view.setInt16(44 + i * 2, value, true);
   }
 
@@ -369,9 +370,9 @@ const uint8ArrayToBase64 = (bytes: Uint8Array): string => {
   const len = bytes.length;
   
   for (let i = 0; i < len; i += 3) {
-    const a = bytes[i];
-    const b = i + 1 < len ? bytes[i + 1] : 0;
-    const c = i + 2 < len ? bytes[i + 2] : 0;
+    const a = bytes[i] ?? 0;
+    const b = i + 1 < len ? (bytes[i + 1] ?? 0) : 0;
+    const c = i + 2 < len ? (bytes[i + 2] ?? 0) : 0;
     
     result += chars[a >> 2];
     result += chars[((a & 3) << 4) | (b >> 4)];
@@ -432,12 +433,12 @@ const generateToneDataUri = (frequency: number, durationMs: number = 20000, samp
     const fadeOut = 1 - (i / crossfadeLength);
     const fadeIn = i / crossfadeLength;
     const endIdx = samples - crossfadeLength + i;
-    rawSamples[endIdx] = rawSamples[endIdx] * fadeOut + rawSamples[samples + i] * fadeIn;
+    rawSamples[endIdx] = (rawSamples[endIdx] ?? 0) * fadeOut + (rawSamples[samples + i] ?? 0) * fadeIn;
   }
 
   // Write to buffer
   for (let i = 0; i < samples; i++) {
-    const value = Math.floor(rawSamples[i] * 32767 * 0.4);
+    const value = Math.floor((rawSamples[i] ?? 0) * 32767 * 0.4);
     view.setInt16(44 + i * 2, value, true);
   }
 
@@ -537,14 +538,14 @@ const generateBinauralDataUri = (
     const fadeIn = i / crossfadeLength;
     const endIdx = samples - crossfadeLength + i;
     
-    leftSamples[endIdx] = leftSamples[endIdx] * fadeOut + leftSamples[samples + i] * fadeIn;
-    rightSamples[endIdx] = rightSamples[endIdx] * fadeOut + rightSamples[samples + i] * fadeIn;
+    leftSamples[endIdx] = (leftSamples[endIdx] ?? 0) * fadeOut + (leftSamples[samples + i] ?? 0) * fadeIn;
+    rightSamples[endIdx] = (rightSamples[endIdx] ?? 0) * fadeOut + (rightSamples[samples + i] ?? 0) * fadeIn;
   }
 
   // Write interleaved stereo data (L, R, L, R, ...)
   for (let i = 0; i < samples; i++) {
-    const leftValue = Math.floor(leftSamples[i] * 32767 * 0.4);
-    const rightValue = Math.floor(rightSamples[i] * 32767 * 0.4);
+    const leftValue = Math.floor((leftSamples[i] ?? 0) * 32767 * 0.4);
+    const rightValue = Math.floor((rightSamples[i] ?? 0) * 32767 * 0.4);
     
     // Left channel
     view.setInt16(44 + i * 4, leftValue, true);

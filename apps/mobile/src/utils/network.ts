@@ -6,16 +6,18 @@
 // Simple network connectivity check using fetch
 export const checkNetworkConnectivity = async (): Promise<boolean> => {
   try {
-    // Try to fetch a reliable endpoint
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-    
-    const response = await fetch('https://httpbin.org/get', { 
-      method: 'HEAD', 
-      signal: controller.signal 
-    });
-    
-    clearTimeout(timeoutId);
+    // Try to fetch a reliable endpoint (no AbortController to avoid platform type mismatches)
+    const timeoutMs = 5000;
+
+    const response = await Promise.race([
+      fetch('https://httpbin.org/get', {
+        method: 'HEAD',
+      }),
+      new Promise<Response>((_, reject) => {
+        setTimeout(() => reject(new Error('Network check timeout')), timeoutMs);
+      }),
+    ]);
+
     return response.ok;
   } catch (error) {
     console.log('[Network] Connectivity check failed:', error);

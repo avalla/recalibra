@@ -1,4 +1,4 @@
-import Purchases, { LOG_LEVEL, CustomerInfo, PurchasesOffering } from 'react-native-purchases';
+import Purchases, { LOG_LEVEL, type CustomerInfo, type PurchasesOffering } from 'react-native-purchases';
 import { Platform } from 'react-native';
 import { AppConfig } from '../config';
 

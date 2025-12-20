@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Button, Card } from '../../components';
 import { useSessions, useAppleHealth } from '../../hooks';

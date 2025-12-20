@@ -34,7 +34,6 @@ import Animated, {
   Easing,
   FadeIn,
   FadeInDown,
-  LayoutAnimation,
 } from 'react-native-reanimated';
 
 // Motivational greeting phrases

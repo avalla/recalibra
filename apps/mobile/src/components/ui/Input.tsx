@@ -5,8 +5,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInputProps,
-  ViewStyle,
+  type TextInputProps,
+  type ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, BorderRadius, FontSize, Spacing } from '../../constants';

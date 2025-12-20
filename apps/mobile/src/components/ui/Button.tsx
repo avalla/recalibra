@@ -5,8 +5,8 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  ViewStyle,
-  TextStyle,
+  type ViewStyle,
+  type TextStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, BorderRadius, FontSize, FontWeight, Spacing } from '../../constants';

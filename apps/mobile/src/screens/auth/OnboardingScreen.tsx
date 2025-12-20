@@ -9,10 +9,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, FontSize, FontWeight, Spacing } from '../../constants';
 import { GradientButton, Screen } from '../../components';
-import type { AuthStackScreenProps, RootStackParamList } from '../../types';
 import { useAuth } from '../../contexts';
 
 const { width } = Dimensions.get('window');
@@ -46,7 +44,6 @@ const slides: OnboardingSlide[] = [
 ];
 
 export const OnboardingScreen: React.FC = () => {
-  const navigation = useNavigation<AuthStackScreenProps<'Onboarding'>['navigation']>();
   const rootNavigation = useNavigation<any>();
   const { completeOnboarding } = useAuth();
   const { isAnonymous, isLoading } = useAuth();
@@ -60,23 +57,11 @@ export const OnboardingScreen: React.FC = () => {
     setIsCompleting(true);
     console.log('🔍 Skip button pressed');
     try {
-      // Mark onboarding as completed locally
-      await AsyncStorage.setItem('onboarding_completed', 'true');
-      console.log('🔍 AsyncStorage updated directly');
-      
-      // Force app reload by triggering a navigation to Auth stack first
-      navigation.reset({
+      await completeOnboarding();
+      rootNavigation.reset({
         index: 0,
-        routes: [{ name: 'Login' }],
+        routes: [{ name: 'Main' }],
       });
-      
-      // Small delay then navigate to Main
-      setTimeout(() => {
-        rootNavigation.reset({
-          index: 0,
-          routes: [{ name: 'Main' }],
-        });
-      }, 100);
     } catch (err) {
       console.error('Unexpected error:', err);
     } finally {
@@ -93,23 +78,11 @@ export const OnboardingScreen: React.FC = () => {
       setIsCompleting(true);
       console.log('🔍 Get Started button pressed');
       try {
-        // Mark onboarding as completed locally
-        await AsyncStorage.setItem('onboarding_completed', 'true');
-        console.log('🔍 AsyncStorage updated directly');
-        
-        // Force app reload by triggering a navigation to Auth stack first
-        navigation.reset({
+        await completeOnboarding();
+        rootNavigation.reset({
           index: 0,
-          routes: [{ name: 'Login' }],
+          routes: [{ name: 'Main' }],
         });
-        
-        // Small delay then navigate to Main
-        setTimeout(() => {
-          rootNavigation.reset({
-            index: 0,
-            routes: [{ name: 'Main' }],
-          });
-        }, 100);
       } catch (err) {
         console.error('Unexpected error:', err);
       } finally {

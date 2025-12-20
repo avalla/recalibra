@@ -15,6 +15,7 @@
       "backgroundColor": "#0F1A19"
     },
     "ios": {
+      "icon": "./assets/icon.png",
       "supportsTablet": true,
       "bundleIdentifier": "com.recalibra.app",
       "infoPlist": {

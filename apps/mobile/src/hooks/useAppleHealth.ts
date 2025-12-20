@@ -274,8 +274,10 @@ export const useAppleHealth = () => {
     const data = await getHRVData(startDate);
     
     if (data.length === 0) return null;
-    
-    return Math.round(data[0].value);
+
+    const first = data[0];
+    if (!first) return null;
+    return Math.round(first.value);
   }, [getHRVData]);
 
   return {

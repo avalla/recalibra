@@ -2,15 +2,6 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
 
-// Auth Stack
-export type AuthStackParamList = {
-  Onboarding: undefined;
-  Login: undefined;
-  SignUp: undefined;
-  ForgotPassword: undefined;
-  AccountUpgrade: undefined;
-};
-
 // Screening Stack
 export type ScreeningStackParamList = {
   ScreeningExperience: undefined;
@@ -77,7 +68,7 @@ export type ProfileStackParamList = {
 
 // Root Navigator
 export type RootStackParamList = {
-  Auth: NavigatorScreenParams<AuthStackParamList>;
+  Onboarding: undefined;
   Screening: NavigatorScreenParams<ScreeningStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
   Paywall: undefined;
@@ -88,12 +79,6 @@ export type RootStackParamList = {
 // Screen Props Types
 export type RootStackScreenProps<T extends keyof RootStackParamList> = 
   NativeStackScreenProps<RootStackParamList, T>;
-
-export type AuthStackScreenProps<T extends keyof AuthStackParamList> = 
-  CompositeScreenProps<
-    NativeStackScreenProps<AuthStackParamList, T>,
-    RootStackScreenProps<keyof RootStackParamList>
-  >;
 
 export type MainTabScreenProps<T extends keyof MainTabParamList> = 
   CompositeScreenProps<

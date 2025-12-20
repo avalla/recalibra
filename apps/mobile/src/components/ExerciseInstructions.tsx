@@ -354,9 +354,13 @@ export const ExerciseInstructions: React.FC<ExerciseInstructionsProps> = ({
   const [modalVisible, setModalVisible] = useState(false);
   
   // Get instructions from props (database) or fallback to hardcoded
-  const fallbackInstructions = EXERCISE_INSTRUCTIONS[exerciseId] || EXERCISE_INSTRUCTIONS['default'];
-  const steps = dbSteps || fallbackInstructions.steps;
-  const tips = dbTips || fallbackInstructions.tips;
+  const fallbackInstructions =
+    EXERCISE_INSTRUCTIONS[exerciseId] ??
+    EXERCISE_INSTRUCTIONS.default ??
+    ({ title: '', steps: [], tips: [] } as const);
+
+  const steps = dbSteps ?? fallbackInstructions.steps;
+  const tips = dbTips ?? fallbackInstructions.tips;
   const title = fallbackInstructions.title || exerciseName;
 
   return (

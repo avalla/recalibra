@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SectionList,
   ActivityIndicator,
   TextInput,
   FlatList,
@@ -16,47 +15,8 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Card } from '../../components';
-import { OriginIcon } from '../../components/OriginIcon';
-import { MoodSelector } from '../../components/MoodSelector';
-import { useExercises, useSubscription } from '../../hooks';
-import { getExerciseBackground } from '../../constants/backgrounds';
-import type { ExerciseWithFavorite, ExerciseCategory, ExerciseOrigin } from '../../types';
-
-// View modes
-type ViewMode = 'tradition' | 'category' | 'list';
-
-// Traditions with flags and info (ordered by antiquity/region)
-const TRADITIONS: { id: ExerciseOrigin; flag: string; name: string; description: string }[] = [
-  // Ancient Asian
-  { id: 'india', flag: '🇮🇳', name: 'India', description: 'Pranayama ~3000 BCE' },
-  { id: 'china', flag: '🇨🇳', name: 'China', description: 'Qigong ~600 BCE' },
-  { id: 'tibet', flag: '🏔️', name: 'Tibet', description: 'Buddhist ~700 CE' },
-  { id: 'japan', flag: '🇯🇵', name: 'Japan', description: 'Zen ~1200 CE' },
-  { id: 'korea', flag: '🇰🇷', name: 'Korea', description: 'Sundo ancient' },
-  { id: 'thailand', flag: '🇹🇭', name: 'Thailand', description: 'Ruesri Dat Ton' },
-  { id: 'mongolia', flag: '🇲🇳', name: 'Mongolia', description: 'Khoomei ancient' },
-  { id: 'indonesia', flag: '🇮🇩', name: 'Indonesia', description: 'Tenaga Dalam' },
-  // Middle East & Persia
-  { id: 'sufi', flag: '☪️', name: 'Sufi', description: 'Heart ~800 CE' },
-  { id: 'persia', flag: '🕌', name: 'Persia', description: 'Zikr & Whirling' },
-  // Pacific & Oceania
-  { id: 'hawaii', flag: '🌺', name: 'Hawaii', description: 'Ha breath ancient' },
-  { id: 'australia', flag: '🇦🇺', name: 'Australia', description: 'Aboriginal 40,000 yrs' },
-  // Africa
-  { id: 'africa', flag: '🌍', name: 'Africa', description: 'Ubuntu & Yoruba' },
-  // Americas
-  { id: 'native_america', flag: '🦅', name: 'Native American', description: 'Medicine Wheel' },
-  { id: 'mexico', flag: '🇲🇽', name: 'Mexico', description: 'Aztec/Maya' },
-  { id: 'brazil', flag: '🇧🇷', name: 'Brazil', description: 'Capoeira & Holotropic' },
-  // Europe
-  { id: 'russia', flag: '🇷🇺', name: 'Russia', description: 'Systema Spetsnaz' },
-  { id: 'scandinavia', flag: '🇸🇪', name: 'Scandinavia', description: 'Viking & Hygge' },
-  { id: 'greece', flag: '🇬🇷', name: 'Greece', description: 'Ancient Pneuma' },
-  { id: 'netherlands', flag: '🇳🇱', name: 'Netherlands', description: 'Wim Hof Method' },
-  // Modern & Universal
-  { id: 'usa', flag: '🇺🇸', name: 'Modern', description: 'Science 20th c.' },
-  { id: 'universal', flag: '🌐', name: 'Universal', description: 'Timeless' },
-];
+import { useExercises, useSessions, useSubscription } from '../../hooks';
+import type { ExerciseWithFavorite, ExerciseCategory } from '../../types';
 
 const CATEGORIES: { id: ExerciseCategory; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { id: 'breathing', label: 'Breathing', icon: 'leaf-outline', color: '#4ECDC4' },
@@ -68,39 +28,87 @@ const CATEGORIES: { id: ExerciseCategory; label: string; icon: keyof typeof Ioni
 export const ExerciseCatalogScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { exercises, isLoading, toggleFavorite } = useExercises();
-  const { isPremium, canAccessExercise, presentPaywall } = useSubscription();
+  const { sessions } = useSessions();
+  const { canAccessExercise, presentPaywall } = useSubscription();
   const [showCatalog, setShowCatalog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
+  const [selectedDuration, setSelectedDuration] = useState<'all' | 'short' | 'medium' | 'long'>('all');
 
-  // Handle mood selection - find best exercise for this mood
-  const handleMoodSelect = (mood: any) => {
-    const moodExercises = exercises.filter(e => e && e.category === mood.exerciseCategory);
-    if (moodExercises.length === 0) {
-      // No exercises found for this mood, show feedback
-      console.warn('No exercises found for mood:', mood.id);
-      return;
-    }
-    
-    // Pick the first matching exercise (could be improved with recommendation logic)
-    const exercise = moodExercises[0];
-    if (!exercise) {
-      console.warn('First exercise is undefined');
-      return;
-    }
-    
-    navigation.navigate('ExerciseSession', {
-      exerciseId: exercise.id,
-      exerciseName: exercise.name,
-      durationMinutes: exercise.duration_minutes,
-      audioPreset: exercise.audio_preset,
-      exerciseCategory: exercise.category,
-      breathingPattern: exercise.breathing_pattern,
-      origin: exercise.origin || 'universal',
-      history: exercise.history || '',
-      benefits: exercise.benefits || '',
-      tips: exercise.tips || '',
-      instructions: exercise.instructions || '',
-    });
+  const renderShelfItem = ({ item }: { item: ExerciseWithFavorite }) => {
+    const isLocked = !canAccessExercise(item.name, item.is_premium);
+
+    return (
+      <Card
+        style={isLocked ? { ...styles.shelfCard, ...styles.exerciseCardLocked } : styles.shelfCard}
+        onPress={() => handleExercisePress(item)}
+      >
+        <View style={styles.shelfTopRow}>
+          <View style={styles.tag}>
+            <Text style={styles.tagText}>{item.duration_minutes} min</Text>
+          </View>
+          {isLocked ? (
+            <View style={styles.premiumBadge}>
+              <Ionicons name="lock-closed" size={12} color={Colors.warning} />
+              <Text style={styles.premiumText}>PRO</Text>
+            </View>
+          ) : (
+            <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
+              <Ionicons
+                name={item.is_favorite ? 'heart' : 'heart-outline'}
+                size={18}
+                color={item.is_favorite ? Colors.primary : Colors.textMuted}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+        <Text style={[styles.shelfTitle, isLocked && styles.exerciseNameLocked]} numberOfLines={2}>
+          {item.name}
+        </Text>
+        <Text style={styles.shelfSubtitle} numberOfLines={2}>
+          {item.description}
+        </Text>
+      </Card>
+    );
+  };
+
+  const renderGridItem = ({ item }: { item: ExerciseWithFavorite }) => {
+    const isLocked = !canAccessExercise(item.name, item.is_premium);
+
+    return (
+      <View style={styles.gridItemWrapper}>
+        <Card
+          style={isLocked ? { ...styles.gridCard, ...styles.exerciseCardLocked } : styles.gridCard}
+          onPress={() => handleExercisePress(item)}
+        >
+          <View style={styles.gridTopRow}>
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>{item.duration_minutes} min</Text>
+            </View>
+            {isLocked ? (
+              <View style={styles.premiumBadge}>
+                <Ionicons name="lock-closed" size={12} color={Colors.warning} />
+                <Text style={styles.premiumText}>PRO</Text>
+              </View>
+            ) : (
+              <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
+                <Ionicons
+                  name={item.is_favorite ? 'heart' : 'heart-outline'}
+                  size={18}
+                  color={item.is_favorite ? Colors.primary : Colors.textMuted}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+          <Text style={[styles.gridTitle, isLocked && styles.exerciseNameLocked]} numberOfLines={2}>
+            {item.name}
+          </Text>
+          <Text style={styles.gridSubtitle} numberOfLines={2}>
+            {item.description}
+          </Text>
+        </Card>
+      </View>
+    );
   };
 
   // Handle time-based selection
@@ -135,61 +143,66 @@ export const ExerciseCatalogScreen: React.FC = () => {
     });
   };
 
-  // Get tradition info
-  const getTradition = (origin?: ExerciseOrigin) => {
-    return TRADITIONS.find(t => t.id === origin) || TRADITIONS[TRADITIONS.length - 1];
-  };
-
-  // Get category info
-  const getCategory = (category: ExerciseCategory) => {
-    return CATEGORIES.find(c => c.id === category) || CATEGORIES[0];
-  };
-
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'beginner': return Colors.primary;
-      case 'intermediate': return Colors.warning;
-      case 'advanced': return Colors.error;
-      default: return Colors.textMuted;
-    }
-  };
-
   // Filter exercises based on search query
   const filteredExercises = useMemo(() => {
-    if (!searchQuery) return exercises;
-    
-    return exercises.filter(e => 
-      e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [exercises, searchQuery]);
+    const normalizedQuery = searchQuery.trim().toLowerCase();
 
-  // Group exercises by tradition for section list
-  const sectionsByTradition = useMemo(() => {
-    const groups: { [key: string]: ExerciseWithFavorite[] } = {};
-    exercises.forEach(exercise => {
-      const origin = exercise.origin || 'universal';
-      if (!groups[origin]) groups[origin] = [];
-      groups[origin].push(exercise);
+    return exercises.filter((e) => {
+      if (normalizedQuery) {
+        const matchesQuery =
+          e.name.toLowerCase().includes(normalizedQuery) ||
+          (e.description ? e.description.toLowerCase().includes(normalizedQuery) : false);
+        if (!matchesQuery) return false;
+      }
+
+      if (selectedCategory !== 'all' && e.category !== selectedCategory) return false;
+
+      if (selectedDuration !== 'all') {
+        const minutes = e.duration_minutes;
+        if (selectedDuration === 'short' && minutes > 3) return false;
+        if (selectedDuration === 'medium' && (minutes < 4 || minutes > 7)) return false;
+        if (selectedDuration === 'long' && minutes < 8) return false;
+      }
+
+      return true;
     });
-    
-    return TRADITIONS
-      .filter(t => groups[t.id]?.length > 0)
-      .map(tradition => ({
-        title: tradition.name,
-        subtitle: tradition.description,
-        data: groups[tradition.id] || [],
-      }));
+  }, [exercises, searchQuery, selectedCategory, selectedDuration]);
+
+  const recentExercises = useMemo(() => {
+    const seen = new Set<string>();
+    const recent: ExerciseWithFavorite[] = [];
+
+    for (const s of sessions) {
+      if (!s.exercise_id) continue;
+      if (seen.has(s.exercise_id)) continue;
+      seen.add(s.exercise_id);
+
+      const ex = exercises.find((e) => e.id === s.exercise_id);
+      if (!ex) continue;
+      recent.push(ex);
+      if (recent.length >= 10) break;
+    }
+
+    return recent;
+  }, [sessions, exercises]);
+
+  const favoriteExercises = useMemo(() => {
+    return exercises.filter((e) => e.is_favorite).slice(0, 12);
   }, [exercises]);
 
-  // Group exercises by category
-  const sectionsByCategory = useMemo(() => {
-    return CATEGORIES.map(cat => ({
-      title: cat.label,
-      icon: cat.icon,
-      color: cat.color,
-      data: exercises.filter(e => e.category === cat.id),
-    })).filter(section => section.data.length > 0);
+  const categoryCounts = useMemo(() => {
+    const counts: Record<ExerciseCategory, number> = {
+      breathing: 0,
+      water: 0,
+      movement: 0,
+      sensory: 0,
+    };
+
+    for (const e of exercises) {
+      counts[e.category] += 1;
+    }
+
+    return counts;
   }, [exercises]);
 
   const handleExercisePress = async (exercise: ExerciseWithFavorite) => {
@@ -215,49 +228,6 @@ export const ExerciseCatalogScreen: React.FC = () => {
     });
   };
 
-  // Render exercise card
-  const renderExerciseCard = (item: ExerciseWithFavorite) => {
-    const tradition = getTradition(item.origin);
-    const isLocked = !canAccessExercise(item.name, item.is_premium);
-    
-    return (
-      <Card style={isLocked ? { ...styles.exerciseCard, ...styles.exerciseCardLocked } : styles.exerciseCard} onPress={() => handleExercisePress(item)}>
-        <View style={styles.exerciseTags}>
-          <View style={styles.originBadge}>
-            <OriginIcon origin={tradition.id} size={16} />
-          </View>
-          <View style={styles.tag}>
-            <Text style={styles.tagText}>{item.duration_minutes} min</Text>
-          </View>
-          <View style={[styles.tag, { borderColor: getLevelColor(item.level) }]}>
-            <Text style={[styles.tagText, { color: getLevelColor(item.level) }]}>
-              {item.level.charAt(0).toUpperCase() + item.level.slice(1)}
-            </Text>
-          </View>
-          {isLocked ? (
-            <View style={styles.premiumBadge}>
-              <Ionicons name="lock-closed" size={12} color={Colors.warning} />
-              <Text style={styles.premiumText}>PRO</Text>
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={styles.favoriteButton}
-              onPress={() => toggleFavorite(item.id)}
-            >
-              <Ionicons
-                name={item.is_favorite ? 'heart' : 'heart-outline'}
-                size={20}
-                color={item.is_favorite ? Colors.primary : Colors.textMuted}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-        <Text style={[styles.exerciseName, isLocked && styles.exerciseNameLocked]}>{item.name}</Text>
-        <Text style={styles.exerciseDescription} numberOfLines={3}>{item.description}</Text>
-      </Card>
-    );
-  };
-
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
@@ -281,18 +251,22 @@ export const ExerciseCatalogScreen: React.FC = () => {
               style={styles.heroGradient}
             />
             <View style={styles.heroContent}>
+              {(() => {
+                const firstExercise = exercises[0];
+                return (
+                  <>
               <Text style={styles.heroLabel}>Today's Exercise</Text>
               <Text style={styles.heroTitle}>
-                {exercises.length > 0 && exercises[0] ? exercises[0].name : 'Loading...'}
+                    {firstExercise ? firstExercise.name : 'Loading...'}
               </Text>
               <Text style={styles.heroSubtitle}>
-                {exercises.length > 0 && exercises[0] ? exercises[0].description : 'Preparing your daily practice...'}
+                    {firstExercise ? firstExercise.description : 'Preparing your daily practice...'}
               </Text>
               
-              {exercises.length > 0 && exercises[0] ? (
+                    {firstExercise ? (
                 <TouchableOpacity
                   style={styles.heroButton}
-                  onPress={() => handleExercisePress(exercises[0])}
+                        onPress={() => handleExercisePress(firstExercise)}
                 >
                   <Text style={styles.heroButtonText}>Start Now</Text>
                 </TouchableOpacity>
@@ -301,6 +275,9 @@ export const ExerciseCatalogScreen: React.FC = () => {
                   <ActivityIndicator size="small" color={Colors.background} />
                 </View>
               )}
+                  </>
+                );
+              })()}
             </View>
           </View>
 
@@ -344,36 +321,166 @@ export const ExerciseCatalogScreen: React.FC = () => {
           </TouchableOpacity>
         </ScrollView>
       ) : (
-        // Full catalog (previous implementation)
-        <View>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => setShowCatalog(false)}
-          >
-            <Ionicons name="arrow-back" size={24} color={Colors.primary} />
-            <Text style={styles.backText}>Back to Quick Start</Text>
-          </TouchableOpacity>
-          
-          {/* Search Bar */}
-          <View style={styles.searchContainer}>
-            <View style={styles.searchBar}>
-              <Ionicons name="search" size={20} color={Colors.textMuted} style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search exercises..."
-                placeholderTextColor={Colors.textMuted}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                clearButtonMode="while-editing"
-              />
-            </View>
-          </View>
+        <FlatList
+          data={filteredExercises}
+          keyExtractor={(item) => item.id}
+          renderItem={renderGridItem}
+          numColumns={2}
+          initialNumToRender={10}
+          maxToRenderPerBatch={12}
+          windowSize={7}
+          removeClippedSubviews
+          contentContainerStyle={styles.catalogContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={
+            <View>
+              <TouchableOpacity style={styles.backButton} onPress={() => setShowCatalog(false)}>
+                <Ionicons name="arrow-back" size={24} color={Colors.primary} />
+                <Text style={styles.backText}>Back to Quick Start</Text>
+              </TouchableOpacity>
 
-          {/* Exercise list */}
-          <ScrollView contentContainerStyle={styles.exerciseList}>
-            {filteredExercises.map(renderExerciseCard)}
-          </ScrollView>
-        </View>
+              <View style={styles.searchContainer}>
+                <View style={styles.searchBar}>
+                  <Ionicons name="search" size={20} color={Colors.textMuted} style={styles.searchIcon} />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search exercises..."
+                    placeholderTextColor={Colors.textMuted}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    clearButtonMode="while-editing"
+                    returnKeyType="search"
+                  />
+                </View>
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.chipsRow}
+                >
+                  <TouchableOpacity
+                    style={selectedCategory === 'all' ? styles.chipActive : styles.chip}
+                    onPress={() => setSelectedCategory('all')}
+                  >
+                    <Text style={selectedCategory === 'all' ? styles.chipTextActive : styles.chipText}>All</Text>
+                  </TouchableOpacity>
+
+                  {CATEGORIES.map((c) => (
+                    <TouchableOpacity
+                      key={c.id}
+                      style={selectedCategory === c.id ? styles.chipActive : styles.chip}
+                      onPress={() => setSelectedCategory(c.id)}
+                    >
+                      <Ionicons
+                        name={c.icon}
+                        size={16}
+                        color={selectedCategory === c.id ? Colors.background : Colors.textPrimary}
+                      />
+                      <Text style={selectedCategory === c.id ? styles.chipTextActive : styles.chipText}>
+                        {c.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+
+                  <TouchableOpacity
+                    style={selectedDuration === 'short' ? styles.chipActive : styles.chip}
+                    onPress={() => setSelectedDuration((prev) => (prev === 'short' ? 'all' : 'short'))}
+                  >
+                    <Text style={selectedDuration === 'short' ? styles.chipTextActive : styles.chipText}>≤ 3 min</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={selectedDuration === 'medium' ? styles.chipActive : styles.chip}
+                    onPress={() => setSelectedDuration((prev) => (prev === 'medium' ? 'all' : 'medium'))}
+                  >
+                    <Text style={selectedDuration === 'medium' ? styles.chipTextActive : styles.chipText}>4–7 min</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={selectedDuration === 'long' ? styles.chipActive : styles.chip}
+                    onPress={() => setSelectedDuration((prev) => (prev === 'long' ? 'all' : 'long'))}
+                  >
+                    <Text style={selectedDuration === 'long' ? styles.chipTextActive : styles.chipText}>8+ min</Text>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+
+              <View style={styles.categoryBrowseSection}>
+                <Text style={styles.shelfSectionTitle}>Browse by category</Text>
+                <View style={styles.categoryGrid}>
+                  {CATEGORIES.map((c) => {
+                    const isActive = selectedCategory === c.id;
+                    return (
+                      <TouchableOpacity
+                        key={c.id}
+                        style={isActive ? [styles.categoryTile, styles.categoryTileActive] : styles.categoryTile}
+                        onPress={() => setSelectedCategory((prev) => (prev === c.id ? 'all' : c.id))}
+                        activeOpacity={0.9}
+                      >
+                        <View style={[styles.categoryTileIcon, { backgroundColor: `${c.color}22` }]}>
+                          <Ionicons name={c.icon} size={22} color={c.color} />
+                        </View>
+                        <View style={styles.categoryTileInfo}>
+                          <Text style={styles.categoryTileTitle}>{c.label}</Text>
+                          <Text style={styles.categoryTileCount}>{categoryCounts[c.id]} exercises</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {recentExercises.length > 0 ? (
+                <View style={styles.shelfSection}>
+                  <Text style={styles.shelfSectionTitle}>Recently</Text>
+                  <FlatList
+                    data={recentExercises}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderShelfItem}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.shelfList}
+                  />
+                </View>
+              ) : null}
+
+              {favoriteExercises.length > 0 ? (
+                <View style={styles.shelfSection}>
+                  <Text style={styles.shelfSectionTitle}>Favorites</Text>
+                  <FlatList
+                    data={favoriteExercises}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderShelfItem}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.shelfList}
+                  />
+                </View>
+              ) : null}
+
+              <View style={styles.allHeader}>
+                <Text style={styles.shelfSectionTitle}>All exercises</Text>
+                <Text style={styles.allCount}>{filteredExercises.length}</Text>
+              </View>
+            </View>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyTitle}>No exercises found</Text>
+              <Text style={styles.emptySubtitle}>Try a different search or clear filters.</Text>
+              <TouchableOpacity
+                style={styles.clearFiltersButton}
+                onPress={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('all');
+                  setSelectedDuration('all');
+                }}
+              >
+                <Text style={styles.clearFiltersText}>Clear filters</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        />
       )}
     </SafeAreaView>
   );
@@ -552,6 +659,192 @@ const styles = StyleSheet.create({
     flex: 1,
     color: Colors.textPrimary,
     fontSize: FontSize.md,
+  },
+  chipsRow: {
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.xs,
+    gap: Spacing.sm,
+    paddingRight: Spacing.lg,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.backgroundCard,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.full,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 8,
+  },
+  chipActive: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.primary,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    borderRadius: BorderRadius.full,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 8,
+  },
+  chipText: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.medium,
+  },
+  chipTextActive: {
+    color: Colors.background,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+  },
+  shelfSection: {
+    paddingTop: Spacing.md,
+  },
+  shelfSectionTitle: {
+    paddingHorizontal: Spacing.lg,
+    color: Colors.textPrimary,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    fontFamily: FontFamily.heading,
+    marginBottom: Spacing.sm,
+  },
+  categoryBrowseSection: {
+    paddingTop: Spacing.md,
+  },
+  categoryGrid: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.md,
+  },
+  categoryTile: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.backgroundCard,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    gap: Spacing.md,
+  },
+  categoryTileActive: {
+    borderColor: Colors.primary,
+    backgroundColor: `${Colors.primary}10`,
+  },
+  categoryTileIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryTileInfo: {
+    flex: 1,
+  },
+  categoryTileTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+    marginBottom: 2,
+  },
+  categoryTileCount: {
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
+  },
+  shelfList: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.md,
+    gap: Spacing.md,
+  },
+  shelfCard: {
+    width: 260,
+    marginRight: Spacing.md,
+  },
+  shelfTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  shelfTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.bold,
+    marginBottom: Spacing.xs,
+  },
+  shelfSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    lineHeight: 18,
+  },
+  catalogContent: {
+    paddingBottom: Spacing.xl,
+  },
+  allHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.sm,
+  },
+  allCount: {
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.medium,
+  },
+  gridItemWrapper: {
+    flex: 1,
+    paddingHorizontal: Spacing.lg / 2,
+    paddingBottom: Spacing.md,
+  },
+  gridCard: {
+    marginBottom: 0,
+    height: 164,
+  },
+  gridTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  gridTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.bold,
+    marginBottom: Spacing.xs,
+  },
+  gridSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.xs,
+    lineHeight: 16,
+  },
+  emptyState: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
+    alignItems: 'center',
+  },
+  emptyTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    marginBottom: Spacing.xs,
+  },
+  emptySubtitle: {
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+  },
+  clearFiltersButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+  },
+  clearFiltersText: {
+    color: Colors.background,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
   },
   filterButton: {
     marginLeft: Spacing.sm,

@@ -102,7 +102,7 @@ export const ProgressScreen: React.FC = () => {
       const adjustedIndex = (index + 1) % 7; // Convert Mon=0 to Sun=6
       const daysSinceStart = (dayOfWeek - adjustedIndex + 7) % 7;
       const targetDate = new Date(now.getTime() - daysSinceStart * 24 * 60 * 60 * 1000);
-      const dateStr = targetDate.toISOString().split('T')[0];
+      const dateStr = targetDate.toISOString().split('T')[0] ?? '';
       
       const daySessions = sessions.filter((s) => s.created_at.startsWith(dateStr) && s.completed_at);
       const hasSession = daySessions.length > 0;
@@ -160,7 +160,7 @@ export const ProgressScreen: React.FC = () => {
     
     for (let i = 27; i >= 0; i--) {
       const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date.toISOString().split('T')[0] ?? '';
       const count = sessions.filter((s) => s.created_at.startsWith(dateStr) && s.completed_at).length;
       days.push({ date: dateStr, count, isToday: i === 0 });
     }

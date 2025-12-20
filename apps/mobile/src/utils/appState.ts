@@ -1,4 +1,4 @@
-import { AppState, AppStateStatus } from 'react-native';
+import { AppState, type AppStateStatus } from 'react-native';
 import { logger } from './logger';
 
 export class AppStateManager {

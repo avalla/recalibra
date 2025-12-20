@@ -99,7 +99,7 @@ export const useNotifications = () => {
 
     if (!settings.enabled) return;
 
-    const [hours, minutes] = settings.time.split(':').map(Number);
+    const [hours = 0, minutes = 0] = settings.time.split(':').map(Number);
 
     // Schedule for each selected day
     for (const day of settings.days) {

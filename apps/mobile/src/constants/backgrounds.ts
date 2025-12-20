@@ -121,8 +121,15 @@ export const EXERCISE_BACKGROUNDS: Record<string, ExerciseBackground> = {
 
 // Helper function to get background for exercise
 export const getExerciseBackground = (category?: string): ExerciseBackground => {
-  if (!category) return EXERCISE_BACKGROUNDS.default;
-  
+  const fallback: ExerciseBackground =
+    EXERCISE_BACKGROUNDS.default ?? {
+      gradient: ['#30CFD0', '#330867'],
+      country: 'Universal',
+      description: 'Timeless wellness practices from around the world',
+    };
+
+  if (!category) return fallback;
+
   const normalizedCategory = category.toLowerCase();
-  return EXERCISE_BACKGROUNDS[normalizedCategory] || EXERCISE_BACKGROUNDS.default;
+  return EXERCISE_BACKGROUNDS[normalizedCategory] ?? fallback;
 };
