@@ -1,18 +1,18 @@
 # RunComfy MCP Server
 
-MCP server per generare video con AI usando le API di RunComfy.
+MCP server to generate AI videos using the RunComfy APIs.
 
 ## Setup
 
-1. Installa le dipendenze:
+1. Install dependencies:
 ```bash
 cd mcp-servers/runcomfy
 bun install
 ```
 
-2. Ottieni la tua API key da: https://www.runcomfy.com/profile
+2. Get your API key from: https://www.runcomfy.com/profile
 
-3. Aggiungi la configurazione al tuo `~/.windsurf/mcp_config.json`:
+3. Add the configuration to your `~/.windsurf/mcp_config.json`:
 
 ```json
 {
@@ -28,44 +28,45 @@ bun install
 }
 ```
 
-4. Riavvia Windsurf
+4. Restart Windsurf
 
-## Tools disponibili
+## Available tools
 
 ### runcomfy_generate_video
-Genera un video con AI. Parametri:
-- `prompt` (required): Descrizione del video
+Generate an AI video. Parameters:
+- `prompt` (required): Video description
 - `model`: wan-2.1, wan-2.1-720p, animatediff, svd, kling, minimax
-- `image_url`: URL immagine per modelli image-to-video
-- `duration`: Durata in secondi
+- `image_url`: Image URL for image-to-video models
+- `duration`: Duration in seconds
 - `aspect_ratio`: 16:9, 9:16, 1:1
-- `seed`: Seed per riproducibilità
+- `seed`: Seed for reproducibility
 
 ### runcomfy_check_status
-Controlla lo stato di una richiesta.
+Check the status of a request.
 
 ### runcomfy_get_result
-Ottiene il risultato (URL video) di una richiesta completata.
+Get the result (video URL) of a completed request.
 
 ### runcomfy_cancel
-Cancella una richiesta in coda.
+Cancel a queued request.
 
 ### runcomfy_list_models
-Lista i modelli video disponibili.
+List available video models.
 
-## Esempio di utilizzo
+## Usage example
 
 ```
-// Genera video
+// Generate video
 runcomfy_generate_video({
   prompt: "A calm person breathing slowly, teal glow, dark background",
   model: "wan-2.1",
   aspect_ratio: "1:1"
 })
 
-// Controlla status
+// Check status
 runcomfy_check_status({ request_id: "abc123" })
 
-// Ottieni risultato
+// Get result
 runcomfy_get_result({ request_id: "abc123" })
 ```
+

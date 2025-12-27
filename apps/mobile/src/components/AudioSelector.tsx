@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
+  Modal,
   Pressable,
   TouchableOpacity,
-  ScrollView,
   LayoutAnimation,
   Platform,
   UIManager,
@@ -18,7 +18,7 @@ import type { AudioPresetKey } from '../hooks/useAudio';
 export type AudioType = 'silence' | 'frequency' | 'nature' | 'tibetan';
 
 export interface AudioOption {
-  id: string;
+  id: AudioPresetKey;
   name: string;
   description: string;
   details?: string;
@@ -26,137 +26,56 @@ export interface AudioOption {
   icon: keyof typeof Ionicons.glyphMap;
 }
 
-export const AUDIO_OPTIONS: AudioOption[] = [
-  // Silence
-  {
-    id: 'silence',
-    name: 'Silence',
-    description: 'Focus on your breath without audio',
-    type: 'silence',
-    icon: 'volume-mute-outline',
-  },
-  // Frequencies
-  {
-    id: 'binaural_alpha',
-    name: 'Alpha Waves',
-    description: 'Relaxation (10 Hz)',
-    details: 'Alpha waves (8–12 Hz) are associated with a calm, relaxed, yet alert state. Often used to reduce stress and support focus without drowsiness.',
-    type: 'frequency',
-    icon: 'pulse-outline',
-  },
-  {
-    id: 'binaural_theta',
-    name: 'Theta Waves',
-    description: 'Deep meditation (6 Hz)',
-    details:
-      'Theta waves (4–8 Hz) are associated with deep meditation, creativity, and REM sleep. They can help access subconscious insights and encourage deep relaxation.',
-    type: 'frequency',
-    icon: 'pulse-outline',
-  },
-  {
-    id: 'solfeggio_432',
-    name: '432 Hz',
-    description: 'Harmony frequency',
-    details: '432 Hz is often described as a “natural tuning” frequency. Many people find it soothing and grounding, supporting a relaxed listening experience.',
-    type: 'frequency',
-    icon: 'radio-outline',
-  },
-  {
-    id: 'solfeggio_528',
-    name: '528 Hz',
-    description: 'Transformation frequency',
-    details: '528 Hz is popularly associated with positive mood and emotional balance. Use it when you want an uplifting, centered background tone.',
-    type: 'frequency',
-    icon: 'radio-outline',
-  },
-  {
-    id: 'om',
-    name: 'OM (136.1 Hz)',
-    description: 'Cosmic vibration',
-    type: 'frequency',
-    icon: 'infinite-outline',
-  },
-  // More frequencies
-  {
-    id: 'solfeggio_741',
-    name: '741 Hz',
-    description: 'Awakening intuition',
-    type: 'frequency',
-    icon: 'radio-outline',
-  },
-  {
-    id: 'schumann',
-    name: 'Schumann 7.83 Hz',
-    description: 'Earth frequency',
-    type: 'frequency',
-    icon: 'globe-outline',
-  },
-  // Tibetan instruments
-  {
-    id: 'tibetan_bowl',
-    name: 'Singing Bowl',
-    description: 'Deep healing tones',
-    details:
-      "Tibetan singing bowls produce rich, harmonic overtones often used for relaxation and meditation. Many people find them grounding and helpful for settling the nervous system.",
-    type: 'tibetan',
-    icon: 'ellipse-outline',
-  },
-  {
-    id: 'tibetan_bells',
-    name: 'Tibetan Bells',
-    description: 'Crystal bell tones',
-    details:
-      'Bright, shimmering bell tones that can feel clarifying and uplifting. Useful when you want a lighter, more spacious background sound.',
-    type: 'tibetan',
-    icon: 'notifications-outline',
-  },
-  // Nature sounds
-  {
-    id: 'nature_rain',
-    name: 'Rain',
-    description: 'Gentle rain sounds',
-    details: 'Soft rain noise can mask distractions and promote a calm, steady rhythm—often used for focus and relaxation.',
-    type: 'nature',
-    icon: 'rainy-outline',
-  },
-  {
-    id: 'nature_ocean',
-    name: 'Ocean',
-    description: 'Calming ocean waves',
-    details: 'Slow, repetitive wave patterns can feel soothing and stabilizing, helping you settle into a relaxed breathing cadence.',
-    type: 'nature',
-    icon: 'water-outline',
-  },
-  {
-    id: 'nature_forest',
-    name: 'Forest',
-    description: 'Birds and gentle wind',
-    details: 'Ambient forest soundscapes can feel restorative and spacious—helpful for unwinding and reducing perceived stress.',
-    type: 'nature',
-    icon: 'leaf-outline',
-  },
-  {
-    id: 'wind',
-    name: 'Wind',
-    description: 'Soft wind sounds',
-    details: 'A light, airy sound bed that can feel cleansing and quiet—useful when you want something subtle and non-intrusive.',
-    type: 'nature',
-    icon: 'cloudy-outline',
-  },
-  {
-    id: 'creek',
-    name: 'Creek',
-    description: 'Flowing water',
-    details: 'Flowing water provides a gentle, continuous texture that many people find grounding and calming.',
-    type: 'nature',
-    icon: 'water-outline',
-  },
-];
+const AUDIO_OPTION_META: Record<
+  AudioPresetKey,
+  { type: AudioType; icon: keyof typeof Ionicons.glyphMap; order: number }
+> = {
+  silence: { type: 'silence', icon: 'volume-mute-outline', order: 0 },
+
+  binaural_alpha: { type: 'frequency', icon: 'pulse-outline', order: 100 },
+  binaural_theta: { type: 'frequency', icon: 'pulse-outline', order: 110 },
+  binaural_delta: { type: 'frequency', icon: 'pulse-outline', order: 120 },
+
+  schumann: { type: 'frequency', icon: 'globe-outline', order: 200 },
+  om: { type: 'frequency', icon: 'infinite-outline', order: 210 },
+
+  solfeggio_396: { type: 'frequency', icon: 'radio-outline', order: 300 },
+  solfeggio_432: { type: 'frequency', icon: 'radio-outline', order: 310 },
+  solfeggio_528: { type: 'frequency', icon: 'radio-outline', order: 320 },
+  solfeggio_639: { type: 'frequency', icon: 'radio-outline', order: 330 },
+  solfeggio_741: { type: 'frequency', icon: 'radio-outline', order: 340 },
+  solfeggio_852: { type: 'frequency', icon: 'radio-outline', order: 350 },
+
+  tibetan_bowl: { type: 'tibetan', icon: 'ellipse-outline', order: 400 },
+  tibetan_bells: { type: 'tibetan', icon: 'notifications-outline', order: 410 },
+
+  nature_rain: { type: 'nature', icon: 'rainy-outline', order: 500 },
+  nature_ocean: { type: 'nature', icon: 'water-outline', order: 510 },
+  nature_forest: { type: 'nature', icon: 'leaf-outline', order: 520 },
+  wind: { type: 'nature', icon: 'cloudy-outline', order: 530 },
+  creek: { type: 'nature', icon: 'water-outline', order: 540 },
+};
+
+export const AUDIO_OPTIONS: AudioOption[] = (Object.keys(AUDIO_PRESETS) as AudioPresetKey[])
+  .map((presetKey) => {
+    const preset = AUDIO_PRESETS[presetKey];
+    const meta = AUDIO_OPTION_META[presetKey];
+
+    return {
+      id: presetKey,
+      name: preset.name,
+      description: preset.description,
+      details: preset.benefits,
+      type: meta.type,
+      icon: meta.icon,
+    };
+  })
+  .sort((a, b) => AUDIO_OPTION_META[a.id].order - AUDIO_OPTION_META[b.id].order);
 
 interface AudioSelectorProps {
-  selectedAudioId: string;
-  onSelect: (audioId: string) => void;
-  recommendedId?: string;
+  selectedAudioId: AudioPresetKey;
+  onSelect: (audioId: AudioPresetKey) => void;
+  recommendedId?: AudioPresetKey;
   showPreviewButton?: boolean;
 }
 
@@ -186,12 +105,24 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
     AUDIO_OPTIONS.find((o) => o.id === selectedAudioId)?.type || 'silence'
   );
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
-  const [previewAudioId, setPreviewAudioId] = useState<string>(selectedAudioId);
-  const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [previewAudioId, setPreviewAudioId] = useState<AudioPresetKey>(selectedAudioId);
+  const [shouldAutoPlayPreview, setShouldAutoPlayPreview] = useState(false);
+  const [isBinauralInfoOpen, setIsBinauralInfoOpen] = useState(false);
+  const [isBinauralDetailsOpen, setIsBinauralDetailsOpen] = useState(false);
+  const previewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const closeBinauralInfo = () => {
+    setIsBinauralInfoOpen(false);
+    setIsBinauralDetailsOpen(false);
+  };
+
+  const isSelectedBinaural = useMemo(() => {
+    return selectedAudioId.startsWith('binaural_');
+  }, [selectedAudioId]);
   
   // Audio preview hook - uses previewAudioId to force re-creation
   const { play: playPreview, stop: stopPreview, isLoaded } = useAudio({
-    preset: previewAudioId as AudioPresetKey,
+    preset: previewAudioId,
     volume: 0.5,
   });
 
@@ -218,30 +149,25 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
     setPreviewAudioId(selectedAudioId);
   }, [selectedAudioId]);
 
-  const handlePreviewToggle = async () => {
-    if (isPreviewPlaying) {
-      if (previewTimeoutRef.current) {
-        clearTimeout(previewTimeoutRef.current);
-        previewTimeoutRef.current = null;
-      }
-      await stopPreview();
-      setIsPreviewPlaying(false);
-    } else {
-      // Ensure we have the latest audio loaded
-      if (!isLoaded) {
-        console.log('[AudioSelector] Audio not loaded yet');
-        return;
-      }
-      await playPreview();
-      setIsPreviewPlaying(true);
-      // Auto-stop after 5 seconds
-      previewTimeoutRef.current = setTimeout(async () => {
-        await stopPreview();
-        setIsPreviewPlaying(false);
-        previewTimeoutRef.current = null;
-      }, 5000);
+  useEffect(() => {
+    if (!shouldAutoPlayPreview) return;
+    if (!isLoaded) return;
+
+    playPreview();
+    setIsPreviewPlaying(true);
+    setShouldAutoPlayPreview(false);
+
+    if (previewTimeoutRef.current) {
+      clearTimeout(previewTimeoutRef.current);
+      previewTimeoutRef.current = null;
     }
-  };
+
+    previewTimeoutRef.current = setTimeout(() => {
+      stopPreview();
+      setIsPreviewPlaying(false);
+      previewTimeoutRef.current = null;
+    }, 5000);
+  }, [isLoaded, playPreview, shouldAutoPlayPreview, stopPreview]);
 
   // Sync active tab when selectedAudioId changes (e.g., from recommendation)
   useEffect(() => {
@@ -258,7 +184,10 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
     { id: 'nature', label: 'Nature', icon: 'leaf-outline' },
   ];
 
-  const filteredOptions = AUDIO_OPTIONS.filter((o) => o.type === activeTab);
+  const filteredOptions = useMemo(
+    () => AUDIO_OPTIONS.filter((o) => o.type === activeTab),
+    [activeTab]
+  );
 
   return (
     <View style={styles.container}>
@@ -290,12 +219,104 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
         ))}
       </View>
 
+      {isSelectedBinaural && (
+        <TouchableOpacity
+          style={styles.binauralNotice}
+          onPress={() => {
+            setIsBinauralDetailsOpen(false);
+            setIsBinauralInfoOpen(true);
+          }}
+          activeOpacity={0.9}
+        >
+          <Ionicons name="headset-outline" size={14} color={Colors.textSecondary} />
+          <Text style={styles.binauralNoticeText}>
+            For binaural effect, use stereo headphones. On speaker, the effect may be reduced.
+          </Text>
+          <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
+        </TouchableOpacity>
+      )}
+
+      <Modal
+        visible={isBinauralInfoOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={closeBinauralInfo}
+      >
+        <Pressable
+          style={styles.sheetOverlay}
+          onPress={closeBinauralInfo}
+        />
+        <View style={styles.sheetContainer}>
+          <View style={styles.sheetHeader}>
+            <View style={styles.sheetHeaderLeft}>
+              <Ionicons name="headset-outline" size={18} color={Colors.textPrimary} />
+              <Text style={styles.sheetTitle}>Binaural beats</Text>
+            </View>
+            <TouchableOpacity
+              onPress={closeBinauralInfo}
+              style={styles.sheetCloseButton}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="close" size={18} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.sheetBody}>
+            <Text style={styles.sheetText}>
+              Binaural beats use a slightly different tone in each ear. The brain can perceive the difference as a slow
+              “beat”.
+            </Text>
+            <Text style={styles.sheetText}>
+              To work properly, the audio must stay separated between left and right. With phone speakers or mono output,
+              channels can mix and the effect may be reduced.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.sheetSecondaryButton}
+              onPress={() => setIsBinauralDetailsOpen((prev) => !prev)}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.sheetSecondaryButtonText}>
+                {isBinauralDetailsOpen ? 'Show less' : 'I want more details'}
+              </Text>
+              <Ionicons
+                name={isBinauralDetailsOpen ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={Colors.primary}
+              />
+            </TouchableOpacity>
+
+            {isBinauralDetailsOpen && (
+              <View style={styles.sheetDetails}>
+                <Text style={styles.sheetText}>
+                  Example: 200 Hz in the left ear and 210 Hz in the right ear can feel like a 10 Hz beat. This “beat” is
+                  not a separate audio tone, but a perception created by the brain.
+                </Text>
+                <Text style={styles.sheetText}>
+                  Headphones are recommended because they keep left and right channels isolated. With speakers, both ears
+                  hear both channels and the effect becomes less reliable.
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.sheetPrimaryButton}
+            onPress={closeBinauralInfo}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.sheetPrimaryButtonText}>Got it</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
       {/* Options */}
       <View style={styles.optionsList}>
         {filteredOptions.map((option) => {
           const isSelected = option.id === selectedAudioId;
           const isRecommended = option.id === recommendedId;
           const isPreviewingThis = isPreviewPlaying && previewAudioId === option.id;
+          const isBinauralOption = option.id.startsWith('binaural_');
 
           return (
             <Pressable
@@ -325,11 +346,22 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                       <Text style={[styles.optionTitle, isSelected && styles.optionTitleActive]}>
                         {option.name}
                       </Text>
+                      {isBinauralOption && (
+                        <View style={[styles.headphonesBadge, isSelected && styles.headphonesBadgeActive]}>
+                          <Ionicons
+                            name="headset-outline"
+                            size={12}
+                            color={isSelected ? Colors.background : Colors.textSecondary}
+                          />
+                        </View>
+                      )}
                       {isRecommended && (
                         <View style={[styles.recommendedBadge, isSelected && styles.recommendedBadgeActive]}>
-                          <Text style={[styles.recommendedBadgeText, isSelected && styles.recommendedBadgeTextActive]}>
-                            Recommended
-                          </Text>
+                          <Ionicons
+                            name={isSelected ? 'star' : 'star-outline'}
+                            size={12}
+                            color={isSelected ? Colors.background : Colors.primary}
+                          />
                         </View>
                       )}
                     </View>
@@ -357,8 +389,24 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                         style={[styles.previewButton, isPreviewingThis && styles.previewButtonActive]}
                         onPress={async () => {
                           animateNextLayout();
+                          if (previewTimeoutRef.current) {
+                            clearTimeout(previewTimeoutRef.current);
+                            previewTimeoutRef.current = null;
+                          }
+
+                          if (isPreviewPlaying && previewAudioId === option.id) {
+                            await stopPreview();
+                            setIsPreviewPlaying(false);
+                            return;
+                          }
+
+                          if (isPreviewPlaying) {
+                            await stopPreview();
+                            setIsPreviewPlaying(false);
+                          }
+
                           setPreviewAudioId(option.id);
-                          await handlePreviewToggle();
+                          setShouldAutoPlayPreview(true);
                         }}
                       >
                         <Ionicons
@@ -387,6 +435,103 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
 const styles = StyleSheet.create({
   container: {
     marginVertical: Spacing.md,
+  },
+  binauralNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.backgroundCard,
+    borderWidth: 1,
+    borderColor: Colors.backgroundLight,
+    marginBottom: Spacing.sm,
+  },
+  binauralNoticeText: {
+    flex: 1,
+    color: Colors.textSecondary,
+    fontSize: FontSize.xs,
+    lineHeight: 16,
+  },
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  sheetContainer: {
+    padding: Spacing.md,
+    backgroundColor: Colors.backgroundElevated,
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.sm,
+  },
+  sheetHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  sheetTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+  },
+  sheetCloseButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.backgroundLight,
+  },
+  sheetBody: {
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  sheetText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    lineHeight: 20,
+  },
+  sheetPrimaryButton: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.primary,
+  },
+  sheetPrimaryButtonText: {
+    color: Colors.background,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+  },
+  sheetSecondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    alignSelf: 'flex-start',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(102, 126, 234, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(102, 126, 234, 0.35)',
+  },
+  sheetSecondaryButtonText: {
+    color: Colors.primary,
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.semibold,
+  },
+  sheetDetails: {
+    gap: Spacing.sm,
   },
   tabs: {
     flexDirection: 'row',
@@ -538,7 +683,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: Spacing.sm,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: BorderRadius.full,
     backgroundColor: 'rgba(102, 126, 234, 0.12)',
@@ -555,6 +700,29 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.semibold,
   },
   recommendedBadgeTextActive: {
+    color: Colors.background,
+  },
+  headphonesBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.14)',
+  },
+  headphonesBadgeActive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    borderColor: 'rgba(255, 255, 255, 0.24)',
+  },
+  headphonesBadgeText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.semibold,
+  },
+  headphonesBadgeTextActive: {
     color: Colors.background,
   },
   previewButton: {

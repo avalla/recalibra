@@ -34,6 +34,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
   const [selectedDuration, setSelectedDuration] = useState<'all' | 'short' | 'medium' | 'long'>('all');
+  const [selectedLevel, setSelectedLevel] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
 
   const renderShelfItem = ({ item }: { item: ExerciseWithFavorite }) => {
     const isLocked = !canAccessExercise(item.name, item.is_premium);
@@ -157,6 +158,8 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
       if (selectedCategory !== 'all' && e.category !== selectedCategory) return false;
 
+      if (selectedLevel !== 'all' && e.level !== selectedLevel) return false;
+
       if (selectedDuration !== 'all') {
         const minutes = e.duration_minutes;
         if (selectedDuration === 'short' && minutes > 3) return false;
@@ -166,7 +169,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
       return true;
     });
-  }, [exercises, searchQuery, selectedCategory, selectedDuration]);
+  }, [exercises, searchQuery, selectedCategory, selectedDuration, selectedLevel]);
 
   const recentExercises = useMemo(() => {
     const seen = new Set<string>();
@@ -212,19 +215,9 @@ export const ExerciseCatalogScreen: React.FC = () => {
       const purchased = await presentPaywall();
       if (!purchased) return;
     }
-    
-    navigation.navigate('ExerciseSession', {
+
+    navigation.navigate('ExerciseDetail', {
       exerciseId: exercise.id,
-      exerciseName: exercise.name,
-      durationMinutes: exercise.duration_minutes,
-      audioPreset: exercise.audio_preset || 'silence',
-      exerciseCategory: exercise.category,
-      breathingPattern: exercise.breathing_pattern,
-      origin: exercise.origin,
-      history: exercise.history,
-      benefits: exercise.benefits,
-      tips: exercise.tips,
-      instructions: exercise.instructions,
     });
   };
 
@@ -335,14 +328,64 @@ export const ExerciseCatalogScreen: React.FC = () => {
           keyboardShouldPersistTaps="handled"
           ListHeaderComponent={
             <View>
-              <TouchableOpacity style={styles.backButton} onPress={() => setShowCatalog(false)}>
-                <Ionicons name="arrow-back" size={24} color={Colors.primary} />
-                <Text style={styles.backText}>Back to Quick Start</Text>
-              </TouchableOpacity>
+              <View style={styles.topBar}>
+                <TouchableOpacity style={styles.backIconButton} onPress={() => setShowCatalog(false)}>
+                  <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
+                </TouchableOpacity>
+                <Text style={styles.pageTitle}>Explore Exercises</Text>
+                <TouchableOpacity style={styles.searchIconButton}>
+                  <Ionicons name="search" size={22} color={Colors.textPrimary} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.categoryTabsRow}
+              >
+                {CATEGORIES.map((c) => {
+                  const isActive = selectedCategory === c.id;
+                  return (
+                    <TouchableOpacity
+                      key={c.id}
+                      style={styles.categoryTab}
+                      onPress={() => setSelectedCategory(c.id)}
+                      activeOpacity={0.85}
+                    >
+                      <Text style={isActive ? styles.categoryTabTextActive : styles.categoryTabText}>{c.label}</Text>
+                      <View style={isActive ? styles.categoryTabUnderlineActive : styles.categoryTabUnderline} />
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+
+              <View style={styles.filterPillsRow}>
+                <TouchableOpacity
+                  style={styles.filterPill}
+                  onPress={() =>
+                    setSelectedDuration((prev) => (prev === 'short' ? 'all' : 'short'))
+                  }
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.filterPillText}>Duration</Text>
+                  <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.filterPill}
+                  onPress={() =>
+                    setSelectedLevel((prev) => (prev === 'beginner' ? 'all' : 'beginner'))
+                  }
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.filterPillText}>Level</Text>
+                  <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
 
               <View style={styles.searchContainer}>
                 <View style={styles.searchBar}>
-                  <Ionicons name="search" size={20} color={Colors.textMuted} style={styles.searchIcon} />
+                  <Ionicons name="search" size={18} color={Colors.textMuted} style={styles.searchIcon} />
                   <TextInput
                     style={styles.searchInput}
                     placeholder="Search exercises..."
@@ -353,55 +396,6 @@ export const ExerciseCatalogScreen: React.FC = () => {
                     returnKeyType="search"
                   />
                 </View>
-
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.chipsRow}
-                >
-                  <TouchableOpacity
-                    style={selectedCategory === 'all' ? styles.chipActive : styles.chip}
-                    onPress={() => setSelectedCategory('all')}
-                  >
-                    <Text style={selectedCategory === 'all' ? styles.chipTextActive : styles.chipText}>All</Text>
-                  </TouchableOpacity>
-
-                  {CATEGORIES.map((c) => (
-                    <TouchableOpacity
-                      key={c.id}
-                      style={selectedCategory === c.id ? styles.chipActive : styles.chip}
-                      onPress={() => setSelectedCategory(c.id)}
-                    >
-                      <Ionicons
-                        name={c.icon}
-                        size={16}
-                        color={selectedCategory === c.id ? Colors.background : Colors.textPrimary}
-                      />
-                      <Text style={selectedCategory === c.id ? styles.chipTextActive : styles.chipText}>
-                        {c.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-
-                  <TouchableOpacity
-                    style={selectedDuration === 'short' ? styles.chipActive : styles.chip}
-                    onPress={() => setSelectedDuration((prev) => (prev === 'short' ? 'all' : 'short'))}
-                  >
-                    <Text style={selectedDuration === 'short' ? styles.chipTextActive : styles.chipText}>≤ 3 min</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={selectedDuration === 'medium' ? styles.chipActive : styles.chip}
-                    onPress={() => setSelectedDuration((prev) => (prev === 'medium' ? 'all' : 'medium'))}
-                  >
-                    <Text style={selectedDuration === 'medium' ? styles.chipTextActive : styles.chipText}>4–7 min</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={selectedDuration === 'long' ? styles.chipActive : styles.chip}
-                    onPress={() => setSelectedDuration((prev) => (prev === 'long' ? 'all' : 'long'))}
-                  >
-                    <Text style={selectedDuration === 'long' ? styles.chipTextActive : styles.chipText}>8+ min</Text>
-                  </TouchableOpacity>
-                </ScrollView>
               </View>
 
               <View style={styles.categoryBrowseSection}>
@@ -624,16 +618,97 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.medium,
   },
   // Catalog mode styles
-  backButton: {
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.md,
   },
-  backText: {
+  backIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(30, 58, 52, 0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(148, 163, 184, 0.16)',
+  },
+  searchIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(30, 58, 52, 0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(148, 163, 184, 0.16)',
+  },
+  pageTitle: {
+    flex: 1,
+    textAlign: 'left',
+    paddingHorizontal: Spacing.md,
+    color: Colors.textPrimary,
+    fontSize: FontSize.xl,
+    fontWeight: FontWeight.bold,
+  },
+  categoryTabsRow: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.xl,
+    paddingBottom: Spacing.sm,
+  },
+  categoryTab: {
+    alignItems: 'center',
+  },
+  categoryTabText: {
+    color: Colors.textMuted,
     fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+  },
+  categoryTabTextActive: {
     color: Colors.primary,
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+  },
+  categoryTabUnderline: {
+    height: 3,
+    width: 64,
+    borderRadius: 999,
+    marginTop: Spacing.sm,
+    backgroundColor: 'transparent',
+  },
+  categoryTabUnderlineActive: {
+    height: 3,
+    width: 64,
+    borderRadius: 999,
+    marginTop: Spacing.sm,
+    backgroundColor: Colors.primary,
+  },
+  filterPillsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.sm,
+  },
+  filterPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(30, 58, 52, 0.9)',
+    borderRadius: BorderRadius.full,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(148, 163, 184, 0.14)',
+  },
+  filterPillText: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
     fontWeight: FontWeight.medium,
   },
   // Search bar

@@ -9,7 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { useSubscription, PREMIUM_FEATURES } from '../../hooks/useSubscription';
+import { useSubscription, PREMIUM_FEATURES } from '@/hooks';
 import { Screen } from '../../components';
 
 /**
@@ -26,9 +26,9 @@ export const PaywallScreen: React.FC = () => {
     const showPaywall = async () => {
       if (hasPresented) return;
       setHasPresented(true);
-      
+
       const purchased = await presentPaywall();
-      
+
       // Go back after paywall is dismissed
       if (navigation.canGoBack()) {
         navigation.goBack();

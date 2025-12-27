@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { HomeScreen } from '../screens/home';
 import { ExerciseNavigator } from './ExerciseNavigator';
@@ -9,9 +8,6 @@ import { ProgressScreen } from '../screens/progress';
 import { ProfileScreen } from '../screens/profile';
 import { Colors, FontSize } from '../constants';
 import type { MainTabParamList } from '../types';
-
-// Screens where we hide the tab bar for full immersion
-const HIDDEN_TAB_BAR_SCREENS = ['ExerciseSession', 'PostSession'];
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -77,13 +73,10 @@ export const MainTabNavigator: React.FC = () => {
       <Tab.Screen 
         name="ExercisesTab" 
         component={ExerciseNavigator}
-        options={({ route }) => {
-          const routeName = getFocusedRouteNameFromRoute(route) ?? 'ExerciseCatalog';
+        options={() => {
           return {
             headerShown: false,
-            tabBarStyle: HIDDEN_TAB_BAR_SCREENS.includes(routeName) 
-              ? { display: 'none' as const }
-              : styles.tabBar,
+            tabBarStyle: styles.tabBar,
           };
         }}
       />

@@ -1,3 +1,6 @@
-export { getDb, initDb, getExercisesWithFavorites, toggleFavorite } from './db';
+export { getDb, initDb } from './db';
+export { getExercisesWithFavorites, toggleFavorite } from './exercises';
 export { listSessions, startSession, updateSessionStatus, completeSession } from './sessions';
-export { getGoals, setGoals, getReminders, setReminders, getScreening, setScreening } from './settings';
+export { getGoals, setGoals } from './goals';
+export { getReminders, setReminders } from './reminders';
+export { getScreening, setScreening } from './screening';

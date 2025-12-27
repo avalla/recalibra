@@ -1,0 +1,17 @@
+export const GREETING_PHRASES = [
+  "let's recalibrate",
+  'time to breathe',
+  'find your calm',
+  "let's reset",
+  'take a moment',
+  'breathe with me',
+  "let's slow down",
+  'find your center',
+  'time to unwind',
+  "let's recharge",
+  'relax and breathe',
+  "let's reconnect",
+  'pause and reset',
+  'find your peace',
+  "let's decompress",
+];

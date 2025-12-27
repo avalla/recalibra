@@ -14,11 +14,11 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Button, Card } from '../../components';
 import { useSessions, useAppleHealth } from '../../hooks';
-import type { ExerciseStackParamList } from '../../types';
+import type { RootStackParamList } from '../../types';
 
 const STRESS_EMOJIS = ['😇', '🙂', '😌', '😟', '😰'];
 
-type PostSessionRouteProps = RouteProp<ExerciseStackParamList, 'PostSession'>;
+type PostSessionRouteProps = RouteProp<RootStackParamList, 'PostSession'>;
 
 export const PostSessionScreen: React.FC = () => {
   const navigation = useNavigation<any>();

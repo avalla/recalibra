@@ -22,7 +22,7 @@ import {
   toExerciseSessionParams,
   type QuickStartMode,
   type QuickStartPreference,
-} from '../../utils/quick-start';
+} from '@/utils/quick-start';
 
 type QuickStartRouteProps = RouteProp<RootStackParamList, 'QuickStartPreferences'>;
 

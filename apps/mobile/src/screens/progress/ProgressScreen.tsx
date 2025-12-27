@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
@@ -36,10 +35,10 @@ const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-  
+
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
-  
+
   return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 };
 
@@ -53,7 +52,7 @@ export const ProgressScreen: React.FC = () => {
     let daysBack = 7;
     if (timeRange === 'month') daysBack = 30;
     if (timeRange === '90days') daysBack = 90;
-    
+
     const cutoff = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
     return sessions.filter((s) => new Date(s.created_at) >= cutoff);
   }, [sessions, timeRange]);
@@ -61,25 +60,25 @@ export const ProgressScreen: React.FC = () => {
   // Calculate stats for the filtered period
   const stats = useMemo(() => {
     const completedSessions = filteredSessions.filter((s) => s.completed_at);
-    
+
     if (completedSessions.length === 0) {
       return { avgStress: 0, stressReduction: 0, totalSessions: 0, totalMinutes: 0 };
     }
 
     const totalMinutes = completedSessions.reduce((sum, s) => sum + Math.round(s.duration_seconds / 60), 0);
-    
+
     // Calculate average post-stress
     const sessionsWithStress = completedSessions.filter((s) => s.post_stress_level !== null);
     const avgPostStress = sessionsWithStress.length > 0
       ? sessionsWithStress.reduce((sum, s) => sum + (s.post_stress_level || 0), 0) / sessionsWithStress.length
       : 0;
-    
+
     // Calculate average stress reduction
-    const sessionsWithBothStress = completedSessions.filter((s) => 
+    const sessionsWithBothStress = completedSessions.filter((s) =>
       s.pre_stress_level !== null && s.post_stress_level !== null
     );
     const avgReduction = sessionsWithBothStress.length > 0
-      ? sessionsWithBothStress.reduce((sum, s) => 
+      ? sessionsWithBothStress.reduce((sum, s) =>
           sum + ((s.pre_stress_level || 0) - (s.post_stress_level || 0)), 0
         ) / sessionsWithBothStress.length
       : 0;
@@ -97,19 +96,19 @@ export const ProgressScreen: React.FC = () => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const now = new Date();
     const dayOfWeek = now.getDay();
-    
+
     return days.map((day, index) => {
       const adjustedIndex = (index + 1) % 7; // Convert Mon=0 to Sun=6
       const daysSinceStart = (dayOfWeek - adjustedIndex + 7) % 7;
       const targetDate = new Date(now.getTime() - daysSinceStart * 24 * 60 * 60 * 1000);
       const dateStr = targetDate.toISOString().split('T')[0] ?? '';
-      
+
       const daySessions = sessions.filter((s) => s.created_at.startsWith(dateStr) && s.completed_at);
       const hasSession = daySessions.length > 0;
       const avgStress = hasSession && daySessions.some((s) => s.post_stress_level)
         ? daySessions.reduce((sum, s) => sum + (s.post_stress_level || 5), 0) / daySessions.length
         : null;
-      
+
       return { day, hasSession, avgStress };
     });
   }, [sessions]);
@@ -119,20 +118,20 @@ export const ProgressScreen: React.FC = () => {
     let currentStreak = 0;
     let longestStreak = 0;
     let tempStreak = 0;
-    
+
     // Get unique session dates
     const sessionDates = new Set(
       sessions
         .filter((s) => s.completed_at)
         .map((s) => s.created_at.split('T')[0])
     );
-    
+
     // Check from today backwards
     const today = new Date();
     for (let i = 0; i < 365; i++) {
       const checkDate = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
       const dateStr = checkDate.toISOString().split('T')[0];
-      
+
       if (sessionDates.has(dateStr)) {
         if (i === 0 || currentStreak > 0) {
           currentStreak++;
@@ -149,7 +148,7 @@ export const ProgressScreen: React.FC = () => {
         tempStreak = 0;
       }
     }
-    
+
     return { current: currentStreak, longest: longestStreak };
   }, [sessions]);
 
@@ -157,14 +156,14 @@ export const ProgressScreen: React.FC = () => {
   const calendarData = useMemo(() => {
     const days: { date: string; count: number; isToday: boolean }[] = [];
     const today = new Date();
-    
+
     for (let i = 27; i >= 0; i--) {
       const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
       const dateStr = date.toISOString().split('T')[0] ?? '';
       const count = sessions.filter((s) => s.created_at.startsWith(dateStr) && s.completed_at).length;
       days.push({ date: dateStr, count, isToday: i === 0 });
     }
-    
+
     return days;
   }, [sessions]);
 
@@ -281,12 +280,12 @@ export const ProgressScreen: React.FC = () => {
             <View style={styles.chartBars}>
               {weeklyData.map((data, index) => (
                 <View key={index} style={styles.chartBarContainer}>
-                  <View 
+                  <View
                     style={[
                       styles.chartBar,
                       data.hasSession && styles.chartBarActive,
                       data.avgStress !== null && { height: Math.max(20, (10 - data.avgStress) * 10) }
-                    ]} 
+                    ]}
                   />
                 </View>
               ))}
@@ -321,10 +320,10 @@ export const ProgressScreen: React.FC = () => {
           filteredSessions.slice(0, 10).map((session) => (
             <Card key={session.id} style={styles.sessionCard}>
               <View style={styles.sessionIcon}>
-                <Ionicons 
-                  name={getCategoryIcon(session.exercise?.category)} 
-                  size={20} 
-                  color={Colors.primary} 
+                <Ionicons
+                  name={getCategoryIcon(session.exercise?.category)}
+                  size={20}
+                  color={Colors.primary}
                 />
               </View>
               <View style={styles.sessionInfo}>
@@ -333,7 +332,7 @@ export const ProgressScreen: React.FC = () => {
                   {formatDate(session.created_at)} - {Math.round(session.duration_seconds / 60)} min
                 </Text>
               </View>
-              {session.pre_stress_level && session.post_stress_level && 
+              {session.pre_stress_level && session.post_stress_level &&
                 renderStressChange(session.pre_stress_level, session.post_stress_level)
               }
             </Card>

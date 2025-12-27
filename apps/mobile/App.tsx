@@ -1,45 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, ActivityIndicator, StyleSheet, Text, TextInput } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { enableScreens } from 'react-native-screens';
 import { useFonts } from 'expo-font';
 import { RootNavigator } from './src/navigation';
 import { AuthProvider } from './src/contexts';
-import { Colors, FontFamily } from './src/constants';
+import { Colors } from './src/constants';
 import { ErrorBoundary } from './src/components';
-import { initializeRevenueCat } from './src/lib/revenuecat';
-import { initDb } from './src/db';
+import { applyDefaultTextProps } from './src/app/default-text-props';
+import { initializeApp } from './src/app/init';
+import { DarkTheme } from './src/app/theme';
 
 // Disable native screens to avoid reanimated issues
 enableScreens(false);
 
-const TextWithDefaultProps = Text as unknown as { defaultProps?: { style?: unknown } };
-TextWithDefaultProps.defaultProps = {
-  ...(TextWithDefaultProps.defaultProps || {}),
-  style: [{ fontFamily: FontFamily.regular }, TextWithDefaultProps.defaultProps?.style],
-};
-
-const TextInputWithDefaultProps = TextInput as unknown as { defaultProps?: { style?: unknown } };
-TextInputWithDefaultProps.defaultProps = {
-  ...(TextInputWithDefaultProps.defaultProps || {}),
-  style: [{ fontFamily: FontFamily.regular }, TextInputWithDefaultProps.defaultProps?.style],
-};
-
-const DarkTheme = {
-  ...DefaultTheme,
-  dark: true,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: Colors.primary,
-    background: Colors.background,
-    card: Colors.backgroundCard,
-    text: Colors.textPrimary,
-    border: Colors.border,
-    notification: Colors.primary,
-  },
-};
+applyDefaultTextProps();
 
 export default function App() {
   const [isRevenueCatReady, setIsRevenueCatReady] = useState(false);
@@ -57,9 +34,8 @@ export default function App() {
   useEffect(() => {
     const init = async () => {
       try {
-        await initDb();
+        await initializeApp();
         setIsDbReady(true);
-        await initializeRevenueCat();
         setIsRevenueCatReady(true);
       } catch (error) {
         console.error('Failed to initialize RevenueCat:', error);

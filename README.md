@@ -1,84 +1,86 @@
-# 🧠 **Progetto: App per la stimolazione del Nervo Vago**
+# 🧠 **Project: Vagus Nerve Stimulation App**
 
-### 🎯 **Obiettivo principale**
+### 🎯 **Main objective**
 
-Creare un’app (web/mobile) che aiuti le persone a riequilibrare il sistema nervoso autonomo tramite **stimolazione vagale guidata**, tracking biometrico (HRV, stress), protocolli personalizzati e, in futuro, possibili integrazioni hardware.
+Build an app (web/mobile) that helps people rebalance the autonomic nervous system through **guided vagal
+stimulation**, biometric tracking (HRV, stress), personalized protocols and, in the future, potential hardware
+integrations.
 
 ---
 
 ## 1️⃣ **Core Value Proposition**
 
-> “5 minuti al giorno per ricalibrare il tuo sistema nervoso.”
+> “5 minutes a day to recalibrate your nervous system.”
 
-* Sessioni guidate → respirazione, vocali, acqua, movimento.
-* Tracking pre/post (umore, stress, HRV).
-* Micro-abitudini → notifiche periodiche.
-* Personalizzazione basata sui dati.
-* Potenziale hardware (t-VNS) per versione avanzata.
-
----
-
-## 2️⃣ **Target iniziale (early adopters)**
-
-* Professionisti stressati (30–50 anni)
-* Utenti wellness/biohacking (usano smartwatch)
-* Persone che già usano Calm, Breathwrk, Headspace
-* Coach / terapisti interessati a protocolli autonomici
+* Guided sessions → breathing, vocal, water, movement.
+* Pre/post tracking (mood, stress, HRV).
+* Micro-habits → periodic notifications.
+* Data-driven personalization.
+* Potential hardware (t-VNS) for an advanced version.
 
 ---
 
-## 3️⃣ **Tipologie di esercizi integrabili**
+## 2️⃣ **Initial target (early adopters)**
 
-### **📦 Categoria base (MVP)**
-
-* Respirazione guidata (diaframmatica / coerenza cardiaca / box)
-* Humming / OM / vocali → vibrazione glottica
-* Timer + vibrazione telefono
-
-### **💧 Esercizi con ACQUA (scientificamente validati)**
-
-| Esercizio                           | Stimolo vagale       | Modalità app        |
-| ----------------------------------- | -------------------- | ------------------- |
-| Splash acqua fredda sul viso        | Diving reflex        | Timer + guida       |
-| Gargarismi con acqua                | Nervi IX-X           | Microfono opzionale |
-| Ice pack su viso/collo              | VNS non invasiva     | Alert sicurezza     |
-| Bere lentamente con respiro guidato | Coordinazione vagale | Audio step-by-step  |
-
-### **🧘 Movimento fisico**
-
-* Allungamento cervicale
-* Eye yoga / sguardi lenti
-* “Legs-up-the-wall” (posizione yoga antistress)
-* Sbadiglio volontario / rilascio mandibolare
-
-### **🔊 Sensoriale / vocale**
-
-* Suoni binaurali / rumore bianco
-* Vibrazioni smartphone (haptic patterns)
-* Aromaterapia mentolata/eucalipto (consigliata)
-* Pressione auricolare (auricoloterapia light)
+* Stressed professionals (30–50 years old)
+* Wellness/biohacking users (smartwatch users)
+* People already using Calm, Breathwrk, Headspace
+* Coaches / therapists interested in autonomic protocols
 
 ---
 
-## 4️⃣ **Funzionalità MVP**
+## 3️⃣ **Exercise types to include**
 
-* Login + onboarding con screening sanitario
-* Sessioni guidate base
-* Tracking percezione stress (da 1 a 10)
-* Dashboard con storico sessioni
-* Notifiche “pausa vagale”
-* Supabase backend con RLS
-* Stripe/Outseta → abbonamento Freemium/Premium
-* (Opzionale) HRV da smartwatch via Apple Health/Google Fit
+### **📦 Base category (MVP)**
+
+* Guided breathing (diaphragmatic / heart coherence / box breathing)
+* Humming / OM / vowels → glottic vibration
+* Timer + phone vibration
+
+### **💧 WATER exercises (evidence-based)**
+
+| Exercise                              | Vagal stimulus       | In-app mode         |
+|---------------------------------------|----------------------|---------------------|
+| Splash cold water on the face         | Diving reflex        | Timer + guidance    |
+| Gargling with water                   | CN IX–X              | Optional microphone |
+| Ice pack on face/neck                 | Non-invasive VNS     | Safety alerts       |
+| Drink slowly with guided breathing    | Vagal coordination   | Step-by-step audio  |
+
+### **🧘 Physical movement**
+
+* Neck stretching
+* Eye yoga / slow gaze movements
+* “Legs-up-the-wall” (anti-stress yoga pose)
+* Voluntary yawning / jaw release
+
+### **🔊 Sensory / vocal**
+
+* Binaural sounds / white noise
+* Smartphone vibrations (haptic patterns)
+* Menthol/eucalyptus aromatherapy (recommended)
+* Auricular pressure (light auriculotherapy)
 
 ---
 
-## 5️⃣ **Stack Tecnico Consigliato**
+## 4️⃣ **MVP features**
 
-| Componente | Tecnologia                        |
-| ---------- | --------------------------------- |
+* Login + onboarding with health screening
+* Basic guided sessions
+* Stress perception tracking (1 to 10)
+* Dashboard with session history
+* “Vagal break” notifications
+* Supabase backend with RLS
+* Stripe/Outseta → Freemium/Premium subscription
+* (Optional) HRV from smartwatch via Apple Health/Google Fit
+
+---
+
+## 5️⃣ **Recommended tech stack**
+
+| Component | Technology                        |
+|------------|-----------------------------------|
 | UI Web/App | ViteJS + React + Tailwind         |
-| Mobile     | React Native / Capacitor (fase 2) |
+| Mobile     | React Native / Capacitor (phase 2) |
 | Backend    | Supabase (auth, storage, DB, RLS) |
 | Billing    | Outseta + Stripe                  |
 | Analytics  | Mixpanel / PostHog                |
@@ -87,12 +89,12 @@ Creare un’app (web/mobile) che aiuti le persone a riequilibrare il sistema ner
 
 ---
 
-## 6️⃣ **Struttura cartelle (ipotetica)**
+## 6️⃣ **Folder structure (hypothetical)**
 
 ```
 /app
   /web (vitejs)
-  /mobile (react-native - fase 2)
+  /mobile (react-native - phase 2)
   /packages
     /ui
     /supabase
@@ -109,22 +111,22 @@ Creare un’app (web/mobile) che aiuti le persone a riequilibrare il sistema ner
 
 ---
 
-## 7️⃣ **Roadmap Progetto**
+## 7️⃣ **Project roadmap**
 
-| Fase | Obiettivo                         |
-| ---- | --------------------------------- |
-| ⚙️ 0 | Nome, branding, disclaimer legale |
-| 🚀 1 | MVP: sessioni + tracking base     |
-| 📊 2 | HRV / AI personalizzazione        |
+| Phase | Goal                              |
+|------|-----------------------------------|
+| ⚙️ 0 | Name, branding, legal disclaimer  |
+| 🚀 1 | MVP: sessions + basic tracking    |
+| 📊 2 | HRV / AI personalization          |
 | 🤝 3 | Coach dashboard + community       |
 | 🔌 4 | Hardware companion                |
-| 🧪 5 | Trial clinico / medical device    |
+| 🧪 5 | Clinical trial / medical device   |
 
 ---
 
-## 8️⃣ **Possibile Naming & Branding**
+## 8️⃣ **Possible naming & branding**
 
-Esempi:
+Examples:
 
 * **VAGUS.ONE**
 * **RESET**
@@ -132,22 +134,23 @@ Esempi:
 * **VAGALITY**
 * **RECALIBRA**
 
-Palette: blu profondi + verde acqua → parasimpatico / calma
+Palette: deep blues + aqua green → parasympathetic / calm
 Font: Julius Sans One / Inter / Source Sans Pro
 
 ---
 
-## 9️⃣ **Monetizzazione**
+## 9️⃣ **Monetization**
 
-* Freemium → respirazione + tracking base
-* Premium → protocolli avanzati + acqua / movimento
-* AI Coaching + report settimanali
-* Pacchetti → “30 giorni per attivare il tuo nervo vago”
-* Dashboard per terapisti (B2B)
+* Freemium → breathing + basic tracking
+* Premium → advanced protocols + water / movement
+* AI Coaching + weekly reports
+* Packages → “30 days to activate your vagus nerve”
+* Therapist dashboard (B2B)
 
 ---
 
-✔ Pronto da salvare e usare come base per il progetto.
-👉 Posso anche generarti **schema Supabase** o **protocol.json** per gli esercizi. Oppure WINDsurf rules per il monorepo.
+✔ Ready to save and use as a starting point for the project.
+👉 I can also generate a **Supabase schema** or an **exercise protocol.json**. Or Windsurf rules for the monorepo.
 
-Dimmi cosa vuoi creare per primo! 🚀
+Tell me what you want to build first!
+

@@ -7,24 +7,22 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Button } from '../../components';
 import { useScreening } from '../../hooks';
 
 export const ScreeningStressScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
   const { saveScreeningProfile, isLoading } = useScreening();
   const [stressLevel, setStressLevel] = useState(5);
 
   const handleComplete = async () => {
     const { error } = await saveScreeningProfile({ initial_stress_level: stressLevel });
-    
+
     if (error) {
       Alert.alert('Error', 'Failed to save your profile. Please try again.');
       return;
     }
-    
+
     // The RootNavigator will automatically redirect to Main since onboarding_completed is now true
   };
 

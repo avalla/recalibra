@@ -1,0 +1,28 @@
+{
+  "name": "recalibra-web",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "bunx --bun vite",
+    "build": "bunx --bun vite build",
+    "preview": "bunx --bun vite preview"
+  },
+  "dependencies": {
+    "marked": "^17.0.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "wouter": "^3.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.0",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react-swc": "^3.7.2",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.2",
+    "vite": "^5.4.21"
+  }
+}

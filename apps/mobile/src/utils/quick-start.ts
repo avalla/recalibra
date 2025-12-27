@@ -57,12 +57,20 @@ function normalizeText(value: string): string {
   return value.trim().toLowerCase();
 }
 
-function pickStandard2MinExercise(exercises: ExerciseWithFavorite[]): ExerciseWithFavorite | undefined {
-  const exact2 = exercises.find((e) => e.duration_minutes === 2);
-  if (exact2) return exact2;
+function pickStandard2MinExercise(
+  exercises: ExerciseWithFavorite[],
+  context: QuickStartContext
+): ExerciseWithFavorite | undefined {
+  const exact2 = exercises.filter((e) => e.is_active && e.duration_minutes === 2);
+  if (exact2.length > 0) {
+    const dayKey = context.now.toISOString().slice(0, 10);
+    const index =
+      [...dayKey].reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % exact2.length;
+    return exact2[index];
+  }
 
   const under3 = exercises
-    .filter((e) => e.duration_minutes <= 3)
+    .filter((e) => e.is_active && e.duration_minutes <= 3)
     .sort((a, b) => a.duration_minutes - b.duration_minutes);
   if (under3.length > 0) return under3[0];
 
@@ -156,7 +164,7 @@ export function getExerciseForQuickStart(
 
   switch (preference.mode) {
     case 'standard_2min':
-      return pickStandard2MinExercise(exercises);
+      return pickStandard2MinExercise(exercises, context);
     case 'favorite':
       return pickFavoriteExercise(exercises, preference.favoriteExerciseId);
     case 'smart':

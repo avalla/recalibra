@@ -34,14 +34,13 @@ export type BreathingPatternParam = {
   cycles?: number;
 };
 
-export type ExerciseStackParamList = {
-  ExerciseCatalog: undefined;
+export type ExerciseFlowParamList = {
   ExerciseDetail: { exerciseId: string };
-  ExerciseSession: { 
-    exerciseId: string; 
-    exerciseName: string; 
-    durationMinutes: number; 
-    audioPreset: string; 
+  ExerciseSession: {
+    exerciseId: string;
+    exerciseName: string;
+    durationMinutes: number;
+    audioPreset: string;
     exerciseCategory?: 'breathing' | 'water' | 'movement' | 'sensory';
     breathingPattern?: BreathingPatternParam;
     origin?: string;
@@ -51,6 +50,10 @@ export type ExerciseStackParamList = {
     instructions?: { step: number; instruction: string }[];
   };
   PostSession: { sessionId: string; exerciseName: string; durationSeconds: number; preStressLevel: number };
+};
+
+export type ExerciseStackParamList = {
+  ExerciseCatalog: undefined;
 };
 
 // Progress Stack
@@ -71,6 +74,9 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Screening: NavigatorScreenParams<ScreeningStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
+  ExerciseDetail: ExerciseFlowParamList['ExerciseDetail'];
+  ExerciseSession: ExerciseFlowParamList['ExerciseSession'];
+  PostSession: ExerciseFlowParamList['PostSession'];
   Paywall: undefined;
   AccountUpgrade: undefined;
   QuickStartPreferences: { from?: 'home' | 'settings' } | undefined;

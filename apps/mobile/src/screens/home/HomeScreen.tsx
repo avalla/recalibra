@@ -1,16 +1,12 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Platform,
   RefreshControl,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Svg, Line, Circle, Polyline } from 'react-native-svg';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Card, Screen } from '../../components';
@@ -22,38 +18,20 @@ import {
   toExerciseSessionParams,
   type QuickStartPreference,
 } from '../../utils/quick-start';
+import { GREETING_PHRASES } from './home-constants';
+import { createStressTrend, getUserFirstName } from './home-helpers';
+import { useHomeAnimations } from './use-home-animations';
+import {
+  GreetingCard,
+  HomeHeader,
+  StartSessionButton,
+  StressTrendChart,
+  SuggestedExerciseCard,
+  TodayStatusCards,
+  WeeklyGoalsCard,
+} from './components';
 
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  withSequence,
-  withDelay,
-  interpolate,
-  Easing,
-  FadeIn,
-  FadeInDown,
-} from 'react-native-reanimated';
-
-// Motivational greeting phrases
-const GREETING_PHRASES = [
-  "let's recalibrate",
-  "time to breathe",
-  "find your calm",
-  "let's reset",
-  "take a moment",
-  "breathe with me",
-  "let's slow down",
-  "find your center",
-  "time to unwind",
-  "let's recharge",
-  "relax and breathe",
-  "let's reconnect",
-  "pause and reset",
-  "find your peace",
-  "let's decompress",
-];
+import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -64,41 +42,9 @@ export const HomeScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [quickStartPreference, setQuickStartPreference] = useState<QuickStartPreference | null>(null);
 
-  // Animation values
-  const breatheScale = useSharedValue(1);
-  const fadeValue = useSharedValue(0);
-  
-  // Breathing animation for the main button
-  useEffect(() => {
-    breatheScale.value = withRepeat(
-      withSequence(
-        withTiming(1.05, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
-  }, []);
-  
-  // Fade in animation on mount
-  useEffect(() => {
-    fadeValue.value = withTiming(1, { duration: 600, easing: Easing.out(Easing.ease) });
-  }, []);
-  
-  const animatedButtonStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: breatheScale.value }],
-    };
-  });
-  
-  const fadeStyle = useAnimatedStyle(() => {
-    return {
-      opacity: fadeValue.value,
-    };
-  });
+  const { animatedButtonStyle, fadeStyle } = useHomeAnimations();
 
-  // Get first name from full name
-  const userName = userMetadata?.full_name?.split(' ')[0] || 'there';
+  const userName = getUserFirstName(userMetadata?.full_name);
   
   // Random greeting phrase (memoized to stay consistent during session)
   const greetingPhrase = useMemo(() => {
@@ -127,13 +73,7 @@ export const HomeScreen: React.FC = () => {
     setRefreshing(false);
   };
   
-  // Generate mock stress trend data (last 7 days)
-  const stressTrend = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => ({
-      day: ['M', 'T', 'W', 'T', 'F', 'S', 'S'][i],
-      value: Math.floor(Math.random() * 40) + 20, // 20-60 stress level
-    }));
-  }, []);
+  const stressTrend = useMemo(() => createStressTrend(), []);
 
   const suggestedExercise = useMemo(() => {
     return exercises.find((e) => e.category === 'breathing') || exercises[0];
@@ -181,168 +121,41 @@ export const HomeScreen: React.FC = () => {
         }
       >
         {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).duration(500)} style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Ionicons name="leaf" size={24} color={Colors.primary} />
-            <Text style={styles.headerTitle}>Recalibra</Text>
-          </View>
-          <TouchableOpacity
-            onPress={handleQuickStart}
-            style={styles.quickStartButton}
-            activeOpacity={0.85}
-          >
-            {/* @ts-ignore - LinearGradient type issue with React 19 */}
-            <LinearGradient
-              colors={[Colors.primaryLight, Colors.primary, Colors.primaryDark] as any}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.quickStartGradient}
-            >
-              <Ionicons name="flash" size={16} color={Colors.background} style={styles.quickStartIcon} />
-              <Text style={styles.quickStartText}>Quick Start</Text>
-            </LinearGradient>
-          </TouchableOpacity>
+        <Animated.View entering={FadeInDown.delay(100).duration(500)}>
+          <HomeHeader onQuickStartPress={handleQuickStart} />
         </Animated.View>
 
         {/* Greeting with gradient background */}
         <Animated.View entering={FadeInDown.delay(200).duration(500)}>
-          {/* @ts-ignore - LinearGradient type issue with React 19 */}
-          <LinearGradient
-            colors={[Colors.primary + '20', Colors.background]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.greetingGradient}
-          >
-            <View style={styles.greeting}>
-              <Text style={styles.greetingTitle}>Hi {userName},</Text>
-              <Text style={styles.greetingSubtitle}>{greetingPhrase}</Text>
-              <View style={styles.greetingAccent} />
-            </View>
-          </LinearGradient>
+          <GreetingCard userName={userName} greetingPhrase={greetingPhrase} />
+        </Animated.View>
+
+        {/* Start Session Button */}
+        <Animated.View entering={FadeInDown.delay(700).duration(500)}>
+          <StartSessionButton
+            animatedStyle={animatedButtonStyle}
+            onPress={() =>
+              navigation.navigate('Main', {
+                screen: 'ExercisesTab',
+                params: {
+                  screen: 'ExerciseCatalog',
+                },
+              })
+            }
+          />
         </Animated.View>
 
         {/* Weekly Goals */}
         <Animated.View entering={FadeInDown.delay(300).duration(500)}>
           <Text style={styles.sectionTitle}>Weekly Goals</Text>
-          {/* @ts-ignore - LinearGradient type issue with React 19 */}
-          <LinearGradient
-            colors={[Colors.backgroundCard, Colors.backgroundCard + 'CC']}
-            style={styles.goalsCardGradient}
-          >
-            <View style={styles.goalsCard}>
-              <Animated.View style={[styles.goalRow, fadeStyle]}>
-                <View style={styles.goalInfo}>
-                  <Text style={styles.goalLabel}>Sessions</Text>
-                  <Text style={styles.goalProgress}>
-                    {weekProgress.sessionsCompleted}/{goals.sessionGoal}
-                  </Text>
-                </View>
-                <View style={styles.goalBarContainer}>
-                  <View style={styles.goalBarBackground}>
-                    <Animated.View 
-                      style={[
-                        styles.goalBar, 
-                        { 
-                          width: `${Math.min(weekProgress.sessionProgress * 100, 100)}%`,
-                          backgroundColor: weekProgress.sessionGoalMet ? Colors.success : Colors.primary
-                        }
-                      ]} 
-                    />
-                  </View>
-                  <Text style={styles.goalPercentage}>
-                    {Math.round(weekProgress.sessionProgress * 100)}%
-                  </Text>
-                </View>
-                {weekProgress.sessionGoalMet && (
-                  <Animated.View entering={FadeIn.delay(400)}>
-                    <View style={styles.goalCheckContainer}>
-                      <Ionicons name="checkmark-circle" size={24} color={Colors.success} />
-                    </View>
-                  </Animated.View>
-                )}
-              </Animated.View>
-              
-              <View style={styles.goalDivider} />
-              
-              <Animated.View style={[styles.goalRow, fadeStyle]}>
-                <View style={styles.goalInfo}>
-                  <Text style={styles.goalLabel}>Minutes</Text>
-                  <Text style={styles.goalProgress}>
-                    {weekProgress.minutesCompleted}/{goals.minutesGoal}
-                  </Text>
-                </View>
-                <View style={styles.goalBarContainer}>
-                  <View style={styles.goalBarBackground}>
-                    <Animated.View 
-                      style={[
-                        styles.goalBar, 
-                        { 
-                          width: `${Math.min(weekProgress.minutesProgress * 100, 100)}%`,
-                          backgroundColor: weekProgress.minutesGoalMet ? Colors.success : Colors.primary
-                        }
-                      ]} 
-                    />
-                  </View>
-                  <Text style={styles.goalPercentage}>
-                    {Math.round(weekProgress.minutesProgress * 100)}%
-                  </Text>
-                </View>
-                {weekProgress.minutesGoalMet && (
-                  <Animated.View entering={FadeIn.delay(400)}>
-                    <View style={styles.goalCheckContainer}>
-                      <Ionicons name="checkmark-circle" size={24} color={Colors.success} />
-                    </View>
-                  </Animated.View>
-                )}
-              </Animated.View>
-            </View>
-          </LinearGradient>
+          <WeeklyGoalsCard goals={goals} weekProgress={weekProgress} fadeStyle={fadeStyle} />
         </Animated.View>
 
         {/* Today's Status */}
         <Animated.View entering={FadeInDown.delay(400).duration(500)}>
           <Text style={styles.sectionTitle}>Today's status</Text>
-          <View style={styles.statusCards}>
-            <Animated.View entering={FadeIn.delay(500).duration(300)}>
-              <Card style={styles.statusCardEnhanced}>
-                <Ionicons name="fitness-outline" size={20} color={Colors.primary} style={styles.statusIcon} />
-                <Text style={styles.statusLabel}>Sessions</Text>
-                <Text style={styles.statusValue}>{stats.totalSessions}</Text>
-                <View style={styles.statusAccent} />
-              </Card>
-            </Animated.View>
-            <Animated.View entering={FadeIn.delay(600).duration(300)}>
-              <Card style={styles.statusCardEnhanced}>
-                <Ionicons name="time-outline" size={20} color={Colors.primary} style={styles.statusIcon} />
-                <Text style={styles.statusLabel}>Minutes</Text>
-                <Text style={styles.statusValue}>{stats.totalMinutes}</Text>
-                <View style={styles.statusAccent} />
-              </Card>
-            </Animated.View>
-          </View>
-        </Animated.View>
-
-        {/* Start Session Button */}
-        <Animated.View entering={FadeInDown.delay(700).duration(500)}>
-          <Animated.View style={[animatedButtonStyle, styles.startButtonContainer]}>
-            <TouchableOpacity
-              style={styles.startButton}
-              onPress={() =>
-                navigation.navigate('Main', {
-                  screen: 'ExercisesTab',
-                  params: {
-                    screen: 'ExerciseCatalog',
-                  },
-                })
-              }
-              activeOpacity={0.8}
-            >
-              <View style={styles.startButtonContent}>
-                <Ionicons name="play" size={24} color={Colors.background} style={styles.startIcon} />
-                <Text style={styles.startButtonText}>Start a Session</Text>
-              </View>
-              <View style={styles.startButtonGradient} />
-            </TouchableOpacity>
+          <Animated.View entering={FadeIn.delay(500).duration(300)}>
+            <TodayStatusCards totalSessions={stats.totalSessions} totalMinutes={stats.totalMinutes} />
           </Animated.View>
         </Animated.View>
 
@@ -350,8 +163,8 @@ export const HomeScreen: React.FC = () => {
         <Animated.View entering={FadeInDown.delay(800).duration(500)}>
           <Text style={styles.sectionTitle}>Suggested for you today</Text>
           {suggestedExercise && (
-            <TouchableOpacity
-              style={styles.suggestedCardWrapper}
+            <SuggestedExerciseCard
+              exercise={suggestedExercise}
               onPress={() =>
                 navigation.navigate('Main', {
                   screen: 'ExercisesTab',
@@ -373,97 +186,14 @@ export const HomeScreen: React.FC = () => {
                   },
                 })
               }
-            >
-              <Card style={styles.suggestedCard}>
-                <View style={styles.suggestedContent}>
-                  <View style={[styles.suggestedIcon, styles.suggestedIconEnhanced]}>
-                    <Ionicons name="body-outline" size={24} color={Colors.primary} />
-                  </View>
-                  <View style={styles.suggestedInfo}>
-                    <Text style={styles.suggestedTitle}>{suggestedExercise.name}</Text>
-                    <Text style={styles.suggestedDuration}>{suggestedExercise.duration_minutes} min</Text>
-                    <Text style={styles.suggestedCategory}>{suggestedExercise.category}</Text>
-                  </View>
-                  <View style={styles.suggestedArrow}>
-                    <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
-                  </View>
-                </View>
-              </Card>
-            </TouchableOpacity>
+            />
           )}
         </Animated.View>
 
         {/* Stress Trend */}
         <Animated.View entering={FadeInDown.delay(900).duration(500)}>
           <Text style={styles.sectionTitle}>Stress Trend</Text>
-          {/* @ts-ignore - LinearGradient type issue with React 19 */}
-          <LinearGradient
-            colors={[Colors.backgroundCard, Colors.backgroundCard + 'CC']}
-            style={styles.chartCardGradient}
-          >
-            <View style={styles.chartCard}>
-              <View style={styles.chartHeader}>
-                <Ionicons name="trending-down-outline" size={20} color={Colors.primary} />
-                <Text style={styles.chartTitle}>Last 7 days</Text>
-                <Text style={styles.chartValue}>
-                  {stats.avgStressReduction > 0 ? `-${stats.avgStressReduction}%` : 'No data'}
-                </Text>
-              </View>
-              <View style={styles.chartContainer}>
-                <Svg width="100%" height={120}>
-                  {/* Grid lines */}
-                  {Array.from({ length: 4 }, (_, i) => (
-                    <Line
-                      key={i}
-                      x1="0"
-                      y1={i * 30}
-                      x2="100%"
-                      y2={i * 30}
-                      stroke={Colors.border}
-                      strokeWidth="1"
-                      opacity="0.3"
-                    />
-                  ))}
-                  {/* Stress trend line */}
-                  <Polyline
-                    points={stressTrend
-                      .map((point, index) => {
-                        const x = (index / (stressTrend.length - 1)) * 100;
-                        const y = 120 - (point.value / 80) * 120;
-                        return `${x},${y}`;
-                      })
-                      .join(' ')}
-                    stroke={Colors.primary}
-                    strokeWidth="3"
-                    fill="none"
-                  />
-                  {/* Data points */}
-                  {stressTrend.map((point, index) => {
-                    const x = (index / (stressTrend.length - 1)) * 100;
-                    const y = 120 - (point.value / 80) * 120;
-                    return (
-                      <Circle
-                        key={index}
-                        cx={x + '%'}
-                        cy={y}
-                        r="4"
-                        fill={Colors.primary}
-                        stroke={Colors.background}
-                        strokeWidth="2"
-                      />
-                    );
-                  })}
-                </Svg>
-                <View style={styles.chartLabels}>
-                  {stressTrend.map((point, index) => (
-                    <Text key={index} style={styles.chartLabel}>
-                      {point.day}
-                    </Text>
-                  ))}
-                </View>
-              </View>
-            </View>
-          </LinearGradient>
+          <StressTrendChart stressTrend={stressTrend} avgStressReduction={stats.avgStressReduction} />
         </Animated.View>
       </ScrollView>
     </Screen>

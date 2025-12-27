@@ -5,47 +5,26 @@ import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 import {
   getCustomerInfo,
   checkPremiumStatus,
-  getExpirationDate,
   getOfferings,
   restorePurchases as rcRestorePurchases,
   addCustomerInfoUpdateListener,
-  getManagementURL,
   ENTITLEMENT_ID,
 } from '../lib/revenuecat';
 import { useAuth } from '../contexts';
+import {
+  canAccessAudio as canAccessAudioRule,
+  canAccessExercise as canAccessExerciseRule,
+  isAudioFree as isAudioFreeRule,
+  isExerciseFree as isExerciseFreeRule,
+  parseSubscriptionInfo,
+  type SubscriptionInfo,
+  type SubscriptionPlan,
+  type SubscriptionStatus,
+} from '../features/subscription';
 
-export type SubscriptionPlan = 'monthly' | 'yearly' | 'lifetime';
-export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'trial' | 'none';
+export type { SubscriptionPlan, SubscriptionStatus };
 
-interface SubscriptionInfo {
-  plan: SubscriptionPlan | null;
-  status: SubscriptionStatus;
-  expirationDate: Date | null;
-  managementURL: string | null;
-  willRenew: boolean;
-}
-
-// Premium features list
-export const PREMIUM_FEATURES = [
-  { icon: '🌍', title: 'All Traditions', description: '8 cultural breathing traditions' },
-  { icon: '🎵', title: 'All Audio', description: '19 ambient sounds & frequencies' },
-  { icon: '📊', title: 'Advanced Stats', description: 'Detailed progress tracking' },
-  { icon: '🎯', title: 'AI Recommendations', description: 'Personalized exercise suggestions' },
-  { icon: '📴', title: 'Offline Mode', description: 'Practice without internet' },
-  { icon: '🔔', title: 'Custom Reminders', description: 'Unlimited reminder settings' },
-];
-
-// Free exercises (hardcoded for quick checks)
-const FREE_EXERCISE_NAMES = [
-  'Box Breathing',
-  '4-7-8 Breathing',
-  'Diaphragmatic Breathing',
-  'Resonant Breathing',
-  'Physiological Sigh',
-];
-
-// Free audio presets
-const FREE_AUDIO_PRESETS = ['silence', 'nature_rain', 'binaural_alpha'];
+export { PREMIUM_FEATURES } from '../features/subscription';
 
 // ⚠️ DEVELOPMENT ONLY - Set to true to bypass RevenueCat and grant all users premium access
 const DEV_FORCE_PREMIUM = true;
@@ -64,25 +43,8 @@ export const useSubscription = () => {
     willRenew: false,
   });
 
-  // Parse customer info to subscription info
   const parseCustomerInfo = useCallback((info: CustomerInfo): SubscriptionInfo => {
-    const entitlement = info.entitlements.active[ENTITLEMENT_ID];
-    const isActive = entitlement?.isActive === true;
-    
-    let plan: SubscriptionPlan | null = null;
-    if (entitlement?.productIdentifier) {
-      if (entitlement.productIdentifier.includes('monthly')) plan = 'monthly';
-      else if (entitlement.productIdentifier.includes('yearly')) plan = 'yearly';
-      else if (entitlement.productIdentifier.includes('lifetime')) plan = 'lifetime';
-    }
-
-    return {
-      plan,
-      status: isActive ? 'active' : 'none',
-      expirationDate: entitlement?.expirationDate ? new Date(entitlement.expirationDate) : null,
-      managementURL: info.managementURL || null,
-      willRenew: entitlement?.willRenew === true,
-    };
+    return parseSubscriptionInfo(info, { entitlementId: ENTITLEMENT_ID });
   }, []);
 
   // Fetch subscription status from RevenueCat
@@ -128,30 +90,27 @@ export const useSubscription = () => {
     return unsubscribe;
   }, [fetchSubscription, parseCustomerInfo]);
 
-  // Check if specific exercise is free
   const isExerciseFree = useCallback((exerciseName: string, isPremiumFlag?: boolean) => {
-    if (isPremiumFlag === false) return true;
-    return FREE_EXERCISE_NAMES.some(name => 
-      exerciseName.toLowerCase().includes(name.toLowerCase())
-    );
+    return isExerciseFreeRule(exerciseName, isPremiumFlag);
   }, []);
 
-  // Check if specific audio is free
   const isAudioFree = useCallback((audioPresetId: string) => {
-    return FREE_AUDIO_PRESETS.includes(audioPresetId);
+    return isAudioFreeRule(audioPresetId);
   }, []);
 
-  // Check if user can access exercise
-  const canAccessExercise = useCallback((exerciseName: string, isPremiumFlag?: boolean) => {
-    if (isPremium) return true;
-    return isExerciseFree(exerciseName, isPremiumFlag);
-  }, [isPremium, isExerciseFree]);
+  const canAccessExercise = useCallback(
+    (exerciseName: string, isPremiumFlag?: boolean) => {
+      return canAccessExerciseRule(isPremium, exerciseName, isPremiumFlag);
+    },
+    [isPremium]
+  );
 
-  // Check if user can access audio
-  const canAccessAudio = useCallback((audioPresetId: string) => {
-    if (isPremium) return true;
-    return isAudioFree(audioPresetId);
-  }, [isPremium, isAudioFree]);
+  const canAccessAudio = useCallback(
+    (audioPresetId: string) => {
+      return canAccessAudioRule(isPremium, audioPresetId);
+    },
+    [isPremium]
+  );
 
   /**
    * Present RevenueCat native paywall

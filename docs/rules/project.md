@@ -13,22 +13,25 @@ TECH STACK:
 - Mobile via React Native
 - Mixpanel analytics
 - AI via LangChain
-- Queue / background jobs via BullMQ + Redis
 
-DATA LAYER (IN TRANSITION):
+PROJECT STATUS:
 
-- The app is migrating away from Supabase-backed data storage toward a smaller local SQLite database.
-- Supabase may still exist in the codebase for legacy data/auth flows; do not expand Supabase usage for new features unless explicitly requested.
+- App is in active testing and not published.
+- Refactors are allowed; prioritize maintainability and correctness.
+
+DATA LAYER:
+
+- No remote data sources.
+- Prefer local SQLite for persistent, user-owned data.
+- Supabase may still exist in the codebase for legacy/unused flows; do not expand Supabase usage unless explicitly requested.
 
 REPOSITORY STRUCTURE:
 
 - monorepo with:
   /apps/mobile
-  /supabase
   /docs
 
 - mobile app lives in /apps/mobile
-- legacy Supabase schema/migrations may still live in /supabase during the migration
 
 CODING CONVENTIONS:
 
@@ -68,8 +71,7 @@ When I request something, output only:
 - complete files, not excerpts
 
 If I ask for UI, generate React components with Tailwind.
-If I ask for backend, generate Supabase SQL + API handlers.
-If I ask for queue, generate BullMQ queues + workers.
+If I ask for backend, generate SQL + API handlers.
 
 Never produce half-implemented components.
 

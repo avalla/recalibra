@@ -16,7 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Screen } from '../../components';
 import { useAppleHealth, useSubscription } from '../../hooks';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '@/contexts';
 
 const HEALTH_SYNC_KEY = '@recalibra:health_sync_enabled';
 
@@ -24,9 +24,9 @@ export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { user, signOut } = useAuth();
   const { isPremium } = useSubscription();
-  const { 
-    isAvailable: healthAvailable, 
-    isAuthorized: healthAuthorized, 
+  const {
+    isAvailable: healthAvailable,
+    isAuthorized: healthAuthorized,
     requestAuthorization,
     getAverageHRV,
     getLatestHRV,
@@ -64,7 +64,7 @@ export const SettingsScreen: React.FC = () => {
       setIsLoadingHealth(true);
       const success = await requestAuthorization();
       setIsLoadingHealth(false);
-      
+
       if (!success) {
         Alert.alert(
           'Authorization Required',
@@ -77,7 +77,7 @@ export const SettingsScreen: React.FC = () => {
         return;
       }
     }
-    
+
     setHealthSyncEnabled(value);
     await AsyncStorage.setItem(HEALTH_SYNC_KEY, value ? 'true' : 'false');
   };
@@ -108,7 +108,7 @@ export const SettingsScreen: React.FC = () => {
         {Platform.OS === 'ios' && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Apple Health</Text>
-            
+
             <View style={styles.settingRow}>
               <View style={styles.settingInfo}>
                 <Ionicons name="heart" size={24} color={Colors.error} />
@@ -157,7 +157,7 @@ export const SettingsScreen: React.FC = () => {
         {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
-          
+
           <View style={styles.settingRow}>
             <View style={styles.settingInfo}>
               <Ionicons name="person" size={24} color={Colors.primary} />
@@ -201,7 +201,7 @@ export const SettingsScreen: React.FC = () => {
             </View>
             <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.settingRow}>
             <View style={styles.settingInfo}>
               <Ionicons name="document-text" size={24} color={Colors.textMuted} />

@@ -16,10 +16,10 @@ import { useNavigation } from '@react-navigation/native';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Screen } from '../../components';
 import { useAuth } from '../../contexts';
-import { useNotifications } from '../../hooks/useNotifications';
-import { useSubscription } from '../../hooks/useSubscription';
-import { useAppleHealth } from '../../hooks/useAppleHealth';
-import { useHaptics } from '../../hooks/useHaptics';
+import { useNotifications } from '@/hooks';
+import { useSubscription } from '@/hooks';
+import { useAppleHealth } from '@/hooks';
+import { useHaptics } from '@/hooks';
 
 interface SettingsItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -85,21 +85,21 @@ export const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { isPremium, subscription, presentPaywall, presentCustomerCenter } = useSubscription();
   const { reminderSettings, saveSettings, sendTestNotification } = useNotifications();
-  const { 
-    isAvailable: healthAvailable, 
-    isAuthorized: healthAuthorized, 
+  const {
+    isAvailable: healthAvailable,
+    isAuthorized: healthAuthorized,
     requestAuthorization,
     getLatestHRV,
     getAverageHRV,
   } = useAppleHealth();
   const { isEnabled: hapticEnabled, setEnabled: setHapticEnabled, medium: hapticMedium } = useHaptics();
-  
+
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [showGoalsModal, setShowGoalsModal] = useState(false);
   const [weeklySessionGoal, setWeeklySessionGoal] = useState(3);
   const [latestHRV, setLatestHRV] = useState<number | null>(null);
   const [avgHRV, setAvgHRV] = useState<number | null>(null);
-  
+
   // Fetch HRV data when authorized
   useEffect(() => {
     const fetchHRVData = async () => {
@@ -112,7 +112,7 @@ export const ProfileScreen: React.FC = () => {
     };
     fetchHRVData();
   }, [healthAuthorized, getLatestHRV, getAverageHRV]);
-  
+
   const handleHealthToggle = async (value: boolean) => {
     if (!value) {
       Alert.alert(
@@ -164,9 +164,9 @@ export const ProfileScreen: React.FC = () => {
   const formatReminderDays = () => {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     if (reminderSettings.days.length === 7) return 'Every day';
-    if (reminderSettings.days.length === 5 && 
+    if (reminderSettings.days.length === 5 &&
         reminderSettings.days.every((d: number) => d >= 1 && d <= 5)) return 'Weekdays';
-    if (reminderSettings.days.length === 2 && 
+    if (reminderSettings.days.length === 2 &&
         reminderSettings.days.includes(0) && reminderSettings.days.includes(6)) return 'Weekends';
     return reminderSettings.days.map((n: number) => dayNames[n]).join(', ');
   };
@@ -210,8 +210,8 @@ export const ProfileScreen: React.FC = () => {
       'We will prepare your data export and send it to your email address.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Export', 
+        {
+          text: 'Export',
           onPress: () => {
             Alert.alert('Export Requested', 'You will receive an email with your data within 24 hours.');
           }
@@ -226,8 +226,8 @@ export const ProfileScreen: React.FC = () => {
       'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
+        {
+          text: 'Delete',
           style: 'destructive',
           onPress: () => {
             Alert.alert(
@@ -296,10 +296,10 @@ export const ProfileScreen: React.FC = () => {
             </View>
             <Text style={styles.premiumTitle}>You're Premium!</Text>
             <Text style={styles.premiumSubtitle}>
-              {subscription?.plan === 'lifetime' ? 'Lifetime access' : 
+              {subscription?.plan === 'lifetime' ? 'Lifetime access' :
                subscription?.plan === 'yearly' ? 'Yearly subscription' : 'Monthly subscription'}
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.manageButton}
               onPress={presentCustomerCenter}
             >
@@ -307,7 +307,7 @@ export const ProfileScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         ) : (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.upgradeCard}
             onPress={presentPaywall}
           >
@@ -469,7 +469,7 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Reminder Settings</Text>
-            
+
             <Text style={styles.modalLabel}>Time</Text>
             <View style={styles.timeRow}>
               {['07:00', '08:00', '09:00', '12:00', '18:00', '20:00'].map((time) => (
@@ -528,7 +528,7 @@ export const ProfileScreen: React.FC = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Weekly Goals</Text>
-            
+
             <Text style={styles.modalLabel}>Sessions per Week</Text>
             <View style={styles.goalRow}>
               <TouchableOpacity

@@ -8,7 +8,8 @@ import {
   Animated, 
   ScrollView,
   Dimensions,
-  Alert
+  Alert,
+  AppState
  } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { useSessions, useAudio, getAudioRecommendation, useHaptics } from '../../hooks';
 import type { AudioPresetKey, ExerciseCategory } from '../../hooks';
-import type { ExerciseStackParamList } from '../../types';
+import type { RootStackParamList } from '../../types';
 import { Screen } from '../../components';
 import { TutorialOverlay } from '../../components/TutorialOverlay';
 import { OriginIcon } from '../../components/OriginIcon';
@@ -58,7 +59,7 @@ const DEFAULT_PATTERN: BreathingPattern = {
   rest: 0,
 };
 
-type SessionRouteProps = RouteProp<ExerciseStackParamList, 'ExerciseSession'>;
+type SessionRouteProps = RouteProp<RootStackParamList, 'ExerciseSession'>;
 
 export const ExerciseSessionScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -100,18 +101,23 @@ export const ExerciseSessionScreen: React.FC = () => {
   const defaultSteps = ['Follow the circle animation on screen', 'Inhale when the circle expands', 'Exhale when the circle contracts', 'Hold when indicated'];
   const defaultTips = ['Find a quiet, comfortable place', 'Practice regularly for best results', 'Stop if you feel dizzy'];
 
-  const exerciseSteps = dbInstructions?.map(i => i.instruction) || defaultSteps;
+  const exerciseSteps =
+    dbInstructions?.map((i: { instruction: string }) => i.instruction) || defaultSteps;
   const exerciseTips = dbTips || defaultTips;
 
   // Audio selection state - user can override the default from exercise
-  const [selectedAudioId, setSelectedAudioId] = useState<string>(audioPreset || 'silence');
+  const [selectedAudioId, setSelectedAudioId] = useState<AudioPresetKey>(() => {
+    if (!audioPreset) return 'silence';
+    const isValidPreset = AUDIO_OPTIONS.some((option: AudioOption) => option.id === audioPreset);
+    return isValidPreset ? (audioPreset as AudioPresetKey) : 'silence';
+  });
   const [audioRecommendation, setAudioRecommendation] = useState<{
     primary: AudioPresetKey;
     reason: string;
   } | null>(null);
 
   // Audio hook - use the user-selected audio
-  const audioPresetKey = selectedAudioId as AudioPresetKey;
+  const audioPresetKey = selectedAudioId;
   console.log('[ExerciseSession] Selected audio:', selectedAudioId, '-> key:', audioPresetKey);
 
   const [audioVolume, setAudioVolume] = useState(0.7);
@@ -135,7 +141,7 @@ export const ExerciseSessionScreen: React.FC = () => {
         title: 'Benefits',
         subtitle: 'What you\'ll experience',
         description: exerciseInfo.benefits
-          .map((benefit, index) => `${index + 1}. ${benefit}`)
+          .map((benefit: string, index: number) => `${index + 1}. ${benefit}`)
           .join('\n'),
         icon: 'heart-outline',
       },
@@ -170,15 +176,14 @@ export const ExerciseSessionScreen: React.FC = () => {
       });
     });
 
-    exerciseTips.forEach((tip: string, index: number) => {
+    if (exerciseTips.length > 0) {
       pages.push({
-        title: `Tip ${index + 1}`,
+        title: 'Tips',
         subtitle: 'Small details that help',
-        customContent: 'singleTip',
-        payload: { text: tip },
+        customContent: 'tipsList',
         icon: 'bulb-outline',
       });
-    });
+    }
 
     return pages;
   }, [exerciseName, exerciseInfo.benefits, exerciseInfo.history, exerciseInfo.origin, exerciseSteps, exerciseTips]);
@@ -316,6 +321,31 @@ export const ExerciseSessionScreen: React.FC = () => {
             <View style={styles.tipItem}>
               <Ionicons name="bulb" size={20} color="#FFA500" style={styles.tipItemIcon} />
               <Text style={styles.tipItemText}>{currentPageData.payload?.text}</Text>
+            </View>
+          </View>
+        );
+
+      case 'tipsList':
+        return (
+          <View style={styles.customContentContainer}>
+            <Ionicons
+              name={currentPageData.icon as any}
+              size={60}
+              color={Colors.primary}
+              style={styles.customContentIcon}
+            />
+            <Text style={styles.onboardingTitle}>{currentPageData.title}</Text>
+            <Text style={styles.onboardingSubtitle}>{currentPageData.subtitle}</Text>
+
+            <View style={styles.setupScroll}>
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.tipsListContent}>
+                {exerciseTips.map((tip: string, index: number) => (
+                  <View key={`${index}-${tip}`} style={styles.tipItem}>
+                    <Ionicons name="bulb" size={20} color="#FFA500" style={styles.tipItemIcon} />
+                    <Text style={styles.tipItemText}>{tip}</Text>
+                  </View>
+                ))}
+              </ScrollView>
             </View>
           </View>
         );
@@ -484,21 +514,27 @@ export const ExerciseSessionScreen: React.FC = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const sessionDuration = durationMinutes * 60;
 
+  const sessionStartedAtMsRef = useRef<number | null>(null);
+  const pausedAtMsRef = useRef<number | null>(null);
+  const pausedTotalMsRef = useRef<number>(0);
+  const isAutoPausingRef = useRef(false);
+
   const isPlaying = sessionState === 'playing';
 
   const scaleAnim = useRef(new Animated.Value(0.6)).current;
+  const phaseTextOpacityAnim = useRef(new Animated.Value(1)).current;
 
   // Get label for current phase (with special pattern support)
   const getPhaseLabel = (phase: BreathingPhase): string => {
     // Special labels based on pattern type
     if (pattern.special === 'humming' && phase === 'exhale') {
-      return 'Hum 🐝';
+      return 'Hum ';
     }
     if (pattern.special === 'roar' && phase === 'exhale') {
-      return 'Roar 🦁';
+      return 'Roar ';
     }
     if (pattern.special === 'ha_sound' && phase === 'exhale') {
-      return 'HA! 🌺';
+      return 'HA! ';
     }
 
     switch (phase) {
@@ -516,6 +552,46 @@ export const ExerciseSessionScreen: React.FC = () => {
         return 'Hold Empty'; // For Wim Hof retention
       default:
         return 'Breathe';
+    }
+  };
+
+  const getPhaseCoachLine = (phase: BreathingPhase): string => {
+    if (pattern.special === 'humming' && phase === 'exhale') {
+      return 'Exhale with a gentle hum.';
+    }
+    if (pattern.special === 'roar' && phase === 'exhale') {
+      return 'Exhale with a relaxed roar.';
+    }
+    if (pattern.special === 'ha_sound' && phase === 'exhale') {
+      return 'Exhale and let out a soft “HA”.';
+    }
+    if (pattern.special === 'double_inhale') {
+      if (phase === 'inhale') return 'Inhale gently through the nose.';
+      if (phase === 'inhale2') return 'Top up with a quick sip of air.';
+      if (phase === 'exhale') return 'Long, slow exhale.';
+      if (phase === 'rest') return 'Pause and relax your shoulders.';
+    }
+    if (pattern.special === 'wim_hof') {
+      if (phase === 'inhale') return 'Deep inhale into the belly and chest.';
+      if (phase === 'exhale') return 'Let it go (no force).';
+      if (phase === 'retention') return 'Hold after exhale. Stay relaxed.';
+    }
+
+    switch (phase) {
+      case 'inhale':
+        return 'Inhale slowly through the nose.';
+      case 'inhale2':
+        return 'A second, smaller inhale.';
+      case 'hold':
+        return 'Stay still. Soften your face.';
+      case 'exhale':
+        return 'Exhale gently and fully.';
+      case 'rest':
+        return 'Rest. Let the breath settle.';
+      case 'retention':
+        return 'Hold on empty. Stay calm.';
+      default:
+        return 'Follow the circle.';
     }
   };
 
@@ -631,32 +707,82 @@ export const ExerciseSessionScreen: React.FC = () => {
     }).start();
   }, [currentPhase, isPlaying]);
 
+  useEffect(() => {
+    if (!isPlaying) return;
+    phaseTextOpacityAnim.setValue(0);
+    Animated.timing(phaseTextOpacityAnim, {
+      toValue: 1,
+      duration: 260,
+      useNativeDriver: true,
+    }).start();
+  }, [currentPhase, isPlaying, phaseTextOpacityAnim]);
+
   // Timer logic
   useEffect(() => {
     if (!isPlaying) return;
+
+    const ensureSessionStart = () => {
+      if (sessionStartedAtMsRef.current === null) {
+        sessionStartedAtMsRef.current = Date.now();
+        pausedTotalMsRef.current = 0;
+        pausedAtMsRef.current = null;
+      }
+      if (pausedAtMsRef.current !== null) {
+        pausedTotalMsRef.current += Date.now() - pausedAtMsRef.current;
+        pausedAtMsRef.current = null;
+      }
+    };
+
+    ensureSessionStart();
 
     const timer = setInterval(() => {
       setPhaseTime((prev) => {
         if (prev <= 1) {
           const nextPhase = getNextPhase(currentPhase);
           setCurrentPhase(nextPhase);
-          // Haptic feedback on phase change
           hapticBreathingPhase();
           return getPhaseDuration(nextPhase);
         }
         return prev - 1;
       });
 
-      setElapsedTime((prev) => {
-        if (prev >= sessionDuration - 1) {
-          return sessionDuration;
-        }
-        return prev + 1;
-      });
+      const startedAt = sessionStartedAtMsRef.current;
+      if (startedAt === null) return;
+
+      const elapsedSeconds = Math.floor(
+        (Date.now() - startedAt - pausedTotalMsRef.current) / 1000
+      );
+      const clampedElapsed = Math.min(sessionDuration, Math.max(0, elapsedSeconds));
+      setElapsedTime((prev) => (prev === clampedElapsed ? prev : clampedElapsed));
     }, 1000);
 
     return () => clearInterval(timer);
   }, [isPlaying, currentPhase]);
+
+  useEffect(() => {
+    if (sessionState !== 'paused') return;
+    if (pausedAtMsRef.current !== null) return;
+    if (sessionStartedAtMsRef.current === null) return;
+    pausedAtMsRef.current = Date.now();
+  }, [sessionState]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        isAutoPausingRef.current = false;
+        return;
+      }
+      if (sessionState !== 'playing') return;
+      if (isAutoPausingRef.current) return;
+      isAutoPausingRef.current = true;
+      pauseAudio();
+      setSessionState('paused');
+    });
+
+    return () => {
+      sub.remove();
+    };
+  }, [pauseAudio, sessionState]);
 
   // Handle session completion
   useEffect(() => {
@@ -668,7 +794,7 @@ export const ExerciseSessionScreen: React.FC = () => {
       navigation.replace('PostSession', {
         sessionId,
         exerciseName,
-        durationSeconds: sessionDuration,
+        durationSeconds: elapsedTime,
         preStressLevel,
       });
     }
@@ -805,6 +931,18 @@ export const ExerciseSessionScreen: React.FC = () => {
   const onboardingContentPaddingBottom = 140 + insets.bottom;
   const onboardingFooterPaddingBottom = Spacing.lg + insets.bottom;
 
+  const nextPhase = useMemo(() => getNextPhase(currentPhase), [currentPhase]);
+  const nowLabel = useMemo(() => getPhaseLabel(currentPhase), [currentPhase]);
+  const nextLabel = useMemo(() => getPhaseLabel(nextPhase), [nextPhase]);
+  const nowCoachLine = useMemo(() => getPhaseCoachLine(currentPhase), [currentPhase]);
+  const nextCoachLine = useMemo(() => getPhaseCoachLine(nextPhase), [nextPhase]);
+
+  const phaseTimeText = useMemo(() => {
+    if (sessionState === 'countdown') return '';
+    if (phaseTime <= 3) return `${phaseTime}s`;
+    return `~${phaseTime}s`;
+  }, [phaseTime, sessionState]);
+
   return (
     <Screen edges={['top']} disableGradient>
       <View style={styles.container}>
@@ -816,406 +954,419 @@ export const ExerciseSessionScreen: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-          {/* Content */}
-          <ScrollView
-            style={styles.onboardingContent}
-            contentContainerStyle={[
-              styles.onboardingContentInner,
-              { paddingBottom: onboardingContentPaddingBottom },
-            ]}
-            showsVerticalScrollIndicator={false}
-          >
-            {!activeOnboardingPage ? null : activeOnboardingPage.customContent ? (
-              renderCustomContent()
-            ) : (
-              // Standard content pages
-              <>
-                <Ionicons 
-                  name={activeOnboardingPage.icon as any} 
-                  size={80} 
-                  color={Colors.primary} 
-                  style={styles.onboardingIcon}
-                />
-                <Text style={styles.onboardingTitle}>
-                  {activeOnboardingPage.title}
-                </Text>
-                <Text style={styles.onboardingSubtitle}>
-                  {activeOnboardingPage.subtitle}
-                </Text>
-                <Text style={styles.onboardingDescription}>
-                  {activeOnboardingPage.description}
-                </Text>
-              </>
-            )}
-          </ScrollView>
-
-          <View style={styles.onboardingProgressContainer}>
-            <View style={styles.onboardingProgressTrack}>
-              <View
-                style={[
-                  styles.onboardingProgressFill,
-                  { width: `${((currentPage + 1) / onboardingPages.length) * 100}%` },
-                ]}
-              />
-            </View>
-            <Text style={styles.onboardingProgressText}>
-              {currentPage + 1}/{onboardingPages.length}
-            </Text>
-          </View>
-
-          {/* Navigation Buttons */}
-          <View style={[styles.onboardingFooter, { paddingBottom: onboardingFooterPaddingBottom }]}>
-            <TouchableOpacity
-              style={styles.nextButton}
-              onPress={handleNextPage}
+            {/* Content */}
+            <ScrollView
+              style={styles.onboardingContent}
+              contentContainerStyle={[
+                styles.onboardingContentInner,
+                { paddingBottom: onboardingContentPaddingBottom },
+              ]}
+              showsVerticalScrollIndicator={false}
             >
-              <LinearGradient
-                colors={['#667EEA', '#764BA2'] as any}
-                style={styles.nextButtonGradient}
-              >
-                <Text style={styles.nextButtonText}>
-                  {currentPage === onboardingPages.length - 1 ? 'Get Started' : 'Next'}
-                </Text>
-                <Ionicons
-                  name={currentPage === onboardingPages.length - 1 ? 'checkmark' : 'arrow-forward'}
-                  size={20}
-                  color={Colors.background}
-                />
-              </LinearGradient>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.mainContent}>
-          <TutorialOverlay
-            visible={showTutorial}
-            exerciseName={exerciseName}
-            exerciseCategory={exerciseCategory || 'default'}
-            origin={exerciseInfo.origin}
-            onClose={() => setShowTutorial(false)}
-            onStart={() => {
-              setShowTutorial(false);
-              if (sessionState === 'stress_prompt') {
-                handleStartSession();
-              }
-            }}
-          />
-
-          <View style={styles.header}>
-            <TouchableOpacity onPress={handleHeaderLeft} style={styles.headerIconButton}>
-              <Ionicons
-                name={sessionState === 'stress_prompt' && preSessionStep > 1 ? 'chevron-back' : 'close'}
-                size={22}
-                color={Colors.textPrimary}
-              />
-            </TouchableOpacity>
-            <View style={styles.headerTitleContainer}>
-              <Text style={styles.headerTitle} numberOfLines={1}>
-                {headerTitle}
-              </Text>
-              <View style={styles.headerMetaRow}>
-                <Text style={styles.headerSubtitle} numberOfLines={1}>
-                  {headerSubtitle}
-                </Text>
-              </View>
-            </View>
-            {sessionState === 'stress_prompt' ? (
-              <View style={styles.headerIconSpacer} />
-            ) : (
-              <TouchableOpacity
-                onPress={() => setShowExerciseInfo(true)}
-                style={styles.headerIconButton}
-                accessibilityLabel="Show instructions"
-              >
-                <Ionicons name="help-circle-outline" size={22} color={Colors.textPrimary} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View
-            style={[
-              styles.content,
-              sessionState === 'stress_prompt' && styles.contentPreSession,
-              { paddingBottom: bottomBarHeight },
-            ]}
-          >
-            {sessionState === 'stress_prompt' ? (
-              <View style={styles.setupFullContainer}>
-                {preSessionStep === 1 ? (
-                  <View style={styles.preSessionStepContainer}>
-                    <ScrollView
-                      showsVerticalScrollIndicator={false}
-                      contentContainerStyle={styles.preSessionInfoContent}
-                    >
-                      <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
-
-                      <Text style={styles.infoSectionTitle}>How to do it</Text>
-                      {exerciseSteps.map((step: string, index: number) => (
-                        <View key={index} style={styles.infoStepRow}>
-                          <View style={styles.infoStepNumber}>
-                            <Text style={styles.infoStepNumberText}>{index + 1}</Text>
-                          </View>
-                          <Text style={styles.infoStepText}>{step}</Text>
-                        </View>
-                      ))}
-
-                      {exerciseTips && exerciseTips.length > 0 && (
-                        <>
-                          <Text style={styles.infoSectionTitle}>💡 Tips</Text>
-                          {exerciseTips.map((tip: string, index: number) => (
-                            <Text key={index} style={styles.infoTip}>
-                              • {tip}
-                            </Text>
-                          ))}
-                        </>
-                      )}
-
-                      <Text style={styles.infoSectionTitle}>✓ Benefits</Text>
-                      <View style={styles.infoBenefits}>
-                        {exerciseInfo.benefits.map((benefit: string, idx: number) => (
-                          <View key={idx} style={styles.infoBenefitBadge}>
-                            <Text style={styles.infoBenefitText}>{benefit}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </ScrollView>
-
-                    <View style={styles.preSessionSpacer} />
-                  </View>
-                ) : preSessionStep === 2 ? (
-                  <View style={styles.preSessionStepContainer}>
-                    <View style={styles.stressList}>
-                      {[
-                        { level: 1, emoji: '😌', label: 'Calm', description: 'Relaxed and grounded' },
-                        { level: 5, emoji: '😐', label: 'Okay', description: 'Neutral / manageable' },
-                        { level: 9, emoji: '😰', label: 'Stressed', description: 'Tense or overwhelmed' },
-                      ].map((item) => {
-                        const isSelected = preStressLevel === item.level;
-                        return (
-                          <Pressable
-                            key={item.level}
-                            style={({ pressed }) => [
-                              styles.stressRow,
-                              isSelected && styles.stressRowActive,
-                              pressed && styles.stressRowPressed,
-                              pressed && isSelected && styles.stressRowPressedActive,
-                            ]}
-                            android_ripple={{ color: 'rgba(102, 126, 234, 0.18)' }}
-                            onPressIn={() => {
-                              hapticSelection();
-                            }}
-                            onPress={() => handleStressLevelChange(item.level)}
-                            hitSlop={12}
-                          >
-                            <View style={[styles.stressEmojiWrap, isSelected && styles.stressEmojiWrapActive]}>
-                              <Text style={styles.stressEmoji}>{item.emoji}</Text>
-                            </View>
-                            <View style={styles.stressTextCol}>
-                              <Text style={[styles.stressRowTitle, isSelected && styles.stressRowTitleActive]}>
-                                {item.label}
-                              </Text>
-                              <Text style={[styles.stressRowSubtitle, isSelected && styles.stressRowSubtitleActive]}>
-                                {item.description}
-                              </Text>
-                            </View>
-                            <View style={[styles.stressRadioOuter, isSelected && styles.stressRadioOuterActive]}>
-                              {isSelected && <View style={styles.stressRadioInner} />}
-                            </View>
-                          </Pressable>
-                        );
-                      })}
-                    </View>
-                    <Text style={styles.stressHint}>This helps personalize your session</Text>
-
-                    <View style={styles.preSessionSpacer} />
-                  </View>
-                ) : (
-                  <View style={styles.preSessionStepContainer}>
-                    <ScrollView
-                      showsVerticalScrollIndicator={false}
-                      contentContainerStyle={styles.preSessionAudioContent}
-                    >
-                      <View style={styles.audioSelectorContainer}>
-                        <AudioSelector
-                          selectedAudioId={selectedAudioId}
-                          onSelect={setSelectedAudioId}
-                          recommendedId={audioRecommendation?.primary}
-                          showPreviewButton
-                        />
-                      </View>
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
-            ) : (
-              <View style={styles.circleContainer}>
-                {sessionState === 'countdown' ? (
-                  <>
-                    <Text style={styles.countdownLabel}>Get Ready</Text>
-                    <Text style={styles.countdownValue}>{countdownValue}</Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.phaseLabel}>{getPhaseLabel(currentPhase)}</Text>
-                    <Text style={styles.phaseTime}>{phaseTime}s</Text>
-                  </>
-                )}
-
-              <View style={styles.circleWrapper}>
-                <View style={styles.outerRing}>
-                  <View style={[styles.progressArc, { transform: [{ rotate: `${progress * 360}deg` }] }]} />
-                </View>
-                <Animated.View style={[styles.breathingCircle, { transform: [{ scale: scaleAnim }] }]}>
-                  <View style={styles.innerCircle} />
-                </Animated.View>
-              </View>
-
-                <View style={styles.progressContainerInline}>
-                  <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-                  </View>
-                  <View style={styles.timeLabels}>
-                    <Text style={styles.timeLabel}>{formatTime(elapsedTime)}</Text>
-                    <Text style={styles.timeLabel}>{formatTime(sessionDuration)}</Text>
-                  </View>
-                </View>
-            </View>
-            )}
-          </View>
-
-          {showVolumeControl && sessionState !== 'stress_prompt' && (
-            <View style={[styles.volumePanel, { bottom: bottomBarHeight + Spacing.md }]}>
-              <View style={styles.volumeHeader}>
-                <Text style={styles.volumePanelTitle}>Volume</Text>
-                <TouchableOpacity onPress={() => setShowVolumeControl(false)}>
-                  <Ionicons name="close" size={20} color={Colors.textMuted} />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.volumeButtons}>
-                {volumeLevels.map((level) => (
-                  <TouchableOpacity
-                    key={level}
-                    style={[styles.volumeButton, audioVolume === level && styles.volumeButtonActive]}
-                    onPress={() => handleVolumeChange(level)}
-                  >
-                    <Ionicons
-                      name={level === 0 ? 'volume-mute' : level < 0.5 ? 'volume-low' : 'volume-high'}
-                      size={20}
-                      color={audioVolume === level ? Colors.background : Colors.textPrimary}
-                    />
-                    <Text
-                      style={[
-                        styles.volumeButtonText,
-                        audioVolume === level && styles.volumeButtonTextActive,
-                      ]}
-                    >
-                      {Math.round(level * 100)}%
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              {presetInfo && <Text style={styles.volumePresetName}>Playing: {presetInfo.name}</Text>}
-            </View>
-          )}
-
-          <View style={[styles.bottomControls, { paddingBottom: bottomBarPaddingBottom }]}>
-            {sessionState === 'stress_prompt' ? (
-              <TouchableOpacity
-                style={styles.primaryCta}
-                onPress={() => {
-                  if (preSessionStep < 3) {
-                    setPreSessionStep((prev) => ((prev + 1) as 1 | 2 | 3));
-                    return;
-                  }
-                  handleStartSession();
-                }}
-              >
-                {/* @ts-ignore - LinearGradient type issue with React 19 */}
-                <LinearGradient colors={['#667EEA', '#764BA2'] as any} style={styles.primaryCtaGradient}>
+              {!activeOnboardingPage ? null : activeOnboardingPage.customContent ? (
+                renderCustomContent()
+              ) : (
+                // Standard content pages
+                <>
                   <Ionicons
-                    name={preSessionStep < 3 ? 'chevron-forward' : 'play'}
+                    name={activeOnboardingPage.icon as any}
+                    size={80}
+                    color={Colors.primary}
+                    style={styles.onboardingIcon}
+                  />
+                  <Text style={styles.onboardingTitle}>
+                    {activeOnboardingPage.title}
+                  </Text>
+                  <Text style={styles.onboardingSubtitle}>
+                    {activeOnboardingPage.subtitle}
+                  </Text>
+                  <Text style={styles.onboardingDescription}>
+                    {activeOnboardingPage.description}
+                  </Text>
+                </>
+              )}
+            </ScrollView>
+
+            <View style={styles.onboardingProgressContainer}>
+              <View style={styles.onboardingProgressTrack}>
+                <View
+                  style={[
+                    styles.onboardingProgressFill,
+                    { width: `${((currentPage + 1) / onboardingPages.length) * 100}%` },
+                  ]}
+                />
+              </View>
+              <Text style={styles.onboardingProgressText}>
+                {currentPage + 1}/{onboardingPages.length}
+              </Text>
+            </View>
+
+            {/* Navigation Buttons */}
+            <View style={[styles.onboardingFooter, { paddingBottom: onboardingFooterPaddingBottom }]}>
+              <TouchableOpacity
+                style={styles.nextButton}
+                onPress={handleNextPage}
+              >
+                <LinearGradient
+                  colors={['#667EEA', '#764BA2'] as any}
+                  style={styles.nextButtonGradient}
+                >
+                  <Text style={styles.nextButtonText}>
+                    {currentPage === onboardingPages.length - 1 ? 'Get Started' : 'Next'}
+                  </Text>
+                  <Ionicons
+                    name={currentPage === onboardingPages.length - 1 ? 'checkmark' : 'arrow-forward'}
                     size={20}
                     color={Colors.background}
                   />
-                  <Text style={styles.primaryCtaText}>{preSessionStep < 3 ? 'Next' : 'Start'}</Text>
                 </LinearGradient>
               </TouchableOpacity>
-            ) : (
-              <View style={styles.controlRow}>
-                <TouchableOpacity
-                  style={[styles.controlButton, showVolumeControl && styles.controlButtonActive]}
-                  onPress={() => setShowVolumeControl(!showVolumeControl)}
-                >
-                  <Ionicons
-                    name={audioVolume === 0 ? 'volume-mute-outline' : 'volume-high-outline'}
-                    size={22}
-                    color={showVolumeControl ? Colors.primary : Colors.textPrimary}
-                  />
-                </TouchableOpacity>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.mainContent}>
+            <TutorialOverlay
+              visible={showTutorial}
+              exerciseName={exerciseName}
+              exerciseCategory={exerciseCategory || 'default'}
+              origin={exerciseInfo.origin}
+              onClose={() => setShowTutorial(false)}
+              onStart={() => {
+                setShowTutorial(false);
+                if (sessionState === 'stress_prompt') {
+                  handleStartSession();
+                }
+              }}
+            />
 
-                <TouchableOpacity style={styles.playButton} onPress={handlePlayPause}>
-                  <Ionicons name={isPlaying ? 'pause' : 'play'} size={28} color={Colors.background} />
-                </TouchableOpacity>
-
+            <View style={styles.header}>
+              <TouchableOpacity onPress={handleHeaderLeft} style={styles.headerIconButton}>
+                <Ionicons
+                  name={sessionState === 'stress_prompt' && preSessionStep > 1 ? 'chevron-back' : 'close'}
+                  size={22}
+                  color={Colors.textPrimary}
+                />
+              </TouchableOpacity>
+              <View style={styles.headerTitleContainer}>
+                <Text style={styles.headerTitle} numberOfLines={1}>
+                  {headerTitle}
+                </Text>
+                <View style={styles.headerMetaRow}>
+                  <Text style={styles.headerSubtitle} numberOfLines={1}>
+                    {headerSubtitle}
+                  </Text>
+                </View>
+              </View>
+              {sessionState === 'stress_prompt' ? (
+                <View style={styles.headerIconSpacer} />
+              ) : (
                 <TouchableOpacity
-                  style={[styles.controlButton, showExerciseInfo && styles.controlButtonActive]}
                   onPress={() => setShowExerciseInfo(true)}
+                  style={styles.headerIconButton}
+                  accessibilityLabel="Show instructions"
                 >
-                  <Ionicons name="information-circle-outline" size={22} color={Colors.textPrimary} />
+                  <Ionicons name="help-circle-outline" size={22} color={Colors.textPrimary} />
                 </TouchableOpacity>
+              )}
+            </View>
+
+            <View
+              style={[
+                styles.content,
+                sessionState === 'stress_prompt' && styles.contentPreSession,
+                { paddingBottom: bottomBarHeight },
+              ]}
+            >
+              {sessionState === 'stress_prompt' ? (
+                <View style={styles.setupFullContainer}>
+                  {preSessionStep === 1 ? (
+                    <View style={styles.preSessionStepContainer}>
+                      <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.preSessionInfoContent}
+                      >
+                        <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
+
+                        <Text style={styles.infoSectionTitle}>How to do it</Text>
+                        {exerciseSteps.map((step: string, index: number) => (
+                          <View key={index} style={styles.infoStepRow}>
+                            <View style={styles.infoStepNumber}>
+                              <Text style={styles.infoStepNumberText}>{index + 1}</Text>
+                            </View>
+                            <Text style={styles.infoStepText}>{step}</Text>
+                          </View>
+                        ))}
+
+                        {exerciseTips && exerciseTips.length > 0 && (
+                          <>
+                            <Text style={styles.infoSectionTitle}> Tips</Text>
+                            {exerciseTips.map((tip: string, index: number) => (
+                              <Text key={index} style={styles.infoTip}>
+                                • {tip}
+                              </Text>
+                            ))}
+                          </>
+                        )}
+
+                        <Text style={styles.infoSectionTitle}> Benefits</Text>
+                        <View style={styles.infoBenefits}>
+                          {exerciseInfo.benefits.map((benefit: string, idx: number) => (
+                            <View key={idx} style={styles.infoBenefitBadge}>
+                              <Text style={styles.infoBenefitText}>{benefit}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </ScrollView>
+
+                      <View style={styles.preSessionSpacer} />
+                    </View>
+                  ) : preSessionStep === 2 ? (
+                    <View style={styles.preSessionStepContainer}>
+                      <View style={styles.stressList}>
+                        {[
+                          { level: 1, emoji: '', label: 'Calm', description: 'Relaxed and grounded' },
+                          { level: 5, emoji: '', label: 'Okay', description: 'Neutral / manageable' },
+                          { level: 9, emoji: '', label: 'Stressed', description: 'Tense or overwhelmed' },
+                        ].map((item) => {
+                          const isSelected = preStressLevel === item.level;
+                          return (
+                            <Pressable
+                              key={item.level}
+                              style={({ pressed }) => [
+                                styles.stressRow,
+                                isSelected && styles.stressRowActive,
+                                pressed && styles.stressRowPressed,
+                                pressed && isSelected && styles.stressRowPressedActive,
+                              ]}
+                              android_ripple={{ color: 'rgba(102, 126, 234, 0.18)' }}
+                              onPressIn={() => {
+                                hapticSelection();
+                              }}
+                              onPress={() => handleStressLevelChange(item.level)}
+                              hitSlop={12}
+                            >
+                              <View style={[styles.stressEmojiWrap, isSelected && styles.stressEmojiWrapActive]}>
+                                <Text style={styles.stressEmoji}>{item.emoji}</Text>
+                              </View>
+                              <View style={styles.stressTextCol}>
+                                <Text style={[styles.stressRowTitle, isSelected && styles.stressRowTitleActive]}>
+                                  {item.label}
+                                </Text>
+                                <Text style={[styles.stressRowSubtitle, isSelected && styles.stressRowSubtitleActive]}>
+                                  {item.description}
+                                </Text>
+                              </View>
+                              <View style={[styles.stressRadioOuter, isSelected && styles.stressRadioOuterActive]}>
+                                {isSelected && <View style={styles.stressRadioInner} />}
+                              </View>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                      <Text style={styles.stressHint}>This helps personalize your session</Text>
+
+                      <View style={styles.preSessionSpacer} />
+                    </View>
+                  ) : (
+                    <View style={styles.preSessionStepContainer}>
+                      <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.preSessionAudioContent}
+                      >
+                        <View style={styles.audioSelectorContainer}>
+                          <AudioSelector
+                            selectedAudioId={selectedAudioId}
+                            onSelect={setSelectedAudioId}
+                            recommendedId={audioRecommendation?.primary}
+                            showPreviewButton
+                          />
+                        </View>
+                      </ScrollView>
+                    </View>
+                  )}
+                </View>
+              ) : (
+                <View style={styles.circleContainer}>
+                  {sessionState === 'countdown' ? (
+                    <>
+                      <Text style={styles.countdownLabel}>Get Ready</Text>
+                      <Text style={styles.countdownValue}>{countdownValue}</Text>
+                    </>
+                  ) : (
+                    <>
+                      <View style={styles.phaseGuidanceContainer}>
+                        <Text style={styles.guidanceCaption}>Now</Text>
+                        <Animated.Text style={[styles.phaseLabel, { opacity: phaseTextOpacityAnim }]}>
+                          {nowLabel}
+                        </Animated.Text>
+                        <Animated.Text style={[styles.phaseTime, { opacity: phaseTextOpacityAnim }]}>
+                          {phaseTimeText}
+                        </Animated.Text>
+                        <Animated.Text style={[styles.phaseCoachLine, { opacity: phaseTextOpacityAnim }]}>
+                          {nowCoachLine}
+                        </Animated.Text>
+                        <Text style={styles.guidanceCaption}>Next</Text>
+                        <Text style={styles.nextPhaseLabel}>{nextLabel}</Text>
+                        <Text style={styles.nextPhaseCoachLine}>{nextCoachLine}</Text>
+                      </View>
+                    </>
+                  )}
+
+                  <View style={styles.circleWrapper}>
+                    <View style={styles.outerRing}>
+                      <View style={[styles.progressArc, { transform: [{ rotate: `${progress * 360}deg` }] }]} />
+                    </View>
+                    <Animated.View style={[styles.breathingCircle, { transform: [{ scale: scaleAnim }] }]}>
+                      <View style={styles.innerCircle} />
+                    </Animated.View>
+                  </View>
+
+                  <View style={styles.progressContainerInline}>
+                    <View style={styles.progressBar}>
+                      <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
+                    </View>
+                    <View style={styles.timeLabels}>
+                      <Text style={styles.timeLabel}>{formatTime(elapsedTime)}</Text>
+                      <Text style={styles.timeLabel}>{formatTime(sessionDuration)}</Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+            </View>
+
+            {showVolumeControl && sessionState !== 'stress_prompt' && (
+              <View style={[styles.volumePanel, { bottom: bottomBarHeight + Spacing.md }]}>
+                <View style={styles.volumeHeader}>
+                  <Text style={styles.volumePanelTitle}>Volume</Text>
+                  <TouchableOpacity onPress={() => setShowVolumeControl(false)}>
+                    <Ionicons name="close" size={20} color={Colors.textMuted} />
+                  </TouchableOpacity>
+                </View>
+                <View style={styles.volumeButtons}>
+                  {volumeLevels.map((level) => (
+                    <TouchableOpacity
+                      key={level}
+                      style={[styles.volumeButton, audioVolume === level && styles.volumeButtonActive]}
+                      onPress={() => handleVolumeChange(level)}
+                    >
+                      <Ionicons
+                        name={level === 0 ? 'volume-mute' : level < 0.5 ? 'volume-low' : 'volume-high'}
+                        size={20}
+                        color={audioVolume === level ? Colors.background : Colors.textPrimary}
+                      />
+                      <Text
+                        style={[
+                          styles.volumeButtonText,
+                          audioVolume === level && styles.volumeButtonTextActive,
+                        ]}
+                      >
+                        {Math.round(level * 100)}%
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                {presetInfo && <Text style={styles.volumePresetName}>Playing: {presetInfo.name}</Text>}
+              </View>
+            )}
+
+            <View style={[styles.bottomControls, { paddingBottom: bottomBarPaddingBottom }]}>
+              {sessionState === 'stress_prompt' ? (
+                <TouchableOpacity
+                  style={styles.primaryCta}
+                  onPress={() => {
+                    if (preSessionStep < 3) {
+                      setPreSessionStep((prev) => ((prev + 1) as 1 | 2 | 3));
+                      return;
+                    }
+                    handleStartSession();
+                  }}
+                >
+                  {/* @ts-ignore - LinearGradient type issue with React 19 */}
+                  <LinearGradient colors={['#667EEA', '#764BA2'] as any} style={styles.primaryCtaGradient}>
+                    <Ionicons
+                      name={preSessionStep < 3 ? 'chevron-forward' : 'play'}
+                      size={20}
+                      color={Colors.background}
+                    />
+                    <Text style={styles.primaryCtaText}>{preSessionStep < 3 ? 'Next' : 'Start'}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.controlRow}>
+                  <TouchableOpacity
+                    style={[styles.controlButton, showVolumeControl && styles.controlButtonActive]}
+                    onPress={() => setShowVolumeControl(!showVolumeControl)}
+                  >
+                    <Ionicons
+                      name={audioVolume === 0 ? 'volume-mute-outline' : 'volume-high-outline'}
+                      size={22}
+                      color={showVolumeControl ? Colors.primary : Colors.textPrimary}
+                    />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.playButton} onPress={handlePlayPause}>
+                    <Ionicons name={isPlaying ? 'pause' : 'play'} size={28} color={Colors.background} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.controlButton, showExerciseInfo && styles.controlButtonActive]}
+                    onPress={() => setShowExerciseInfo(true)}
+                  >
+                    <Ionicons name="information-circle-outline" size={22} color={Colors.textPrimary} />
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {showExerciseInfo && (
+              <View style={styles.infoModalOverlay}>
+                <View style={styles.infoModalContent}>
+                  <ScrollView showsVerticalScrollIndicator={false}>
+                    <View style={styles.infoModalHeader}>
+                      <Text style={styles.infoModalTitle}>{exerciseName}</Text>
+                      <View style={styles.infoOriginBadge}>
+                        <OriginIcon origin={exerciseInfo.originKey} size={18} />
+                        <Text style={styles.originLabel}>{exerciseInfo.origin}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
+                    <Text style={styles.infoSectionTitle}>How to do it</Text>
+                    {exerciseSteps.map((step: string, index: number) => (
+                      <View key={index} style={styles.infoStepRow}>
+                        <View style={styles.infoStepNumber}>
+                          <Text style={styles.infoStepNumberText}>{index + 1}</Text>
+                        </View>
+                        <Text style={styles.infoStepText}>{step}</Text>
+                      </View>
+                    ))}
+                    {exerciseTips && exerciseTips.length > 0 && (
+                      <>
+                        <Text style={styles.infoSectionTitle}> Tips</Text>
+                        {exerciseTips.map((tip: string, index: number) => (
+                          <Text key={index} style={styles.infoTip}>
+                            • {tip}
+                          </Text>
+                        ))}
+                      </>
+                    )}
+                    <Text style={styles.infoSectionTitle}> Benefits</Text>
+                    <View style={styles.infoBenefits}>
+                      {exerciseInfo.benefits.map((benefit: string, idx: number) => (
+                        <View key={idx} style={styles.infoBenefitBadge}>
+                          <Text style={styles.infoBenefitText}>{benefit}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </ScrollView>
+
+                  <TouchableOpacity style={styles.infoModalClose} onPress={() => setShowExerciseInfo(false)}>
+                    <Text style={styles.infoModalCloseText}>Got it!</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           </View>
-
-          {showExerciseInfo && (
-            <View style={styles.infoModalOverlay}>
-              <View style={styles.infoModalContent}>
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  <View style={styles.infoModalHeader}>
-                    <Text style={styles.infoModalTitle}>{exerciseName}</Text>
-                    <View style={styles.infoOriginBadge}>
-                      <OriginIcon origin={exerciseInfo.originKey} size={18} />
-                      <Text style={styles.originLabel}>{exerciseInfo.origin}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
-                  <Text style={styles.infoSectionTitle}>How to do it</Text>
-                  {exerciseSteps.map((step: string, index: number) => (
-                    <View key={index} style={styles.infoStepRow}>
-                      <View style={styles.infoStepNumber}>
-                        <Text style={styles.infoStepNumberText}>{index + 1}</Text>
-                      </View>
-                      <Text style={styles.infoStepText}>{step}</Text>
-                    </View>
-                  ))}
-                  {exerciseTips && exerciseTips.length > 0 && (
-                    <>
-                      <Text style={styles.infoSectionTitle}>💡 Tips</Text>
-                      {exerciseTips.map((tip: string, index: number) => (
-                        <Text key={index} style={styles.infoTip}>
-                          • {tip}
-                        </Text>
-                      ))}
-                    </>
-                  )}
-                  <Text style={styles.infoSectionTitle}>✓ Benefits</Text>
-                  <View style={styles.infoBenefits}>
-                    {exerciseInfo.benefits.map((benefit: string, idx: number) => (
-                      <View key={idx} style={styles.infoBenefitBadge}>
-                        <Text style={styles.infoBenefitText}>{benefit}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </ScrollView>
-
-                <TouchableOpacity style={styles.infoModalClose} onPress={() => setShowExerciseInfo(false)}>
-                  <Text style={styles.infoModalCloseText}>Got it!</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        </View>
-      )}
+        )}
       </View>
     </Screen>
   );
@@ -1323,6 +1474,35 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: Spacing.xl,
     paddingHorizontal: Spacing.sm,
+  },
+  phaseGuidanceContainer: {
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  guidanceCaption: {
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
+    marginBottom: Spacing.xs,
+    letterSpacing: 0.2,
+  },
+  nextPhaseLabel: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.semibold,
+    marginBottom: Spacing.xs,
+  },
+  phaseCoachLine: {
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+  },
+  nextPhaseCoachLine: {
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
+    textAlign: 'center',
+    paddingHorizontal: Spacing.lg,
   },
   progressBar: {
     height: 4,
@@ -1559,6 +1739,10 @@ const styles = StyleSheet.create({
     maxHeight: 320,
   },
   setupScrollContent: {
+    paddingBottom: Spacing.md,
+    gap: Spacing.md,
+  },
+  tipsListContent: {
     paddingBottom: Spacing.md,
     gap: Spacing.md,
   },

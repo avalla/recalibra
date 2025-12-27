@@ -1,36 +1,17 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import type { UserMetadata } from '../types';
 import { getDeviceUUID, isFirstLaunch } from '../utils/device';
-
-interface LocalUser {
-  id: string;
-  email?: string;
-  is_anonymous?: boolean;
-  user_metadata?: UserMetadata;
-}
-
-interface LocalSession {
-  user: LocalUser;
-}
-
-interface AuthContextType {
-  session: LocalSession | null;
-  user: LocalUser | null;
-  userMetadata: UserMetadata | null;
-  isLoading: boolean;
-  isAnonymous: boolean;
-  onboardingCompleted: boolean;
-  deviceUUID: string | null;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<void>;
-  signInAnonymously: () => Promise<{ error: Error | null }>;
-  upgradeAccount: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
-  updateUserMetadata: (metadata: Partial<UserMetadata>) => Promise<{ error: Error | null }>;
-  completeOnboarding: () => Promise<void>;
-}
+import type { AuthContextType, LocalSession, LocalUser } from '../features/auth';
+import {
+  clearPersistedUser,
+  generateUserId,
+  loadCredentials,
+  loadOnboardingCompleted,
+  loadPersistedUser,
+  persistCredentials,
+  persistOnboardingCompleted,
+  persistUser,
+} from '../features/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -56,28 +37,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   console.log('🔍 AuthProvider render - onboardingCompleted:', onboardingCompleted);
 
-  const USER_STORAGE_KEY = '@recalibra:local_user_v1';
-  const CREDENTIALS_EMAIL_KEY = '@recalibra:credentials_email_v1';
-  const CREDENTIALS_PASSWORD_KEY = '@recalibra:credentials_password_v1';
-
-  const generateUserId = (uuid: string) => `local_${uuid}`;
-
-  const persistUser = async (nextUser: LocalUser) => {
-    await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUser));
-  };
-
-  const loadPersistedUser = async (): Promise<LocalUser | null> => {
-    const raw = await AsyncStorage.getItem(USER_STORAGE_KEY);
-    if (!raw) return null;
-    try {
-      const parsed = JSON.parse(raw) as LocalUser;
-      if (!parsed?.id) return null;
-      return parsed;
-    } catch {
-      return null;
-    }
-  };
-
   const setAuthenticatedUser = async (nextUser: LocalUser) => {
     const nextSession: LocalSession = { user: nextUser };
     setUser(nextUser);
@@ -90,9 +49,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Check onboarding status first
-        const onboardingStatus = await AsyncStorage.getItem('onboarding_completed');
-        setOnboardingCompleted(onboardingStatus === 'true');
+        const onboardingStatus = await loadOnboardingCompleted();
+        setOnboardingCompleted(onboardingStatus);
         
         // Get device UUID
         const uuid = await getDeviceUUID();
@@ -109,7 +67,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           id: generateUserId(uuid),
           is_anonymous: true,
           user_metadata: {
-            onboarding_completed: onboardingStatus === 'true',
+            onboarding_completed: onboardingStatus,
           },
         };
         await setAuthenticatedUser(anonymousUser);
@@ -134,8 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { error: new Error('Device UUID not available') };
       }
 
-      await SecureStore.setItemAsync(CREDENTIALS_EMAIL_KEY, email);
-      await SecureStore.setItemAsync(CREDENTIALS_PASSWORD_KEY, password);
+      await persistCredentials(email, password);
 
       const nextUser: LocalUser = {
         id: generateUserId(deviceUUID),
@@ -155,14 +112,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const storedEmail = await SecureStore.getItemAsync(CREDENTIALS_EMAIL_KEY);
-      const storedPassword = await SecureStore.getItemAsync(CREDENTIALS_PASSWORD_KEY);
-
-      if (!storedEmail || !storedPassword) {
+      const stored = await loadCredentials();
+      if (!stored) {
         return { error: new Error('No local account found') };
       }
 
-      if (storedEmail !== email || storedPassword !== password) {
+      if (stored.email !== email || stored.password !== password) {
         return { error: new Error('Invalid email or password') };
       }
 
@@ -188,7 +143,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     try {
-      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+      await clearPersistedUser();
     } finally {
       setSession(null);
       setUser(null);
@@ -225,8 +180,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
-      await SecureStore.setItemAsync(CREDENTIALS_EMAIL_KEY, email);
-      await SecureStore.setItemAsync(CREDENTIALS_PASSWORD_KEY, password);
+      await persistCredentials(email, password);
 
       const nextUser: LocalUser = {
         id: user.id,
@@ -262,7 +216,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await setAuthenticatedUser(nextUser);
 
       if (metadata.onboarding_completed === true) {
-        await AsyncStorage.setItem('onboarding_completed', 'true');
+        await persistOnboardingCompleted(true);
         setOnboardingCompleted(true);
       }
 
@@ -275,7 +229,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const completeOnboarding = async () => {
     console.log('🔍 completeOnboarding called');
     try {
-      await AsyncStorage.setItem('onboarding_completed', 'true');
+      await persistOnboardingCompleted(true);
       console.log('🔍 AsyncStorage updated');
       // Force a re-render by using a functional update
       setOnboardingCompleted(prev => {
