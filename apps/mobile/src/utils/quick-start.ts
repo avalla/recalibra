@@ -133,6 +133,23 @@ function scoreExerciseForSmartMode(exercise: ExerciseWithFavorite, context: Quic
     if (exercise.category === 'movement') score -= 1;
   }
 
+  if (exercise.objective === 'energy') {
+    if (isMorning) score += 4;
+    if (isEvening) score -= 4;
+  }
+  if (exercise.objective === 'relax') {
+    if (isMorning) score -= 1;
+    if (isEvening) score += 3;
+  }
+  if (exercise.objective === 'focus') {
+    if (!isMorning && !isEvening) score += 3;
+    if (isEvening) score -= 1;
+  }
+  if (exercise.objective === 'sleep') {
+    if (isEvening) score += 5;
+    if (!isEvening) score -= 4;
+  }
+
   const name = normalizeText(exercise.name);
   if (name.includes('2-minute') || name.includes('2 min') || name.includes('2min')) score += 1;
 

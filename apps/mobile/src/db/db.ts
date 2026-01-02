@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
 import { seedExercises } from '../data/exercises';
+import { buildUniqueSlugs } from '../data/slug';
 import { SCHEMA_SQL } from './schema';
 
 const DB_NAME = 'recalibra_v3.db';
@@ -22,6 +23,11 @@ export async function initDb(): Promise<void> {
   const db = await getDb();
 
   await db.execAsync(SCHEMA_SQL);
+
+  await ensureExercisesSlugColumn(db);
+  await ensureExercisesObjectiveColumn(db);
+  await ensureExercisesObjectiveBackfill(db);
+  await ensureExercisesMediaColumn(db);
 
   await ensureSeededExercises(db);
   await ensureDefaults(db);
@@ -51,19 +57,22 @@ async function ensureSeededExercises(db: SQLite.SQLiteDatabase): Promise<void> {
     for (const e of seedExercises) {
       await db.runAsync(
         `INSERT INTO exercises (
-          id, name, description, category, level, duration_minutes, image_url,
+          id, slug, name, description, category, objective, level, duration_minutes, image_url, media_json,
           instructions_json, safety_warning, audio_preset, origin,
           is_premium, is_active, breathing_pattern_json, history,
           benefits_json, tips_json, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)` ,
         [
           e.id,
+          e.slug,
           e.name,
           e.description,
           e.category,
+          e.objective,
           e.level,
           e.duration_minutes,
           e.image_url ?? null,
+          e.media ? JSON.stringify(e.media) : null,
           JSON.stringify(e.instructions ?? []),
           e.safety_warning ?? null,
           e.audio_preset,
@@ -78,6 +87,117 @@ async function ensureSeededExercises(db: SQLite.SQLiteDatabase): Promise<void> {
           e.updated_at,
         ]
       );
+    }
+  });
+}
+
+async function ensureExercisesMediaColumn(db: SQLite.SQLiteDatabase): Promise<void> {
+  const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(exercises)');
+  const hasMedia = columns.some((c) => c.name === 'media_json');
+  if (hasMedia) return;
+
+  await db.execAsync('ALTER TABLE exercises ADD COLUMN media_json TEXT;');
+}
+
+async function ensureExercisesSlugColumn(db: SQLite.SQLiteDatabase): Promise<void> {
+  const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(exercises)');
+  const hasSlug = columns.some((c) => c.name === 'slug');
+  if (!hasSlug) {
+    await db.execAsync("ALTER TABLE exercises ADD COLUMN slug TEXT NOT NULL DEFAULT '';");
+  }
+
+  const rows = await db.getAllAsync<{ id: string; name: string; slug: string }>('SELECT id, name, slug FROM exercises');
+  const seedSlugById = new Map(seedExercises.map((e) => [e.id, e.slug] as const));
+  const slugsById = buildUniqueSlugs(rows.map((r) => ({ id: r.id, name: r.name })));
+  const isLegacySlug = (value: string) => /-[0-9a-f]{8}$/.test(value);
+
+  await db.withTransactionAsync(async () => {
+    for (const r of rows) {
+      const current = (r.slug ?? '').trim();
+      if (current && !isLegacySlug(current)) continue;
+      const nextSlug = seedSlugById.get(r.id) ?? slugsById[r.id] ?? current;
+      if (!nextSlug) continue;
+      await db.runAsync('UPDATE exercises SET slug = ? WHERE id = ?', [nextSlug, r.id]);
+    }
+  });
+}
+
+async function ensureExercisesObjectiveColumn(db: SQLite.SQLiteDatabase): Promise<void> {
+  const columns = await db.getAllAsync<{ name: string }>('PRAGMA table_info(exercises)');
+  const hasObjective = columns.some((c) => c.name === 'objective');
+  if (hasObjective) return;
+
+  await db.execAsync("ALTER TABLE exercises ADD COLUMN objective TEXT NOT NULL DEFAULT 'relax';");
+  await db.execAsync("UPDATE exercises SET objective = 'relax' WHERE objective IS NULL OR objective = ''; ");
+}
+
+function inferObjective(input: {
+  name: string;
+  description: string;
+  category: string;
+  breathingPatternJson: string | null;
+}): 'relax' | 'energy' | 'focus' | 'sleep' {
+  const name = input.name.trim().toLowerCase();
+  const description = input.description.trim().toLowerCase();
+  const haystack = `${name} ${description}`;
+
+  if (/(sleep|insomnia|bedtime|night)/.test(haystack)) return 'sleep';
+  if (/(focus|concentration|study|clarity|attention)/.test(haystack)) return 'focus';
+  if (/(energy|energ|boost|wake|berserker|power|ignite)/.test(haystack)) return 'energy';
+  if (/(relax|calm|downshift|soothe|release|unwind|ground)/.test(haystack)) return 'relax';
+
+  try {
+    if (input.breathingPatternJson) {
+      const parsed = JSON.parse(input.breathingPatternJson) as { special?: string };
+      const special = parsed?.special;
+      if (special === 'wim_hof' || special === 'rapid' || special === 'holotropic') return 'energy';
+      if (special === 'humming') return 'relax';
+    }
+  } catch {
+    // ignore
+  }
+
+  if (input.category === 'movement') return 'energy';
+  if (input.category === 'sensory') return 'relax';
+  if (input.category === 'water') return 'energy';
+
+  return 'relax';
+}
+
+async function ensureExercisesObjectiveBackfill(db: SQLite.SQLiteDatabase): Promise<void> {
+  const seedObjectiveById = new Map(seedExercises.map((e) => [e.id, e.objective] as const));
+  const seedObjectiveBySlug = new Map(seedExercises.map((e) => [e.slug, e.objective] as const));
+
+  const rows = await db.getAllAsync<{
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+    category: string;
+    objective: string;
+    breathing_pattern_json: string | null;
+  }>('SELECT id, slug, name, description, category, objective, breathing_pattern_json FROM exercises');
+
+  await db.withTransactionAsync(async () => {
+    for (const r of rows) {
+      const mapped = seedObjectiveById.get(r.id) ?? seedObjectiveBySlug.get(r.slug);
+      if (mapped && mapped !== 'relax') {
+        await db.runAsync('UPDATE exercises SET objective = ? WHERE id = ?', [mapped, r.id]);
+        continue;
+      }
+
+      const inferred = inferObjective({
+        name: r.name,
+        description: r.description,
+        category: r.category,
+        breathingPatternJson: r.breathing_pattern_json,
+      });
+
+      const current = (r.objective ?? '').trim();
+      if (current && current !== 'relax') continue;
+      if (inferred === 'relax') continue;
+
+      await db.runAsync('UPDATE exercises SET objective = ? WHERE id = ?', [inferred, r.id]);
     }
   });
 }

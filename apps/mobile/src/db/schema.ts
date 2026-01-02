@@ -4,12 +4,15 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS exercises (
   id TEXT PRIMARY KEY NOT NULL,
+  slug TEXT NOT NULL,
   name TEXT NOT NULL,
   description TEXT NOT NULL,
   category TEXT NOT NULL,
+  objective TEXT NOT NULL DEFAULT 'relax',
   level TEXT NOT NULL,
   duration_minutes INTEGER NOT NULL,
   image_url TEXT,
+  media_json TEXT,
   instructions_json TEXT NOT NULL,
   safety_warning TEXT,
   audio_preset TEXT NOT NULL,

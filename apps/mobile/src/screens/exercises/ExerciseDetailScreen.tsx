@@ -12,8 +12,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useVideoPlayer, VideoView } from 'expo-video';
 
-import { Card, Screen } from '@/components';
+import { Card, ExerciseIllustration, Screen } from '@/components';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '@/constants';
 import { useExercises } from '@/hooks';
 import type { RootStackParamList } from '@/types';
@@ -68,6 +69,12 @@ export const ExerciseDetailScreen: React.FC = () => {
     );
   }
 
+  const primaryMedia = exercise.media?.[0];
+  const videoSource = primaryMedia?.type === 'video' ? primaryMedia.uri : null;
+  const player = useVideoPlayer(videoSource, (p) => {
+    p.loop = false;
+  });
+
   const tags = [
     exercise.origin ? formatOrigin(exercise.origin) : null,
     `${exercise.duration_minutes} Minutes`,
@@ -85,11 +92,25 @@ export const ExerciseDetailScreen: React.FC = () => {
       >
         <View style={styles.hero}>
           <View style={styles.heroImageWrap}>
-            {exercise.image_url ? (
+            {primaryMedia?.type === 'video' && videoSource ? (
+              <VideoView
+                style={styles.heroVideo}
+                player={player}
+                nativeControls
+                allowsFullscreen
+                allowsPictureInPicture
+              />
+            ) : primaryMedia?.type === 'image' && primaryMedia.uri ? (
+              <Image source={{ uri: primaryMedia.uri }} style={styles.heroImage} />
+            ) : exercise.image_url ? (
               <Image source={{ uri: exercise.image_url }} style={styles.heroImage} />
             ) : (
-              // @ts-ignore - LinearGradient type issue with React 19
-              <LinearGradient colors={['#0B2A26', '#0F1A19'] as any} style={styles.heroFallback} />
+              <ExerciseIllustration
+                exercise={exercise}
+                variant="hero"
+                animated
+                style={styles.heroIllustration}
+              />
             )}
           </View>
         </View>
@@ -122,6 +143,16 @@ export const ExerciseDetailScreen: React.FC = () => {
           ) : null}
         </View>
 
+        {exercise.safety_warning ? (
+          <Card style={styles.safetyCard}>
+            <View style={styles.safetyTitleRow}>
+              <Ionicons name="warning" size={18} color={Colors.warning} />
+              <Text style={styles.safetyTitle}>Safety First</Text>
+            </View>
+            <Text style={styles.safetyText}>{exercise.safety_warning}</Text>
+          </Card>
+        ) : null}
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Instructions</Text>
           <View style={styles.instructionsList}>
@@ -135,16 +166,6 @@ export const ExerciseDetailScreen: React.FC = () => {
             ))}
           </View>
         </View>
-
-        {exercise.safety_warning ? (
-          <Card style={styles.safetyCard}>
-            <View style={styles.safetyTitleRow}>
-              <Ionicons name="warning" size={18} color={Colors.warning} />
-              <Text style={styles.safetyTitle}>Safety First</Text>
-            </View>
-            <Text style={styles.safetyText}>{exercise.safety_warning}</Text>
-          </Card>
-        ) : null}
       </ScrollView>
 
       <View
@@ -209,7 +230,15 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
+  heroVideo: {
+    width: '100%',
+    height: '100%',
+  },
   heroFallback: {
+    width: '100%',
+    height: '100%',
+  },
+  heroIllustration: {
     width: '100%',
     height: '100%',
   },

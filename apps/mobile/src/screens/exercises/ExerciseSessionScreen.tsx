@@ -338,7 +338,11 @@ export const ExerciseSessionScreen: React.FC = () => {
             <Text style={styles.onboardingSubtitle}>{currentPageData.subtitle}</Text>
 
             <View style={styles.setupScroll}>
-              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.tipsListContent}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                style={styles.tipsListScroll}
+                contentContainerStyle={styles.tipsListContent}
+              >
                 {exerciseTips.map((tip: string, index: number) => (
                   <View key={`${index}-${tip}`} style={styles.tipItem}>
                     <Ionicons name="bulb" size={20} color="#FFA500" style={styles.tipItemIcon} />
@@ -1011,13 +1015,16 @@ export const ExerciseSessionScreen: React.FC = () => {
                   colors={['#667EEA', '#764BA2'] as any}
                   style={styles.nextButtonGradient}
                 >
-                  <Text style={styles.nextButtonText}>
-                    {currentPage === onboardingPages.length - 1 ? 'Get Started' : 'Next'}
-                  </Text>
+                  <View style={styles.nextButtonContent}>
+                    <Text style={styles.nextButtonText}>
+                      {currentPage === onboardingPages.length - 1 ? 'Get Started' : 'Next'}
+                    </Text>
+                  </View>
                   <Ionicons
                     name={currentPage === onboardingPages.length - 1 ? 'checkmark' : 'arrow-forward'}
                     size={20}
                     color={Colors.background}
+                    style={styles.nextButtonIcon}
                   />
                 </LinearGradient>
               </TouchableOpacity>
@@ -1057,17 +1064,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                   </Text>
                 </View>
               </View>
-              {sessionState === 'stress_prompt' ? (
-                <View style={styles.headerIconSpacer} />
-              ) : (
-                <TouchableOpacity
-                  onPress={() => setShowExerciseInfo(true)}
-                  style={styles.headerIconButton}
-                  accessibilityLabel="Show instructions"
-                >
-                  <Ionicons name="help-circle-outline" size={22} color={Colors.textPrimary} />
-                </TouchableOpacity>
-              )}
+              <View style={styles.headerIconSpacer} />
             </View>
 
             <View
@@ -1737,6 +1734,12 @@ const styles = StyleSheet.create({
     width: '100%',
     marginTop: Spacing.md,
     maxHeight: 320,
+    alignSelf: 'stretch',
+  },
+  tipsListScroll: {
+    flexGrow: 0,
+    width: '100%',
+    alignSelf: 'stretch',
   },
   setupScrollContent: {
     paddingBottom: Spacing.md,
@@ -1745,6 +1748,9 @@ const styles = StyleSheet.create({
   tipsListContent: {
     paddingBottom: Spacing.md,
     gap: Spacing.md,
+    width: '100%',
+    alignSelf: 'stretch',
+    alignItems: 'stretch',
   },
   setupCard: {
     backgroundColor: Colors.backgroundCard,
@@ -1954,6 +1960,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   nextButtonGradient: {
+    position: 'relative',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1961,6 +1968,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     gap: Spacing.sm,
     minHeight: 56, // Ensure consistent height
+  },
+  nextButtonContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nextButtonIcon: {
+    position: 'absolute',
+    right: Spacing.xl,
   },
   nextButtonText: {
     fontSize: FontSize.lg,
@@ -2031,6 +2047,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundCard,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
+    width: '100%',
+    alignSelf: 'stretch',
   },
   tipItemIcon: {
     marginRight: Spacing.md,

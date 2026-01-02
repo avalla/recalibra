@@ -14,9 +14,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { Card } from '../../components';
+import { Card, ExerciseIllustration } from '../../components';
 import { useExercises, useSessions, useSubscription } from '../../hooks';
-import type { ExerciseWithFavorite, ExerciseCategory } from '../../types';
+import type { ExerciseWithFavorite, ExerciseCategory, ExerciseObjective, ExerciseLevel } from '../../types';
 
 const CATEGORIES: { id: ExerciseCategory; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { id: 'breathing', label: 'Breathing', icon: 'leaf-outline', color: '#4ECDC4' },
@@ -25,16 +25,64 @@ const CATEGORIES: { id: ExerciseCategory; label: string; icon: keyof typeof Ioni
   { id: 'sensory', label: 'Sensory', icon: 'ear-outline', color: '#DDA0DD' },
 ];
 
+const OBJECTIVES: {
+  id: ExerciseObjective;
+  label: string;
+  subtitle: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  color: string;
+}[] = [
+  { id: 'relax', label: 'Relax', subtitle: 'Calm down & reset', icon: 'leaf-outline', color: '#4ECDC4' },
+  { id: 'energy', label: 'Energy', subtitle: 'Boost & wake up', icon: 'flash-outline', color: '#F59E0B' },
+  { id: 'focus', label: 'Focus', subtitle: 'Clarity & attention', icon: 'sparkles-outline', color: '#60A5FA' },
+  { id: 'sleep', label: 'Sleep', subtitle: 'Wind down', icon: 'moon-outline', color: '#A78BFA' },
+];
+
 export const ExerciseCatalogScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { exercises, isLoading, toggleFavorite } = useExercises();
   const { sessions } = useSessions();
   const { canAccessExercise, presentPaywall } = useSubscription();
   const [showCatalog, setShowCatalog] = useState(false);
+  const [isGuidedResults, setIsGuidedResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
   const [selectedDuration, setSelectedDuration] = useState<'all' | 'short' | 'medium' | 'long'>('all');
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
+
+  const [guidedStep, setGuidedStep] = useState<1 | 2 | 3>(1);
+  const [guidedObjective, setGuidedObjective] = useState<ExerciseObjective | null>(null);
+  const [guidedMinutes, setGuidedMinutes] = useState<3 | 5 | 10 | null>(null);
+  const [guidedAvoidWater, setGuidedAvoidWater] = useState(false);
+  const [guidedIntensity, setGuidedIntensity] = useState<'gentle' | 'energizing' | null>(null);
+
+  const applyGuidedFiltersAndBrowse = () => {
+    setSearchQuery('');
+    setSelectedCategory(guidedAvoidWater ? 'breathing' : 'all');
+
+    if (guidedMinutes === 3) setSelectedDuration('short');
+    if (guidedMinutes === 5) setSelectedDuration('medium');
+    if (guidedMinutes === 10) setSelectedDuration('long');
+
+    const nextLevel: ExerciseLevel | 'all' = guidedIntensity === 'gentle' ? 'beginner' : 'all';
+    setSelectedLevel(nextLevel);
+
+    setIsGuidedResults(true);
+    setShowCatalog(true);
+  };
+
+  const guidedSummaryLabels = useMemo(() => {
+    if (!guidedObjective || !guidedMinutes) return [];
+
+    const objectiveLabel = OBJECTIVES.find((o) => o.id === guidedObjective)?.label ?? guidedObjective;
+    const labels: string[] = [`${objectiveLabel}`, `${guidedMinutes} min`];
+
+    if (guidedIntensity === 'gentle') labels.push('Gentle');
+    if (guidedIntensity === 'energizing') labels.push('Energizing');
+    if (guidedAvoidWater) labels.push('No water');
+
+    return labels;
+  }, [guidedAvoidWater, guidedIntensity, guidedMinutes, guidedObjective]);
 
   const renderShelfItem = ({ item }: { item: ExerciseWithFavorite }) => {
     const isLocked = !canAccessExercise(item.name, item.is_premium);
@@ -44,6 +92,9 @@ export const ExerciseCatalogScreen: React.FC = () => {
         style={isLocked ? { ...styles.shelfCard, ...styles.exerciseCardLocked } : styles.shelfCard}
         onPress={() => handleExercisePress(item)}
       >
+        <View style={styles.cardThumbnailWrap}>
+          <ExerciseIllustration exercise={item} variant="card" style={styles.cardThumbnail} />
+        </View>
         <View style={styles.shelfTopRow}>
           <View style={styles.tag}>
             <Text style={styles.tagText}>{item.duration_minutes} min</Text>
@@ -82,6 +133,9 @@ export const ExerciseCatalogScreen: React.FC = () => {
           style={isLocked ? { ...styles.gridCard, ...styles.exerciseCardLocked } : styles.gridCard}
           onPress={() => handleExercisePress(item)}
         >
+          <View style={styles.cardThumbnailWrapGrid}>
+            <ExerciseIllustration exercise={item} variant="card" style={styles.cardThumbnail} />
+          </View>
           <View style={styles.gridTopRow}>
             <View style={styles.tag}>
               <Text style={styles.tagText}>{item.duration_minutes} min</Text>
@@ -112,38 +166,6 @@ export const ExerciseCatalogScreen: React.FC = () => {
     );
   };
 
-  // Handle time-based selection
-  const handleTimeSelect = (minutes: number) => {
-    // Find exercises matching the time preference
-    const timeExercises = exercises.filter(e => 
-      e && e.duration_minutes <= minutes
-    );
-    
-    if (timeExercises.length === 0) {
-      console.warn('No exercises found for time:', minutes);
-      return;
-    }
-    
-    // Pick the longest exercise that fits the time
-    const exercise = timeExercises.reduce((longest, current) => 
-      current.duration_minutes > longest.duration_minutes ? current : longest
-    );
-    
-    navigation.navigate('ExerciseSession', {
-      exerciseId: exercise.id,
-      exerciseName: exercise.name,
-      durationMinutes: exercise.duration_minutes,
-      audioPreset: exercise.audio_preset,
-      exerciseCategory: exercise.category,
-      breathingPattern: exercise.breathing_pattern,
-      origin: exercise.origin || 'universal',
-      history: exercise.history || '',
-      benefits: exercise.benefits || '',
-      tips: exercise.tips || '',
-      instructions: exercise.instructions || '',
-    });
-  };
-
   // Filter exercises based on search query
   const filteredExercises = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
@@ -158,6 +180,23 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
       if (selectedCategory !== 'all' && e.category !== selectedCategory) return false;
 
+      if (guidedAvoidWater && e.category === 'water') return false;
+
+      if (guidedObjective && e.objective !== guidedObjective) return false;
+
+      if (guidedIntensity === 'gentle') {
+        if (e.level !== 'beginner') return false;
+        if (e.category === 'movement') return false;
+        const special = e.breathing_pattern?.special;
+        if (special === 'wim_hof' || special === 'rapid' || special === 'holotropic') return false;
+      }
+
+      if (guidedIntensity === 'energizing') {
+        if (e.level === 'beginner') return false;
+        const special = e.breathing_pattern?.special;
+        if (special === 'humming') return false;
+      }
+
       if (selectedLevel !== 'all' && e.level !== selectedLevel) return false;
 
       if (selectedDuration !== 'all') {
@@ -169,7 +208,16 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
       return true;
     });
-  }, [exercises, searchQuery, selectedCategory, selectedDuration, selectedLevel]);
+  }, [
+    exercises,
+    searchQuery,
+    selectedCategory,
+    selectedDuration,
+    selectedLevel,
+    guidedAvoidWater,
+    guidedObjective,
+    guidedIntensity,
+  ]);
 
   const recentExercises = useMemo(() => {
     const seen = new Set<string>();
@@ -234,9 +282,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {!showCatalog ? (
-        // Premium minimal flow
         <ScrollView style={styles.simpleFlow} showsVerticalScrollIndicator={false}>
-          {/* Hero Card - Today's Exercise */}
           <View style={styles.heroCard}>
             {/* @ts-ignore - LinearGradient type issue with React 19 */}
             <LinearGradient
@@ -244,74 +290,148 @@ export const ExerciseCatalogScreen: React.FC = () => {
               style={styles.heroGradient}
             />
             <View style={styles.heroContent}>
-              {(() => {
-                const firstExercise = exercises[0];
-                return (
-                  <>
-              <Text style={styles.heroLabel}>Today's Exercise</Text>
-              <Text style={styles.heroTitle}>
-                    {firstExercise ? firstExercise.name : 'Loading...'}
-              </Text>
+              <Text style={styles.heroLabel}>Find the right exercise</Text>
+              <Text style={styles.heroTitle}>What do you need right now?</Text>
               <Text style={styles.heroSubtitle}>
-                    {firstExercise ? firstExercise.description : 'Preparing your daily practice...'}
+                Answer 3 quick questions and we’ll surface the best matches.
               </Text>
-              
-                    {firstExercise ? (
-                <TouchableOpacity
-                  style={styles.heroButton}
-                        onPress={() => handleExercisePress(firstExercise)}
-                >
-                  <Text style={styles.heroButtonText}>Start Now</Text>
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.heroButton}>
-                  <ActivityIndicator size="small" color={Colors.background} />
+
+              {guidedStep === 1 ? (
+                <View style={styles.guidedOptionsGrid}>
+                  {OBJECTIVES.map((o) => {
+                    const isSelected = guidedObjective === o.id;
+                    return (
+                      <TouchableOpacity
+                        key={o.id}
+                        style={isSelected ? [styles.guidedOptionCard, styles.guidedOptionCardSelected] : styles.guidedOptionCard}
+                        onPress={() => {
+                          setGuidedObjective(o.id);
+                          setGuidedStep(2);
+                        }}
+                        activeOpacity={0.9}
+                      >
+                        <View style={[styles.guidedOptionIcon, { backgroundColor: `${o.color}22` }]}>
+                          <Ionicons name={o.icon} size={20} color={o.color} />
+                        </View>
+                        <View style={styles.guidedOptionText}>
+                          <Text style={styles.guidedOptionTitle}>{o.label}</Text>
+                          <Text style={styles.guidedOptionSubtitle}>{o.subtitle}</Text>
+                        </View>
+                        <Ionicons name="chevron-forward" size={18} color={Colors.background + 'CC'} />
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
-              )}
-                  </>
-                );
-              })()}
+              ) : null}
+
+              {guidedStep === 2 ? (
+                <View style={styles.guidedStepBlock}>
+                  <Text style={styles.guidedStepTitle}>How much time do you have?</Text>
+                  <View style={styles.timeButtons}>
+                    <TouchableOpacity
+                      style={guidedMinutes === 3 ? [styles.timeButton, styles.timeButtonSelected] : styles.timeButton}
+                      onPress={() => {
+                        setGuidedMinutes(3);
+                        setGuidedStep(3);
+                      }}
+                      activeOpacity={0.9}
+                    >
+                      <Text style={styles.timeButtonText}>3 min</Text>
+                      <Text style={styles.timeButtonSubtext}>Quick</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={guidedMinutes === 5 ? [styles.timeButton, styles.timeButtonSelected] : styles.timeButton}
+                      onPress={() => {
+                        setGuidedMinutes(5);
+                        setGuidedStep(3);
+                      }}
+                      activeOpacity={0.9}
+                    >
+                      <Text style={styles.timeButtonText}>5 min</Text>
+                      <Text style={styles.timeButtonSubtext}>Standard</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={guidedMinutes === 10 ? [styles.timeButton, styles.timeButtonSelected] : styles.timeButton}
+                      onPress={() => {
+                        setGuidedMinutes(10);
+                        setGuidedStep(3);
+                      }}
+                      activeOpacity={0.9}
+                    >
+                      <Text style={styles.timeButtonText}>10 min</Text>
+                      <Text style={styles.timeButtonSubtext}>Deep</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <TouchableOpacity style={styles.guidedBackLink} onPress={() => setGuidedStep(1)}>
+                    <Ionicons name="arrow-back" size={18} color={Colors.background + 'CC'} />
+                    <Text style={styles.guidedBackText}>Back</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
+
+              {guidedStep === 3 ? (
+                <View style={styles.guidedStepBlock}>
+                  <Text style={styles.guidedStepTitle}>Anything else?</Text>
+
+                  <TouchableOpacity
+                    style={guidedAvoidWater ? [styles.guidedToggle, styles.guidedToggleSelected] : styles.guidedToggle}
+                    onPress={() => setGuidedAvoidWater((v) => !v)}
+                    activeOpacity={0.9}
+                  >
+                    <View style={styles.guidedToggleLeft}>
+                      <Ionicons name="water-outline" size={18} color={Colors.background} />
+                      <Text style={styles.guidedToggleText}>Avoid water-based exercises</Text>
+                    </View>
+                    <Ionicons name={guidedAvoidWater ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={Colors.background} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={guidedIntensity === 'gentle' ? [styles.guidedToggle, styles.guidedToggleSelected] : styles.guidedToggle}
+                    onPress={() => setGuidedIntensity((prev) => (prev === 'gentle' ? null : 'gentle'))}
+                    activeOpacity={0.9}
+                  >
+                    <View style={styles.guidedToggleLeft}>
+                      <Ionicons name="leaf-outline" size={18} color={Colors.background} />
+                      <Text style={styles.guidedToggleText}>Gentle</Text>
+                    </View>
+                    <Ionicons name={guidedIntensity === 'gentle' ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={Colors.background} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={guidedIntensity === 'energizing' ? [styles.guidedToggle, styles.guidedToggleSelected] : styles.guidedToggle}
+                    onPress={() => setGuidedIntensity((prev) => (prev === 'energizing' ? null : 'energizing'))}
+                    activeOpacity={0.9}
+                  >
+                    <View style={styles.guidedToggleLeft}>
+                      <Ionicons name="flash-outline" size={18} color={Colors.background} />
+                      <Text style={styles.guidedToggleText}>Energizing</Text>
+                    </View>
+                    <Ionicons name={guidedIntensity === 'energizing' ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={Colors.background} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.heroButton}
+                    onPress={() => {
+                      applyGuidedFiltersAndBrowse();
+                    }}
+                    disabled={!guidedObjective || !guidedMinutes}
+                    activeOpacity={0.9}
+                  >
+                    <Text style={styles.heroButtonText}>Show matches</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.guidedBackLink} onPress={() => setGuidedStep(2)}>
+                    <Ionicons name="arrow-back" size={18} color={Colors.background + 'CC'} />
+                    <Text style={styles.guidedBackText}>Back</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : null}
             </View>
           </View>
 
-          {/* Quick Time Options */}
-          <View style={styles.timeSection}>
-            <Text style={styles.timeTitle}>How much time do you have?</Text>
-            <View style={styles.timeButtons}>
-              <TouchableOpacity
-                style={styles.timeButton}
-                onPress={() => handleTimeSelect(3)}
-              >
-                <Text style={styles.timeButtonText}>3 min</Text>
-                <Text style={styles.timeButtonSubtext}>Quick</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={[styles.timeButton, styles.timeButtonPrimary]}
-                onPress={() => handleTimeSelect(5)}
-              >
-                <Text style={[styles.timeButtonText, styles.timeButtonTextPrimary]}>5 min</Text>
-                <Text style={[styles.timeButtonSubtext, styles.timeButtonSubtextPrimary]}>Standard</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.timeButton}
-                onPress={() => handleTimeSelect(10)}
-              >
-                <Text style={styles.timeButtonText}>10 min</Text>
-                <Text style={styles.timeButtonSubtext}>Deep</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Browse all link */}
-          <TouchableOpacity
-            style={styles.browseButton}
-            onPress={() => setShowCatalog(true)}
-          >
-            <Text style={styles.browseText}>Browse All Exercises</Text>
-            <Ionicons name="arrow-forward" size={20} color={Colors.primary} />
-          </TouchableOpacity>
         </ScrollView>
       ) : (
         <FlatList
@@ -329,133 +449,171 @@ export const ExerciseCatalogScreen: React.FC = () => {
           ListHeaderComponent={
             <View>
               <View style={styles.topBar}>
-                <TouchableOpacity style={styles.backIconButton} onPress={() => setShowCatalog(false)}>
+                <TouchableOpacity
+                  style={styles.backIconButton}
+                  onPress={() => {
+                    setShowCatalog(false);
+                    setIsGuidedResults(false);
+                  }}
+                >
                   <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
                 </TouchableOpacity>
-                <Text style={styles.pageTitle}>Explore Exercises</Text>
-                <TouchableOpacity style={styles.searchIconButton}>
-                  <Ionicons name="search" size={22} color={Colors.textPrimary} />
-                </TouchableOpacity>
+
+                <Text style={styles.pageTitle}>{isGuidedResults ? 'Your matches' : 'Explore Exercises'}</Text>
+
+                {isGuidedResults ? (
+                  <TouchableOpacity
+                    style={styles.searchIconButton}
+                    onPress={() => {
+                      setShowCatalog(false);
+                      setIsGuidedResults(false);
+                      setGuidedStep(1);
+                    }}
+                  >
+                    <Ionicons name="options-outline" size={22} color={Colors.textPrimary} />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity style={styles.searchIconButton}>
+                    <Ionicons name="search" size={22} color={Colors.textPrimary} />
+                  </TouchableOpacity>
+                )}
               </View>
 
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.categoryTabsRow}
-              >
-                {CATEGORIES.map((c) => {
-                  const isActive = selectedCategory === c.id;
-                  return (
+              {isGuidedResults ? (
+                <View style={styles.guidedResultsHeader}>
+                  <Text style={styles.guidedResultsCount}>{filteredExercises.length} results</Text>
+                  {guidedSummaryLabels.length > 0 ? (
+                    <View style={styles.guidedChipsRow}>
+                      {guidedSummaryLabels.map((label) => (
+                        <View key={label} style={styles.guidedChip}>
+                          <Text style={styles.guidedChipText}>{label}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
+                </View>
+              ) : (
+                <>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.categoryTabsRow}
+                  >
+                    {CATEGORIES.map((c) => {
+                      const isActive = selectedCategory === c.id;
+                      return (
+                        <TouchableOpacity
+                          key={c.id}
+                          style={styles.categoryTab}
+                          onPress={() => setSelectedCategory(c.id)}
+                          activeOpacity={0.85}
+                        >
+                          <Text style={isActive ? styles.categoryTabTextActive : styles.categoryTabText}>{c.label}</Text>
+                          <View style={isActive ? styles.categoryTabUnderlineActive : styles.categoryTabUnderline} />
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+
+                  <View style={styles.filterPillsRow}>
                     <TouchableOpacity
-                      key={c.id}
-                      style={styles.categoryTab}
-                      onPress={() => setSelectedCategory(c.id)}
+                      style={styles.filterPill}
+                      onPress={() =>
+                        setSelectedDuration((prev) => (prev === 'short' ? 'all' : 'short'))
+                      }
                       activeOpacity={0.85}
                     >
-                      <Text style={isActive ? styles.categoryTabTextActive : styles.categoryTabText}>{c.label}</Text>
-                      <View style={isActive ? styles.categoryTabUnderlineActive : styles.categoryTabUnderline} />
+                      <Text style={styles.filterPillText}>Duration</Text>
+                      <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
                     </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
 
-              <View style={styles.filterPillsRow}>
-                <TouchableOpacity
-                  style={styles.filterPill}
-                  onPress={() =>
-                    setSelectedDuration((prev) => (prev === 'short' ? 'all' : 'short'))
-                  }
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.filterPillText}>Duration</Text>
-                  <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
-                </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.filterPill}
+                      onPress={() =>
+                        setSelectedLevel((prev) => (prev === 'beginner' ? 'all' : 'beginner'))
+                      }
+                      activeOpacity={0.85}
+                    >
+                      <Text style={styles.filterPillText}>Level</Text>
+                      <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
 
-                <TouchableOpacity
-                  style={styles.filterPill}
-                  onPress={() =>
-                    setSelectedLevel((prev) => (prev === 'beginner' ? 'all' : 'beginner'))
-                  }
-                  activeOpacity={0.85}
-                >
-                  <Text style={styles.filterPillText}>Level</Text>
-                  <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
+                  <View style={styles.searchContainer}>
+                    <View style={styles.searchBar}>
+                      <Ionicons name="search" size={18} color={Colors.textMuted} style={styles.searchIcon} />
+                      <TextInput
+                        style={styles.searchInput}
+                        placeholder="Search exercises..."
+                        placeholderTextColor={Colors.textMuted}
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        clearButtonMode="while-editing"
+                        returnKeyType="search"
+                      />
+                    </View>
+                  </View>
 
-              <View style={styles.searchContainer}>
-                <View style={styles.searchBar}>
-                  <Ionicons name="search" size={18} color={Colors.textMuted} style={styles.searchIcon} />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search exercises..."
-                    placeholderTextColor={Colors.textMuted}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    clearButtonMode="while-editing"
-                    returnKeyType="search"
-                  />
-                </View>
-              </View>
+                  <View style={styles.categoryBrowseSection}>
+                    <Text style={styles.shelfSectionTitle}>Browse by category</Text>
+                    <View style={styles.categoryGrid}>
+                      {CATEGORIES.map((c) => {
+                        const isActive = selectedCategory === c.id;
+                        return (
+                          <TouchableOpacity
+                            key={c.id}
+                            style={isActive ? [styles.categoryTile, styles.categoryTileActive] : styles.categoryTile}
+                            onPress={() => setSelectedCategory((prev) => (prev === c.id ? 'all' : c.id))}
+                            activeOpacity={0.9}
+                          >
+                            <View style={[styles.categoryTileIcon, { backgroundColor: `${c.color}22` }]}>
+                              <Ionicons name={c.icon} size={22} color={c.color} />
+                            </View>
+                            <View style={styles.categoryTileInfo}>
+                              <Text style={styles.categoryTileTitle}>{c.label}</Text>
+                              <Text style={styles.categoryTileCount}>{categoryCounts[c.id]} exercises</Text>
+                            </View>
+                            <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
 
-              <View style={styles.categoryBrowseSection}>
-                <Text style={styles.shelfSectionTitle}>Browse by category</Text>
-                <View style={styles.categoryGrid}>
-                  {CATEGORIES.map((c) => {
-                    const isActive = selectedCategory === c.id;
-                    return (
-                      <TouchableOpacity
-                        key={c.id}
-                        style={isActive ? [styles.categoryTile, styles.categoryTileActive] : styles.categoryTile}
-                        onPress={() => setSelectedCategory((prev) => (prev === c.id ? 'all' : c.id))}
-                        activeOpacity={0.9}
-                      >
-                        <View style={[styles.categoryTileIcon, { backgroundColor: `${c.color}22` }]}>
-                          <Ionicons name={c.icon} size={22} color={c.color} />
-                        </View>
-                        <View style={styles.categoryTileInfo}>
-                          <Text style={styles.categoryTileTitle}>{c.label}</Text>
-                          <Text style={styles.categoryTileCount}>{categoryCounts[c.id]} exercises</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
+                  {recentExercises.length > 0 ? (
+                    <View style={styles.shelfSection}>
+                      <Text style={styles.shelfSectionTitle}>Recently</Text>
+                      <FlatList
+                        data={recentExercises}
+                        keyExtractor={(item) => item.id}
+                        renderItem={renderShelfItem}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.shelfList}
+                      />
+                    </View>
+                  ) : null}
 
-              {recentExercises.length > 0 ? (
-                <View style={styles.shelfSection}>
-                  <Text style={styles.shelfSectionTitle}>Recently</Text>
-                  <FlatList
-                    data={recentExercises}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderShelfItem}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.shelfList}
-                  />
-                </View>
-              ) : null}
+                  {favoriteExercises.length > 0 ? (
+                    <View style={styles.shelfSection}>
+                      <Text style={styles.shelfSectionTitle}>Favorites</Text>
+                      <FlatList
+                        data={favoriteExercises}
+                        keyExtractor={(item) => item.id}
+                        renderItem={renderShelfItem}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.shelfList}
+                      />
+                    </View>
+                  ) : null}
 
-              {favoriteExercises.length > 0 ? (
-                <View style={styles.shelfSection}>
-                  <Text style={styles.shelfSectionTitle}>Favorites</Text>
-                  <FlatList
-                    data={favoriteExercises}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderShelfItem}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.shelfList}
-                  />
-                </View>
-              ) : null}
-
-              <View style={styles.allHeader}>
-                <Text style={styles.shelfSectionTitle}>All exercises</Text>
-                <Text style={styles.allCount}>{filteredExercises.length}</Text>
-              </View>
+                  <View style={styles.allHeader}>
+                    <Text style={styles.shelfSectionTitle}>All exercises</Text>
+                    <Text style={styles.allCount}>{filteredExercises.length}</Text>
+                  </View>
+                </>
+              )}
             </View>
           }
           ListEmptyComponent={
@@ -495,6 +653,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.lg,
     borderRadius: BorderRadius.xl,
     overflow: 'hidden',
+    backgroundColor: '#667EEA',
     minHeight: 360,
     position: 'relative',
   },
@@ -504,6 +663,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    borderRadius: BorderRadius.xl,
   },
   heroContent: {
     flex: 1,
@@ -535,6 +695,97 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     paddingHorizontal: Spacing.md,
   },
+  guidedOptionsGrid: {
+    alignSelf: 'stretch',
+    gap: Spacing.md,
+    marginTop: Spacing.lg,
+  },
+  guidedOptionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    gap: Spacing.md,
+  },
+  guidedOptionCardSelected: {
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    borderColor: 'rgba(255, 255, 255, 0.28)',
+  },
+  guidedOptionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  guidedOptionText: {
+    flex: 1,
+  },
+  guidedOptionTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+    color: Colors.background,
+  },
+  guidedOptionSubtitle: {
+    fontSize: FontSize.sm,
+    color: Colors.background + 'CC',
+    marginTop: 2,
+  },
+  guidedStepBlock: {
+    alignSelf: 'stretch',
+    marginTop: Spacing.lg,
+  },
+  guidedStepTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.semibold,
+    color: Colors.background,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+  },
+  guidedBackLink: {
+    marginTop: Spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+  },
+  guidedBackText: {
+    fontSize: FontSize.sm,
+    color: Colors.background + 'CC',
+    fontWeight: FontWeight.semibold,
+  },
+  guidedToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    marginBottom: Spacing.md,
+  },
+  guidedToggleSelected: {
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    borderColor: 'rgba(255, 255, 255, 0.28)',
+  },
+  guidedToggleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    flex: 1,
+    paddingRight: Spacing.md,
+  },
+  guidedToggleText: {
+    fontSize: FontSize.md,
+    color: Colors.background,
+    fontWeight: FontWeight.semibold,
+  },
   heroButton: {
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.xl,
@@ -555,19 +806,6 @@ const styles = StyleSheet.create({
     color: '#667EEA',
     textAlign: 'center',
   },
-  // Time selection
-  timeSection: {
-    marginTop: Spacing.xxl,
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.lg,
-  },
-  timeTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.semibold,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: Spacing.lg,
-  },
   timeButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -582,9 +820,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  timeButtonPrimary: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+  timeButtonSelected: {
+    backgroundColor: Colors.background,
+    borderColor: Colors.background,
   },
   timeButtonText: {
     fontSize: FontSize.lg,
@@ -592,30 +830,9 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginBottom: Spacing.xs,
   },
-  timeButtonTextPrimary: {
-    color: Colors.background,
-  },
   timeButtonSubtext: {
     fontSize: FontSize.sm,
     color: Colors.textMuted,
-  },
-  timeButtonSubtextPrimary: {
-    color: Colors.background + 'CC',
-  },
-  browseButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.xl,
-    gap: Spacing.sm,
-  },
-  browseText: {
-    fontSize: FontSize.md,
-    color: Colors.primary,
-    fontWeight: FontWeight.medium,
   },
   // Catalog mode styles
   topBar: {
@@ -653,6 +870,35 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.xl,
     fontWeight: FontWeight.bold,
+  },
+  guidedResultsHeader: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xs,
+    paddingBottom: Spacing.md,
+  },
+  guidedResultsCount: {
+    fontSize: FontSize.md,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.sm,
+  },
+  guidedChipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  guidedChip: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(30, 58, 52, 0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(148, 163, 184, 0.16)',
+  },
+  guidedChipText: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    color: Colors.textPrimary,
   },
   categoryTabsRow: {
     paddingHorizontal: Spacing.lg,
@@ -834,6 +1080,22 @@ const styles = StyleSheet.create({
     width: 260,
     marginRight: Spacing.md,
   },
+  cardThumbnailWrap: {
+    height: 84,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    marginBottom: Spacing.sm,
+  },
+  cardThumbnailWrapGrid: {
+    height: 64,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    marginBottom: Spacing.sm,
+  },
+  cardThumbnail: {
+    width: '100%',
+    height: '100%',
+  },
   shelfTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -874,7 +1136,7 @@ const styles = StyleSheet.create({
   },
   gridCard: {
     marginBottom: 0,
-    height: 164,
+    height: 184,
   },
   gridTopRow: {
     flexDirection: 'row',

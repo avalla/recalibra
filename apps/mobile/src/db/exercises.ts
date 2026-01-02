@@ -11,12 +11,15 @@ export async function getExercisesWithFavorites(): Promise<ExerciseWithFavorite[
 
   const rows = await db.getAllAsync<{
     id: string;
+    slug: string;
     name: string;
     description: string;
     category: string;
+    objective: string;
     level: string;
     duration_minutes: number;
     image_url: string | null;
+    media_json: string | null;
     instructions_json: string;
     safety_warning: string | null;
     audio_preset: string;
@@ -41,12 +44,15 @@ export async function getExercisesWithFavorites(): Promise<ExerciseWithFavorite[
   return rows.map((r): ExerciseWithFavorite => {
     const exercise: Exercise = {
       id: r.id,
+      slug: r.slug,
       name: r.name,
       description: r.description,
       category: r.category as Exercise['category'],
+      objective: r.objective as Exercise['objective'],
       level: r.level as Exercise['level'],
       duration_minutes: r.duration_minutes,
       image_url: r.image_url ?? undefined,
+      media: r.media_json ? (JSON.parse(r.media_json) as Exercise['media']) : undefined,
       instructions: JSON.parse(r.instructions_json) as Exercise['instructions'],
       safety_warning: r.safety_warning ?? undefined,
       audio_preset: r.audio_preset as Exercise['audio_preset'],

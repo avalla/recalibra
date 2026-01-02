@@ -8,6 +8,7 @@ export * from './navigation';
 export type MeditationExperience = 'none' | 'beginner' | 'intermediate' | 'advanced';
 export type ExerciseCategory = 'breathing' | 'water' | 'movement' | 'sensory';
 export type ExerciseLevel = 'beginner' | 'intermediate' | 'advanced';
+export type ExerciseObjective = 'relax' | 'energy' | 'focus' | 'sleep';
 export type ExerciseOrigin = 
   | 'india' 
   | 'china' 
@@ -83,14 +84,23 @@ export interface BreathingPattern {
   retention_seconds?: number;
 }
 
+export interface ExerciseMediaItem {
+  type: 'image' | 'video';
+  uri: string;
+  poster_uri?: string;
+}
+
 export interface Exercise {
   id: string;
+  slug: string;
   name: string;
   description: string;
   category: ExerciseCategory;
+  objective: ExerciseObjective;
   level: ExerciseLevel;
   duration_minutes: number;
   image_url?: string;
+  media?: ExerciseMediaItem[];
   instructions: ExerciseInstruction[];
   safety_warning?: string;
   audio_preset: AudioPreset;
