@@ -1,11 +1,12 @@
 {
-  "name": "recalibra-web",
+  "name": "@recalibra/web",
   "private": true,
   "type": "module",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "dev": "bunx --bun vite",
-    "build": "bunx --bun vite build",
+    "prebuild": "bun scripts/sync-public-assets.ts",
+    "build": "bun run prebuild && bunx --bun vite build",
     "preview": "bunx --bun vite preview"
   },
   "dependencies": {

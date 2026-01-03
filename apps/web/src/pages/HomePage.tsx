@@ -18,9 +18,21 @@ export function HomePage() {
         <Container className="py-20">
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-7">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
-                <span className="h-2 w-2 rounded-full bg-teal-300" />
-                Beta privata — nuove sessioni ogni settimana
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                  <span className="h-2 w-2 rounded-full bg-teal-300" />
+                  Beta privata — nuove sessioni ogni settimana
+                </div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
+                  <img
+                    src="/brand/icon.png"
+                    alt=""
+                    className="h-4 w-4 rounded"
+                    loading="eager"
+                    decoding="async"
+                  />
+                  iOS & Android
+                </div>
               </div>
 
               <h1 className="mt-5 text-balance text-4xl font-semibold tracking-tight text-slate-50 sm:text-5xl">
@@ -158,6 +170,53 @@ export function HomePage() {
                   {item.body}
                 </p>
               </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      <section id="screenshots" className="border-t border-white/10">
+        <Container className="py-16">
+          <div className="max-w-2xl">
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-50">
+              Dentro Recalibra.
+            </h2>
+            <p className="mt-3 text-slate-200">
+              Alcune schermate dell’app in beta (UI in evoluzione).
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "Catalogo esercizi",
+                src: "/screenshots/exercise-catalog.png",
+              },
+              {
+                title: "Dettaglio esercizio",
+                src: "/screenshots/exercise-detail.png",
+              },
+              {
+                title: "Player sessione",
+                src: "/screenshots/exercise-player-session.png",
+              },
+            ].map((shot) => (
+              <figure
+                key={shot.title}
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                <div className="aspect-[9/19] w-full bg-slate-950/30">
+                  <img
+                    src={shot.src}
+                    alt={shot.title}
+                    className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <figcaption className="border-t border-white/10 px-4 py-3 text-sm text-slate-200">
+                  {shot.title}
+                </figcaption>
+              </figure>
             ))}
           </div>
         </Container>
