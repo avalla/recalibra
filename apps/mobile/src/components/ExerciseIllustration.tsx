@@ -5,6 +5,7 @@ import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
+  withSequence,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
@@ -81,6 +82,49 @@ function getIntensityFromBreathingPattern(pattern: ExerciseIllustrationProps['ex
   return 1;
 }
 
+function clampMs(valueMs: number, minMs: number, maxMs: number): number {
+  return Math.max(minMs, Math.min(maxMs, valueMs));
+}
+
+function toMs(seconds: number | undefined): number {
+  if (!seconds || !Number.isFinite(seconds)) return 0;
+  return Math.max(0, Math.round(seconds * 1000));
+}
+
+function buildBreathingScaleAnimation(input: {
+  pattern: ExerciseIllustrationProps['exercise']['breathing_pattern'];
+  baseScale: number;
+  maxScale: number;
+}) {
+  const inhaleMs = clampMs(toMs(input.pattern?.inhale), 600, 12000);
+  const holdMs = clampMs(toMs(input.pattern?.hold), 0, 12000);
+  const exhaleMs = clampMs(toMs(input.pattern?.exhale), 600, 12000);
+  const restMs = clampMs(toMs(input.pattern?.rest), 0, 12000);
+
+  const special = input.pattern?.special;
+  const ease = Easing.inOut(Easing.quad);
+
+  if (special === 'double_inhale') {
+    const inhale1 = Math.max(220, Math.round(inhaleMs * 0.38));
+    const inhale2 = Math.max(220, inhaleMs - inhale1);
+    const midScale = input.baseScale + (input.maxScale - input.baseScale) * 0.62;
+    return withSequence(
+      withTiming(midScale, { duration: inhale1, easing: ease }),
+      withTiming(input.maxScale, { duration: inhale2, easing: ease }),
+      withTiming(input.maxScale, { duration: holdMs, easing: ease }),
+      withTiming(input.baseScale, { duration: exhaleMs, easing: ease }),
+      withTiming(input.baseScale, { duration: restMs, easing: ease })
+    );
+  }
+
+  return withSequence(
+    withTiming(input.maxScale, { duration: inhaleMs, easing: ease }),
+    withTiming(input.maxScale, { duration: holdMs, easing: ease }),
+    withTiming(input.baseScale, { duration: exhaleMs, easing: ease }),
+    withTiming(input.baseScale, { duration: restMs, easing: ease })
+  );
+}
+
 export function ExerciseIllustration({
   exercise,
   variant,
@@ -104,6 +148,30 @@ export function ExerciseIllustration({
       return;
     }
 
+    const isBreathingTimeline =
+      exercise.category === 'breathing' &&
+      variant === 'hero' &&
+      !!exercise.breathing_pattern &&
+      (exercise.breathing_pattern.inhale > 0 || exercise.breathing_pattern.exhale > 0);
+
+    if (isBreathingTimeline) {
+      const intensity = getIntensityFromBreathingPattern(exercise.breathing_pattern);
+      const amplitude = 0.06 * intensity;
+      const baseScale = 1;
+      const maxScale = clampMs(Math.round((baseScale + amplitude) * 1000), 1020, 1120) / 1000;
+
+      pulse.value = withRepeat(
+        buildBreathingScaleAnimation({
+          pattern: exercise.breathing_pattern,
+          baseScale,
+          maxScale,
+        }),
+        -1,
+        false
+      );
+      return;
+    }
+
     const baseDuration = variant === 'hero' ? 2400 : 3200;
     const intensity = getIntensityFromBreathingPattern(exercise.breathing_pattern);
     const duration = Math.max(1400, Math.round(baseDuration / intensity));
@@ -116,7 +184,7 @@ export function ExerciseIllustration({
       -1,
       true
     );
-  }, [animated, exercise.breathing_pattern, pulse, variant]);
+  }, [animated, exercise.breathing_pattern, exercise.category, pulse, variant]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {

@@ -10,8 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVideoPlayer, VideoView } from 'expo-video';
 
 import { Card, ExerciseIllustration, Screen } from '@/components';
@@ -28,9 +27,17 @@ export const ExerciseDetailScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const { exercises, isLoading, toggleFavorite } = useExercises();
 
+  const footerHeight = 56 + Spacing.md + Spacing.sm + insets.bottom;
+
   const exercise = useMemo(() => {
     return exercises.find((e) => e.id === route.params.exerciseId) ?? null;
   }, [exercises, route.params.exerciseId]);
+
+  const primaryMedia = exercise?.media?.[0];
+  const videoSource = primaryMedia?.type === 'video' ? primaryMedia.uri : null;
+  const player = useVideoPlayer(videoSource, (p) => {
+    p.loop = false;
+  });
 
   const handleBack = () => {
     navigation.goBack();
@@ -69,12 +76,6 @@ export const ExerciseDetailScreen: React.FC = () => {
     );
   }
 
-  const primaryMedia = exercise.media?.[0];
-  const videoSource = primaryMedia?.type === 'video' ? primaryMedia.uri : null;
-  const player = useVideoPlayer(videoSource, (p) => {
-    p.loop = false;
-  });
-
   const tags = [
     exercise.origin ? formatOrigin(exercise.origin) : null,
     `${exercise.duration_minutes} Minutes`,
@@ -86,7 +87,7 @@ export const ExerciseDetailScreen: React.FC = () => {
       <ScrollView
         contentContainerStyle={[
           styles.scrollContent,
-          { paddingBottom: 120 + insets.bottom },
+          { paddingBottom: footerHeight + Spacing.lg },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -168,20 +169,15 @@ export const ExerciseDetailScreen: React.FC = () => {
         </View>
       </ScrollView>
 
-      <View
-        style={[
-          styles.footer,
-          {
-            paddingBottom: Spacing.md + insets.bottom,
-          },
-        ]}
-      >
-        <TouchableOpacity style={styles.primaryCta} onPress={handleStartSession} activeOpacity={0.9}>
-          <Text style={styles.primaryCtaText}>Start Session</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.favoriteCta} activeOpacity={0.85} onPress={handleToggleFavorite}>
-          <Ionicons name={exercise.is_favorite ? 'heart' : 'heart-outline'} size={22} color={Colors.primary} />
-        </TouchableOpacity>
+      <View style={styles.footerContainer}>
+        <SafeAreaView style={styles.footerContent} edges={['bottom']}>
+          <TouchableOpacity style={styles.primaryCta} onPress={handleStartSession} activeOpacity={0.9}>
+            <Text style={styles.primaryCtaText}>Start Session</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.favoriteCta} activeOpacity={0.85} onPress={handleToggleFavorite}>
+            <Ionicons name={exercise.is_favorite ? 'heart' : 'heart-outline'} size={22} color={Colors.primary} />
+          </TouchableOpacity>
+        </SafeAreaView>
       </View>
     </Screen>
   );
@@ -366,19 +362,22 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     lineHeight: 20,
   },
-  footer: {
+  footerContainer: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
+    backgroundColor: 'rgba(15, 26, 25, 0.92)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(148, 163, 184, 0.12)',
+  },
+  footerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.md,
-    backgroundColor: 'rgba(15, 26, 25, 0.92)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(148, 163, 184, 0.12)',
+    paddingBottom: Spacing.sm,
   },
   primaryCta: {
     flex: 1,

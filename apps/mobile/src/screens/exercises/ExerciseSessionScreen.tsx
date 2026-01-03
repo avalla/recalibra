@@ -1737,7 +1737,7 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
   tipsListScroll: {
-    flexGrow: 0,
+    flex: 1,
     width: '100%',
     alignSelf: 'stretch',
   },
