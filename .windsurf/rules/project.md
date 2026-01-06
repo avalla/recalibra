@@ -50,7 +50,7 @@ APP REQUIREMENTS:
 - stress tracking pre/post session
 - HRV integration (Apple Health / Google Fit)
 - Mixpanel tracking events for every session
-- subscription paywall via Outseta
+- subscription paywall via revenuecat
 - user dashboard with historical trends
 - notifications (local + scheduled)
 - safety warnings for water/ice exercises

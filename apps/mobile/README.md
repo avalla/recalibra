@@ -17,20 +17,20 @@ React Native Expo mobile application for vagus nerve stimulation and stress mana
 bun install
 
 # Start the development server
-bun start
+bun run --cwd apps/mobile start
 ```
 
 ### Running on Device/Simulator
 
 ```bash
 # iOS Simulator
-bun run ios
+bun run --cwd apps/mobile ios
 
 # Android Emulator
-bun run android
+bun run --cwd apps/mobile android
 
 # Web (development)
-bun run web
+bun run --cwd apps/mobile web
 ```
 
 ## 📁 Project Structure
@@ -85,8 +85,8 @@ src/
 Create a `.env` file based on `.env.example`:
 
 ```bash
-EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+EXPO_PUBLIC_REVENUECAT_IOS_KEY=appl_XXXXXXXXXXXXXXXXXXXXXXXXX
+EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=goog_XXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 ### TypeScript Path Aliases
@@ -118,8 +118,37 @@ import { HomeScreen } from '@/screens';
 - [ ] HRV integration via Apple Health/Google Fit
 - [ ] Push notifications for reminders
 - [ ] Offline support
-- [ ] Premium subscription (Stripe)
+- [ ] Premium subscription UX improvements (RevenueCat)
 - [ ] AI-powered exercise recommendations
+
+## 🧩 Exercise seed data
+
+The exercise catalog is driven by per-category seed JSON files in `src/data/`:
+
+- `src/data/exercises_seed_breathing.json`
+- `src/data/exercises_seed_water.json`
+- `src/data/exercises_seed_movement.json`
+- `src/data/exercises_seed_sensory.json`
+
+To regenerate/refresh seed files:
+
+```bash
+# From repo root
+bun ./apps/mobile/scripts/generate-exercises-seed.ts
+
+# From apps/mobile
+bun ./scripts/generate-exercises-seed.ts
+```
+
+## 🔊 Audio (binaural beats)
+
+The app uses `expo-audio` for audio playback. Keep it installed and ensure iOS builds include the `expo-audio` config plugin.
+
+## ✅ Typecheck
+
+```bash
+bunx tsc -p apps/mobile/tsconfig.json --noEmit
+```
 
 ## 🧪 Testing
 

@@ -5,7 +5,7 @@
 
 ## Introduction
 
-Avalla S.r.l. ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use the Recalibra mobile application ("App").
+Andrea Valla ("we," "us," or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use the Recalibra mobile application ("App").
 
 ## Information We Collect
 
@@ -68,7 +68,7 @@ Under GDPR, you have the right to:
 - Object to processing
 - Withdraw consent
 
-To exercise these rights, contact us at privacy@avalla.com
+To exercise these rights, contact us at contact@recalibra.it
 
 ## Health Data Consent
 
@@ -106,9 +106,9 @@ We may update this Privacy Policy from time to time. We will notify you of any c
 
 If you have questions about this Privacy Policy, please contact us:
 
-**Avalla S.r.l.**
-Email: privacy@avalla.com
-Website: https://avalla.com
+**Andrea Valla**
+Email: contact@recalibra.it
+Website: https://recalibra.it
 
 ## HealthKit Integration (iOS)
 

@@ -2,6 +2,7 @@ import React from "react";
 import { Route, Switch } from "wouter";
 
 import { HomePage } from "./pages/HomePage";
+import { SupportPage } from "./pages/SupportPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
 import { TermsPage } from "./pages/TermsPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
@@ -10,6 +11,8 @@ export function App() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
+      <Route path="/support" component={SupportPage} />
+      <Route path="/supporto" component={SupportPage} />
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/terms" component={TermsPage} />
       <Route component={NotFoundPage} />

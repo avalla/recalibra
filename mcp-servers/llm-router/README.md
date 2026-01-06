@@ -16,6 +16,12 @@ MCP server that routes requests to the best available LLM provider via **LangCha
 bun install
 ```
 
+## Typecheck
+
+```bash
+bunx tsc -p tsconfig.json --noEmit
+```
+
 Run (for debugging):
 
 ```bash
@@ -105,6 +111,13 @@ Notes:
 ## Batch enrich seed JSON
 
 This repo includes a batch script that reads the per-category seed JSON files in `apps/mobile/src/data/` and fills missing fields using `llm_enrich_exercises_seed`.
+
+Seed files (source of truth):
+
+- `apps/mobile/src/data/exercises_seed_breathing.json`
+- `apps/mobile/src/data/exercises_seed_water.json`
+- `apps/mobile/src/data/exercises_seed_movement.json`
+- `apps/mobile/src/data/exercises_seed_sensory.json`
 
 Dry-run (no writes):
 

@@ -3,7 +3,7 @@
 **Effective Date**: December 2025
 **Last Updated**: December 16, 2025
 
-This End User License Agreement ("EULA") is a binding legal agreement between you ("User" or "you") and Avalla S.r.l. ("Company," "we," "us," or "our"). By downloading, installing, or using the Recalibra mobile application ("App"), you agree to be bound by the terms of this EULA.
+This End User License Agreement ("EULA") is a binding legal agreement between you ("User" or "you") and Andrea Valla ("Company," "we," "us," or "our"). By downloading, installing, or using the Recalibra mobile application ("App"), you agree to be bound by the terms of this EULA.
 
 ## 1. Acceptance of Terms
 
@@ -47,7 +47,7 @@ This End User License Agreement ("EULA") is a binding legal agreement between yo
 5.2. We process health data in compliance with GDPR Article 9 (Special Categories of Personal Data).
 5.3. You can revoke health data permissions at any time through your device settings.
 5.4. Health data is used solely to provide personalized wellness experiences.
-5.5. Our Privacy Policy, available at https://avalla.com/privacy-recalibra, provides detailed information about data processing.
+5.5. Our Privacy Policy provides detailed information about data processing.
 
 ## 6. AI-Powered Features
 
@@ -71,7 +71,7 @@ This End User License Agreement ("EULA") is a binding legal agreement between yo
 
 ## 8. Intellectual Property
 
-8.1. Recalibra and all its content, features, and functionality are owned by Avalla S.r.l. and protected by copyright, trademark, and other intellectual property laws.
+8.1. Recalibra and all its content, features, and functionality are owned by Andrea Valla and protected by copyright, trademark, and other intellectual property laws.
 8.2. You may not use our trademarks, logos, or proprietary materials without prior written consent.
 8.3. User-generated content remains your property, but you grant us a license to use it for improving our services.
 
@@ -90,7 +90,7 @@ This End User License Agreement ("EULA") is a binding legal agreement between yo
 
 ## 10. Indemnification
 
-10.1. You agree to indemnify and hold harmless Avalla S.r.l. and its affiliates from any claims arising from:
+10.1. You agree to indemnify and hold harmless Andrea Valla and affiliates from any claims arising from:
    - Your breach of this EULA
    - Your improper use of the App
    - Your violation of any laws or regulations
@@ -126,9 +126,9 @@ This End User License Agreement ("EULA") is a binding legal agreement between yo
 
 For questions about this EULA, please contact:
 
-**Avalla S.r.l.**
-Email: legal@avalla.com
-Website: https://avalla.com
+**Andrea Valla**
+Email: contact@recalibra.it
+Website: https://recalibra.it
 Address: [Your registered address in Italy]
 
 ## 15. Entire Agreement

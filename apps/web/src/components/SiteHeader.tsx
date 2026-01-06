@@ -27,7 +27,7 @@ export function SiteHeader() {
           <a
             className="hidden rounded-lg px-3 py-2 text-slate-200 hover:bg-white/5 md:inline"
             href="#features">
-            Funzionalità
+            Features
           </a>
           <a
             className="hidden rounded-lg px-3 py-2 text-slate-200 hover:bg-white/5 md:inline"
@@ -37,12 +37,15 @@ export function SiteHeader() {
           <a
             className="hidden rounded-lg px-3 py-2 text-slate-200 hover:bg-white/5 md:inline"
             href="#safety">
-            Sicurezza
+            Safety
           </a>
+          <Link className="rounded-lg px-3 py-2 text-slate-200 hover:bg-white/5" href="/support">
+            Support
+          </Link>
           <a
             className="rounded-lg bg-white/10 px-3 py-2 text-slate-50 hover:bg-white/15"
-            href="mailto:hello@avalla.com?subject=Recalibra%20%E2%80%94%20Beta%20access">
-            Richiedi accesso
+            href="mailto:contact@recalibra.it?subject=Recalibra%20%E2%80%94%20Contact">
+            Contact
           </a>
         </nav>
       </Container>

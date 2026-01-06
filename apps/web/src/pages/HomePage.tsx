@@ -7,8 +7,8 @@ import { SiteLayout } from "@/components/SiteLayout";
 export function HomePage() {
   return (
     <SiteLayout
-      title="Recalibra — Stimolazione del nervo vago"
-      description="Recalibra ti guida in micro-esercizi per aiutarti a gestire stress e recupero: respiro, voce, movimento e routine sicure.">
+      title="Recalibra — Vagus nerve stimulation"
+      description="Recalibra guides you through short, safe micro-exercises to support stress management and recovery: breathing, voice, movement, and gentle routines.">
       <div className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10">
           <div className="absolute -top-32 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-teal-400/15 blur-3xl" />
@@ -21,7 +21,7 @@ export function HomePage() {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
                   <span className="h-2 w-2 rounded-full bg-teal-300" />
-                  Beta privata — nuove sessioni ogni settimana
+                  Launching soon — coming to iOS and Android
                 </div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200">
                   <img
@@ -36,30 +36,30 @@ export function HomePage() {
               </div>
 
               <h1 className="mt-5 text-balance text-4xl font-semibold tracking-tight text-slate-50 sm:text-5xl">
-                Micro-esercizi guidati per calmare il sistema nervoso.
+                Guided micro-exercises to calm your nervous system.
               </h1>
 
               <p className="mt-5 max-w-2xl text-pretty text-lg leading-relaxed text-slate-200">
-                Recalibra unisce respiro, voce e movimento in routine brevi e sicure.
-                Misura stress prima/dopo e costruisci costanza senza frizioni.
+                Recalibra combines breathing, voice, and movement into short, safe routines.
+                Track stress before/after and build consistency without friction.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <a
                   className="inline-flex items-center justify-center rounded-xl bg-teal-300 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-teal-200"
-                  href="mailto:hello@avalla.com?subject=Recalibra%20%E2%80%94%20Richiesta%20beta&body=Ciao%20Avalla%2C%20vorrei%20accedere%20alla%20beta%20di%20Recalibra.%0A%0ADevice%3A%20iOS%2FAndroid%0ACitt%C3%A0%3A%20">
-                  Richiedi accesso beta
+                  href="mailto:contact@recalibra.it?subject=Recalibra%20%E2%80%94%20Contact&body=Hi%2C%20I%27d%20like%20to%20receive%20updates%20about%20Recalibra.%0A%0ADevice%3A%20iOS%2FAndroid%0A">
+                  Contact
                 </a>
 
                 <a
                   href="#features"
                   className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-slate-50 hover:bg-white/10">
-                  Scopri le funzionalità
+                  Explore features
                 </a>
               </div>
 
               <p className="mt-6 text-sm text-slate-400">
-                Nota: Recalibra è un’app di wellness, non un dispositivo medico.
+                Note: Recalibra is a wellness app, not a medical device.
               </p>
             </div>
 
@@ -67,11 +67,11 @@ export function HomePage() {
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="text-sm font-semibold text-slate-50">Una sessione tipica</div>
-                    <div className="mt-1 text-sm text-slate-300">8–12 minuti</div>
+                    <div className="text-sm font-semibold text-slate-50">A typical session</div>
+                    <div className="mt-1 text-sm text-slate-300">8–12 minutes</div>
                   </div>
                   <div className="rounded-xl bg-teal-300/10 px-3 py-1 text-xs font-medium text-teal-200">
-                    Guidata
+                    Guided
                   </div>
                 </div>
 
@@ -79,17 +79,17 @@ export function HomePage() {
                   {[
                     {
                       title: "Check-in",
-                      desc: "Stress e intenzione della sessione",
+                      desc: "Stress level and session intention",
                       badge: "1 min",
                     },
                     {
-                      title: "Esercizio",
-                      desc: "Respiro + voce + movimento",
+                      title: "Exercise",
+                      desc: "Breathing + voice + movement",
                       badge: "6–9 min",
                     },
                     {
                       title: "Check-out",
-                      desc: "Riflessione e note rapide",
+                      desc: "Reflection and quick notes",
                       badge: "1–2 min",
                     },
                   ].map((step) => (
@@ -110,9 +110,9 @@ export function HomePage() {
                 </div>
 
                 <div className="mt-6 rounded-xl border border-white/10 bg-indigo-500/10 p-4">
-                  <div className="text-sm font-semibold text-slate-50">Integrazione HRV</div>
+                  <div className="text-sm font-semibold text-slate-50">HRV integration</div>
                   <div className="mt-1 text-sm text-slate-200">
-                    Apple Health / Google Fit (con consenso esplicito).
+                    Apple Health / Google Fit (with explicit consent).
                   </div>
                 </div>
               </div>
@@ -125,39 +125,38 @@ export function HomePage() {
         <Container className="py-16">
           <div className="max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-tight text-slate-50">
-              Progettata per rendere il recupero semplice.
+              Designed to make recovery effortless.
             </h2>
             <p className="mt-3 text-slate-200">
-              Routine brevi, contenuti chiari, attenzione alla sicurezza e alla
-              costanza.
+              Short routines, clear guidance, safety-first messaging, and gentle consistency.
             </p>
           </div>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                title: "Catalogo esercizi",
-                body: "Respiro, vocalizzazione, movimento e tecniche a impatto basso.",
+                title: "Exercise library",
+                body: "Breathing, vocalization, movement, and low-impact techniques.",
               },
               {
                 title: "Check-in / check-out",
-                body: "Traccia come ti senti prima e dopo, senza complicazioni.",
+                body: "Track how you feel before and after—without complexity.",
               },
               {
-                title: "Avvisi di sicurezza",
-                body: "Messaggi chiari per esercizi con acqua/ghiaccio e condizioni sensibili.",
+                title: "Safety prompts",
+                body: "Clear guidance for water/cold exercises and sensitive conditions.",
               },
               {
-                title: "Raccomandazioni",
-                body: "Suggerimenti personalizzati basati sulle tue abitudini.",
+                title: "Recommendations",
+                body: "Personalized suggestions based on your habits.",
               },
               {
-                title: "Cronologia",
-                body: "Sessioni e trend per capire cosa ti aiuta davvero.",
+                title: "History",
+                body: "Sessions and trends to understand what helps you most.",
               },
               {
-                title: "Notifiche",
-                body: "Promemoria gentili per mantenere la costanza.",
+                title: "Notifications",
+                body: "Gentle reminders to keep you consistent.",
               },
             ].map((item) => (
               <div
@@ -179,25 +178,25 @@ export function HomePage() {
         <Container className="py-16">
           <div className="max-w-2xl">
             <h2 className="text-2xl font-semibold tracking-tight text-slate-50">
-              Dentro Recalibra.
+              Inside Recalibra.
             </h2>
             <p className="mt-3 text-slate-200">
-              Alcune schermate dell’app in beta (UI in evoluzione).
+              A few screenshots from the current build (UI is evolving).
             </p>
           </div>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                title: "Catalogo esercizi",
+                title: "Exercise library",
                 src: "/screenshots/exercise-catalog.png",
               },
               {
-                title: "Dettaglio esercizio",
+                title: "Exercise details",
                 src: "/screenshots/exercise-detail.png",
               },
               {
-                title: "Player sessione",
+                title: "Session player",
                 src: "/screenshots/exercise-player-session.png",
               },
             ].map((shot) => (
@@ -227,26 +226,25 @@ export function HomePage() {
           <div className="grid gap-10 lg:grid-cols-12">
             <div className="lg:col-span-7">
               <h2 className="text-2xl font-semibold tracking-tight text-slate-50">
-                Sicurezza prima di tutto.
+                Safety first.
               </h2>
               <p className="mt-3 text-slate-200">
-                Alcune tecniche (es. acqua fredda) non sono adatte a tutti. In app
-                trovi screening e avvisi.
+                Some techniques (e.g., cold water) aren't suitable for everyone. The app includes screening and clear warnings.
               </p>
 
               <div className="mt-8 space-y-4">
                 {[
                   {
-                    title: "Non è un dispositivo medico",
-                    body: "Recalibra supporta il benessere, non diagnostica né cura.",
+                    title: "Not a medical device",
+                    body: "Recalibra supports wellbeing and does not diagnose or treat.",
                   },
                   {
-                    title: "Ascolta i segnali del corpo",
-                    body: "Interrompi se senti dolore, vertigini o disagio marcato.",
+                    title: "Listen to your body",
+                    body: "Stop if you feel pain, dizziness, or significant discomfort.",
                   },
                   {
-                    title: "Consenso per dati salute",
-                    body: "HRV e HealthKit/Fit sono opzionali e revocabili.",
+                    title: "Consent for health data",
+                    body: "HRV and HealthKit/Fit are optional and can be revoked anytime.",
                   },
                 ].map((item) => (
                   <div
@@ -265,21 +263,21 @@ export function HomePage() {
 
             <div className="lg:col-span-5">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <div className="text-sm font-semibold text-slate-50">Domande frequenti</div>
+                <div className="text-sm font-semibold text-slate-50">FAQ</div>
 
                 <div className="mt-4 space-y-4">
                   {[
                     {
-                      q: "Quando esce?",
-                      a: "Siamo in beta privata. Scrivici per accedere e ricevere aggiornamenti.",
+                      q: "When is it coming out?",
+                      a: "We're in the launch phase. Email us to receive updates.",
                     },
                     {
-                      q: "Serve un wearable?",
-                      a: "No. L’integrazione HRV è opzionale.",
+                      q: "Do I need a wearable?",
+                      a: "No. HRV integration is optional.",
                     },
                     {
-                      q: "Che dati raccogliete?",
-                      a: "Solo quanto necessario per l’esperienza. Leggi la Privacy Policy.",
+                      q: "What data do you collect?",
+                      a: "Only what's necessary for the experience. See the Privacy Policy.",
                     },
                   ].map((faq) => (
                     <div key={faq.q} className="rounded-xl bg-slate-950/30 p-4">
@@ -293,12 +291,12 @@ export function HomePage() {
                   <Link
                     className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-50 hover:bg-white/10"
                     href="/privacy">
-                    Leggi la Privacy Policy
+                    Read the Privacy Policy
                   </Link>
                   <Link
                     className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-50 hover:bg-white/10"
                     href="/terms">
-                    Leggi l’EULA
+                    Read the EULA
                   </Link>
                 </div>
               </div>

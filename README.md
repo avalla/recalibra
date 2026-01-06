@@ -8,6 +8,21 @@ integrations.
 
 ---
 
+## 🚀 Quick start (monorepo)
+
+```bash
+bun install
+
+# Mobile (Expo)
+bun run --cwd apps/mobile start
+
+# iOS / Android (dev builds)
+bun run --cwd apps/mobile ios
+bun run --cwd apps/mobile android
+```
+
+---
+
 ## 1️⃣ **Core Value Proposition**
 
 > “5 minutes a day to recalibrate your nervous system.”
@@ -69,44 +84,36 @@ integrations.
 * Stress perception tracking (1 to 10)
 * Dashboard with session history
 * “Vagal break” notifications
-* Supabase backend with RLS
-* Stripe/Outseta → Freemium/Premium subscription
+* RevenueCat → Freemium/Premium subscription
 * (Optional) HRV from smartwatch via Apple Health/Google Fit
 
 ---
 
 ## 5️⃣ **Recommended tech stack**
 
-| Component | Technology                        |
-|------------|-----------------------------------|
-| UI Web/App | ViteJS + React + Tailwind         |
-| Mobile     | React Native / Capacitor (phase 2) |
-| Backend    | Supabase (auth, storage, DB, RLS) |
-| Billing    | Outseta + Stripe                  |
-| Analytics  | Mixpanel / PostHog                |
-| AI         | LangChain + Supabase Vector Store |
-| Queue/task | Supabase Queue (pgmq)             |
+| Component | Technology |
+|------------|------------|
+| Mobile | React Native + Expo (TypeScript) |
+| Web | Vite + React (Bun runtime) |
+| Data | Local SQLite (user-owned) |
+| Billing | RevenueCat |
+| Analytics | Mixpanel |
+| AI tooling | LangChain (via MCP server `mcp-servers/llm-router`) |
+| Backend | No remote backend required for core flows (Supabase may exist for legacy/unused flows) |
 
 ---
 
-## 6️⃣ **Folder structure (hypothetical)**
+## 6️⃣ **Folder structure**
 
 ```
-/app
-  /web (vitejs)
-  /mobile (react-native - phase 2)
-  /packages
-    /ui
-    /supabase
-    /shared (utils/types)
-/supabase
-  schema.sql
-  policies.sql
-  seed.sql
+/apps
+  /mobile            # Expo app
+  /web               # Vite + React web app
+/mcp-servers
+  /llm-router        # MCP server (LangChain) used to review/enrich exercise seed data
 /docs
-  lean-canvas.md
-  exercise-protocols.md
-  roadmap.md
+  ...
+/supabase            # Legacy/experimental schema & migrations
 ```
 
 ---
