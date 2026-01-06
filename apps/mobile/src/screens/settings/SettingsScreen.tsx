@@ -22,7 +22,7 @@ const HEALTH_SYNC_KEY = '@recalibra:health_sync_enabled';
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { isPremium } = useSubscription();
   const {
     isAvailable: healthAvailable,
@@ -80,17 +80,6 @@ export const SettingsScreen: React.FC = () => {
 
     setHealthSyncEnabled(value);
     await AsyncStorage.setItem(HEALTH_SYNC_KEY, value ? 'true' : 'false');
-  };
-
-  const handleSignOut = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: signOut },
-      ]
-    );
   };
 
   return (
@@ -227,12 +216,6 @@ export const SettingsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* Sign Out */}
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Ionicons name="log-out" size={20} color={Colors.error} />
-          <Text style={styles.signOutText}>Sign Out</Text>
-        </TouchableOpacity>
-
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </Screen>
@@ -330,22 +313,6 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontStyle: 'italic',
     marginTop: Spacing.sm,
-  },
-  signOutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.error,
-    gap: Spacing.sm,
-    marginTop: Spacing.lg,
-  },
-  signOutText: {
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
-    color: Colors.error,
   },
   bottomSpacer: {
     height: 50,

@@ -10,13 +10,13 @@
     "userInterfaceStyle": "dark",
     "scheme": "recalibra",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#0F1A19"
     },
     "ios": {
       "icon": "./assets/icon.png",
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.recalibra.mobile",
       "infoPlist": {
         "NSHealthShareUsageDescription": "Recalibra needs access to your health data to track HRV and stress levels.",

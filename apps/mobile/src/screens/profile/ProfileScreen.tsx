@@ -79,7 +79,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 );
 
 export const ProfileScreen: React.FC = () => {
-  const { signOut } = useAuth();
+  useAuth();
   const navigation = useNavigation<any>();
   const { isPremium, subscription, presentPaywall, presentCustomerCenter } = useSubscription();
   const {
@@ -131,17 +131,6 @@ export const ProfileScreen: React.FC = () => {
         );
       }
     }
-  };
-
-  const handleLogout = () => {
-    Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Log Out', style: 'destructive', onPress: () => signOut() },
-      ]
-    );
   };
 
   const handleHapticToggle = async (enabled: boolean) => {
@@ -280,12 +269,6 @@ export const ProfileScreen: React.FC = () => {
             onPress={handlePrivacyPolicy}
           />
         </View>
-
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color={Colors.textPrimary} />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
       </ScrollView>
     </Screen>
   );
@@ -355,21 +338,6 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontSize: FontSize.sm,
     marginRight: Spacing.sm,
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.md,
-    marginTop: Spacing.xl,
-    gap: Spacing.sm,
-  },
-  logoutText: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.medium,
   },
   // Premium styles
   premiumCard: {

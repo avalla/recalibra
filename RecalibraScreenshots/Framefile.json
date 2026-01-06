@@ -1,0 +1,39 @@
+{
+  "device_frame_version": "latest",
+  "default": {
+    "title": {
+      "font_size": 64,
+      "color": "#FFFFFF"
+    },
+    "keyword": {
+      "font_size": 36,
+      "color": "#D1D5DB"
+    },
+    "padding": "5%x6%",
+    "show_complete_frame": true,
+    "title_below_image": false,
+    "frame": "BLACK"
+  },
+  "data": [
+    {
+      "filter": "Home",
+      "keyword": { "text": "Your daily reset" },
+      "title": { "text": "Home" }
+    },
+    {
+      "filter": "Exercises",
+      "keyword": { "text": "Find your next session" },
+      "title": { "text": "Exercise Library" }
+    },
+    {
+      "filter": "Exercise_Detail",
+      "keyword": { "text": "Step-by-step guidance" },
+      "title": { "text": "Exercise" }
+    },
+    {
+      "filter": "Current",
+      "keyword": { "text": "" },
+      "title": { "text": "" }
+    }
+  ]
+}
