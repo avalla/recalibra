@@ -15,9 +15,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Svg, { Circle, Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { useSessions, useAudio, getAudioRecommendation, useHaptics } from '../../hooks';
+import { useSessions, useAudio, getAudioRecommendation, useHaptics, useSubscription } from '../../hooks';
 import type { AudioPresetKey, ExerciseCategory } from '../../hooks';
 import type { RootStackParamList } from '../../types';
 import { Screen } from '../../components';
@@ -61,10 +62,97 @@ const DEFAULT_PATTERN: BreathingPattern = {
 
 type SessionRouteProps = RouteProp<RootStackParamList, 'ExerciseSession'>;
 
+type PhasePalette = {
+  inhale: string;
+  hold: string;
+  exhale: string;
+  rest: string;
+};
+
+type CycleSegment = {
+  phase: BreathingPhase;
+  duration: number;
+};
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
+  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
+  return {
+    x: cx + r * Math.cos(angleRad),
+    y: cy + r * Math.sin(angleRad),
+  };
+}
+
+function describeArcPath(cx: number, cy: number, r: number, startAngle: number, endAngle: number): string {
+  const start = polarToCartesian(cx, cy, r, endAngle);
+  const end = polarToCartesian(cx, cy, r, startAngle);
+  const sweep = endAngle - startAngle;
+  const largeArcFlag = sweep <= 180 ? '0' : '1';
+  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
+}
+
+function buildCycleSegments(pattern: BreathingPattern): CycleSegment[] {
+  if (pattern.special === 'double_inhale') {
+    const segments: CycleSegment[] = [
+      { phase: 'inhale', duration: 2 },
+      { phase: 'inhale2', duration: 1 },
+      { phase: 'exhale', duration: 8 },
+    ];
+    if (pattern.rest > 0) segments.push({ phase: 'rest', duration: pattern.rest });
+    return segments;
+  }
+
+  if (pattern.special === 'wim_hof') {
+    const segments: CycleSegment[] = [
+      { phase: 'inhale', duration: pattern.inhale },
+      { phase: 'exhale', duration: pattern.exhale },
+    ];
+    const retention = pattern.retention_seconds || 60;
+    if (retention > 0) segments.push({ phase: 'retention', duration: retention });
+    return segments;
+  }
+
+  const segments: CycleSegment[] = [{ phase: 'inhale', duration: pattern.inhale }];
+  if (pattern.hold > 0) segments.push({ phase: 'hold', duration: pattern.hold });
+  segments.push({ phase: 'exhale', duration: pattern.exhale });
+  if (pattern.rest > 0) segments.push({ phase: 'rest', duration: pattern.rest });
+  return segments;
+}
+
+function getPhaseTypePalette(): PhasePalette {
+  return {
+    inhale: Colors.primary,
+    hold: Colors.warning,
+    exhale: Colors.success,
+    rest: Colors.textSecondary,
+  };
+}
+
+function getPhaseColor(phase: BreathingPhase, palette: PhasePalette): string {
+  switch (phase) {
+    case 'inhale':
+    case 'inhale2':
+      return palette.inhale;
+    case 'hold':
+    case 'retention':
+      return palette.hold;
+    case 'exhale':
+      return palette.exhale;
+    case 'rest':
+      return palette.rest;
+    default:
+      return palette.inhale;
+  }
+}
+
 export const ExerciseSessionScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<SessionRouteProps>();
   const insets = useSafeAreaInsets();
+  const { canAccessAudio } = useSubscription();
   
   const {
     exerciseId,
@@ -109,7 +197,9 @@ export const ExerciseSessionScreen: React.FC = () => {
   const [selectedAudioId, setSelectedAudioId] = useState<AudioPresetKey>(() => {
     if (!audioPreset) return 'silence';
     const isValidPreset = AUDIO_OPTIONS.some((option: AudioOption) => option.id === audioPreset);
-    return isValidPreset ? (audioPreset as AudioPresetKey) : 'silence';
+    if (!isValidPreset) return 'silence';
+    if (!canAccessAudio(audioPreset)) return 'silence';
+    return audioPreset as AudioPresetKey;
   });
   const [audioRecommendation, setAudioRecommendation] = useState<{
     primary: AudioPresetKey;
@@ -518,6 +608,12 @@ export const ExerciseSessionScreen: React.FC = () => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const sessionDuration = durationMinutes * 60;
 
+  const [smoothPhaseProgress, setSmoothPhaseProgress] = useState(0);
+
+  const phaseFadeAnim = useRef(new Animated.Value(1)).current;
+  const prevPhaseColorRef = useRef<string>(Colors.primary);
+  const currentPhaseColorRef = useRef<string>(Colors.primary);
+
   const sessionStartedAtMsRef = useRef<number | null>(null);
   const pausedAtMsRef = useRef<number | null>(null);
   const pausedTotalMsRef = useRef<number>(0);
@@ -527,6 +623,10 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   const scaleAnim = useRef(new Animated.Value(0.6)).current;
   const phaseTextOpacityAnim = useRef(new Animated.Value(1)).current;
+
+  const phaseStartedAtMsRef = useRef<number | null>(null);
+  const phasePausedAtMsRef = useRef<number | null>(null);
+  const phasePausedTotalMsRef = useRef<number>(0);
 
   // Get label for current phase (with special pattern support)
   const getPhaseLabel = (phase: BreathingPhase): string => {
@@ -941,10 +1041,99 @@ export const ExerciseSessionScreen: React.FC = () => {
   const nowCoachLine = useMemo(() => getPhaseCoachLine(currentPhase), [currentPhase]);
   const nextCoachLine = useMemo(() => getPhaseCoachLine(nextPhase), [nextPhase]);
 
+  const phaseDuration = useMemo(() => getPhaseDuration(currentPhase), [currentPhase]);
+
+  const phasePalette = useMemo(() => getPhaseTypePalette(), []);
+  const activePhaseColor = useMemo(() => getPhaseColor(currentPhase, phasePalette), [currentPhase, phasePalette]);
+
+  // Smooth phase progress (for ring + dot), based on real time rather than 1s ticks
+  useEffect(() => {
+    if (sessionState !== 'playing') {
+      if (phaseStartedAtMsRef.current !== null && phasePausedAtMsRef.current === null) {
+        phasePausedAtMsRef.current = Date.now();
+      }
+      return;
+    }
+
+    // entering/resuming playing
+    if (phaseStartedAtMsRef.current === null) {
+      phaseStartedAtMsRef.current = Date.now();
+      phasePausedTotalMsRef.current = 0;
+      phasePausedAtMsRef.current = null;
+      setSmoothPhaseProgress(0);
+      return;
+    }
+
+    if (phasePausedAtMsRef.current !== null) {
+      phasePausedTotalMsRef.current += Date.now() - phasePausedAtMsRef.current;
+      phasePausedAtMsRef.current = null;
+    }
+  }, [sessionState]);
+
+  useEffect(() => {
+    // Crossfade from the *previous* active color to the new one
+    const previous = currentPhaseColorRef.current;
+    prevPhaseColorRef.current = previous;
+    currentPhaseColorRef.current = activePhaseColor;
+
+    phaseFadeAnim.stopAnimation();
+    phaseFadeAnim.setValue(0);
+    Animated.timing(phaseFadeAnim, {
+      toValue: 1,
+      duration: 320,
+      useNativeDriver: false,
+    }).start();
+  }, [activePhaseColor, phaseFadeAnim]);
+
+  useEffect(() => {
+    if (sessionState !== 'playing') return;
+    phaseStartedAtMsRef.current = Date.now();
+    phasePausedAtMsRef.current = null;
+    phasePausedTotalMsRef.current = 0;
+    setSmoothPhaseProgress(0);
+  }, [currentPhase, sessionState]);
+
+  useEffect(() => {
+    if (sessionState !== 'playing') return;
+    if (phaseDuration <= 0) return;
+
+    let rafId = 0;
+
+    const tick = () => {
+      const startedAt = phaseStartedAtMsRef.current;
+      if (startedAt === null) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      const elapsedMs = Date.now() - startedAt - phasePausedTotalMsRef.current;
+      const progress = clampNumber(elapsedMs / (phaseDuration * 1000), 0, 1);
+      setSmoothPhaseProgress(progress);
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [phaseDuration, sessionState]);
+
+  const cycleSegments = useMemo(() => buildCycleSegments(pattern), [pattern]);
+
+  const cycleTotalSeconds = useMemo(() => {
+    const total = cycleSegments.reduce((sum, s) => sum + s.duration, 0);
+    return total > 0 ? total : 1;
+  }, [cycleSegments]);
+
+  const activeSegmentIndex = useMemo(() => {
+    const idx = cycleSegments.findIndex((s) => s.phase === currentPhase);
+    return idx >= 0 ? idx : 0;
+  }, [currentPhase, cycleSegments]);
+
+  const phaseColor = activePhaseColor;
+
   const phaseTimeText = useMemo(() => {
     if (sessionState === 'countdown') return '';
-    if (phaseTime <= 3) return `${phaseTime}s`;
-    return `~${phaseTime}s`;
+    return `${phaseTime}s`;
   }, [phaseTime, sessionState]);
 
   return (
@@ -1211,10 +1400,149 @@ export const ExerciseSessionScreen: React.FC = () => {
 
                   <View style={styles.circleWrapper}>
                     <View style={styles.outerRing}>
-                      <View style={[styles.progressArc, { transform: [{ rotate: `${progress * 360}deg` }] }]} />
+                      <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE} style={styles.phaseRingSvg}>
+                        {(() => {
+                          const cx = CIRCLE_SIZE / 2;
+                          const cy = CIRCLE_SIZE / 2;
+                          const r = CIRCLE_SIZE / 2 - 8;
+                          const strokeWidth = 6;
+                          let angleCursor = -90;
+
+                          const AnimatedPath = Animated.createAnimatedComponent(Path);
+                          const AnimatedSvgCircle = Animated.createAnimatedComponent(Circle);
+
+                          return cycleSegments.map((segment, index) => {
+                            const sweep = (segment.duration / cycleTotalSeconds) * 360;
+                            const startAngle = angleCursor;
+                            const endAngle = angleCursor + sweep;
+                            angleCursor += sweep;
+
+                            const basePath = describeArcPath(cx, cy, r, startAngle, endAngle);
+                            const isActive = index === activeSegmentIndex;
+                            const activeEndAngle = startAngle + sweep * smoothPhaseProgress;
+                            const activeSweep = activeEndAngle - startAngle;
+                            const safeActiveEndAngle = activeSweep < 0.5 ? startAngle + 0.5 : activeEndAngle;
+                            const activePath = describeArcPath(cx, cy, r, startAngle, safeActiveEndAngle);
+
+                            const segmentColor = getPhaseColor(segment.phase, phasePalette);
+
+                            return (
+                              <React.Fragment key={`${segment.phase}-${index}`}>
+                                <Path
+                                  d={basePath}
+                                  stroke={segmentColor}
+                                  strokeWidth={strokeWidth}
+                                  strokeLinecap="round"
+                                  fill="transparent"
+                                  opacity={isActive ? 0.35 : 0.14}
+                                />
+                                {isActive && (
+                                  <>
+                                    <AnimatedPath
+                                      d={activePath}
+                                      stroke={prevPhaseColorRef.current}
+                                      strokeWidth={strokeWidth}
+                                      strokeLinecap="round"
+                                      fill="transparent"
+                                      opacity={phaseFadeAnim.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [0.95, 0],
+                                      })}
+                                    />
+                                    <AnimatedPath
+                                      d={activePath}
+                                      stroke={segmentColor}
+                                      strokeWidth={strokeWidth}
+                                      strokeLinecap="round"
+                                      fill="transparent"
+                                      opacity={phaseFadeAnim.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [0, 0.95],
+                                      })}
+                                    />
+                                    {(() => {
+                                      const dotPos = polarToCartesian(cx, cy, r, safeActiveEndAngle);
+                                      return (
+                                        <>
+                                          <AnimatedSvgCircle
+                                            cx={dotPos.x}
+                                            cy={dotPos.y}
+                                            r={10}
+                                            fill={prevPhaseColorRef.current}
+                                            opacity={phaseFadeAnim.interpolate({
+                                              inputRange: [0, 1],
+                                              outputRange: [0.18, 0],
+                                            })}
+                                          />
+                                          <AnimatedSvgCircle
+                                            cx={dotPos.x}
+                                            cy={dotPos.y}
+                                            r={7}
+                                            fill={prevPhaseColorRef.current}
+                                            opacity={phaseFadeAnim.interpolate({
+                                              inputRange: [0, 1],
+                                              outputRange: [0.28, 0],
+                                            })}
+                                          />
+                                          <AnimatedSvgCircle
+                                            cx={dotPos.x}
+                                            cy={dotPos.y}
+                                            r={4}
+                                            fill={prevPhaseColorRef.current}
+                                            opacity={phaseFadeAnim.interpolate({
+                                              inputRange: [0, 1],
+                                              outputRange: [0.95, 0],
+                                            })}
+                                          />
+                                          <AnimatedSvgCircle
+                                            cx={dotPos.x}
+                                            cy={dotPos.y}
+                                            r={10}
+                                            fill={segmentColor}
+                                            opacity={phaseFadeAnim.interpolate({
+                                              inputRange: [0, 1],
+                                              outputRange: [0, 0.18],
+                                            })}
+                                          />
+                                          <AnimatedSvgCircle
+                                            cx={dotPos.x}
+                                            cy={dotPos.y}
+                                            r={7}
+                                            fill={segmentColor}
+                                            opacity={phaseFadeAnim.interpolate({
+                                              inputRange: [0, 1],
+                                              outputRange: [0, 0.28],
+                                            })}
+                                          />
+                                          <AnimatedSvgCircle
+                                            cx={dotPos.x}
+                                            cy={dotPos.y}
+                                            r={4}
+                                            fill={segmentColor}
+                                            opacity={phaseFadeAnim.interpolate({
+                                              inputRange: [0, 1],
+                                              outputRange: [0, 0.95],
+                                            })}
+                                          />
+                                        </>
+                                      );
+                                    })()}
+                                  </>
+                                )}
+                              </React.Fragment>
+                            );
+                          });
+                        })()}
+                      </Svg>
                     </View>
-                    <Animated.View style={[styles.breathingCircle, { transform: [{ scale: scaleAnim }] }]}>
-                      <View style={styles.innerCircle} />
+                    <Animated.View
+                      style={[
+                        styles.breathingCircle,
+                        { backgroundColor: Colors.backgroundElevated },
+                        { transform: [{ scale: scaleAnim }] },
+                      ]}
+                    >
+                      <View style={[styles.innerCircle, { backgroundColor: phaseColor, opacity: 0.14 }]} />
                     </Animated.View>
                   </View>
 
@@ -1553,17 +1881,11 @@ const styles = StyleSheet.create({
     width: CIRCLE_SIZE,
     height: CIRCLE_SIZE,
     borderRadius: CIRCLE_SIZE / 2,
-    borderWidth: 4,
-    borderColor: Colors.backgroundLight,
   },
-  progressArc: {
+  phaseRingSvg: {
     position: 'absolute',
-    top: -4,
-    left: CIRCLE_SIZE / 2 - 4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
+    top: 0,
+    left: 0,
   },
   breathingCircle: {
     width: CIRCLE_SIZE * 0.8,

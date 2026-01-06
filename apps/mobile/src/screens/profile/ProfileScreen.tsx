@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
-  Modal,
   Linking,
   Platform,
 } from 'react-native';
@@ -16,7 +15,6 @@ import { useNavigation } from '@react-navigation/native';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Screen } from '../../components';
 import { useAuth } from '../../contexts';
-import { useNotifications } from '@/hooks';
 import { useSubscription } from '@/hooks';
 import { useAppleHealth } from '@/hooks';
 import { useHaptics } from '@/hooks';
@@ -84,7 +82,6 @@ export const ProfileScreen: React.FC = () => {
   const { signOut } = useAuth();
   const navigation = useNavigation<any>();
   const { isPremium, subscription, presentPaywall, presentCustomerCenter } = useSubscription();
-  const { reminderSettings, saveSettings, sendTestNotification } = useNotifications();
   const {
     isAvailable: healthAvailable,
     isAuthorized: healthAuthorized,
@@ -93,10 +90,6 @@ export const ProfileScreen: React.FC = () => {
     getAverageHRV,
   } = useAppleHealth();
   const { isEnabled: hapticEnabled, setEnabled: setHapticEnabled, medium: hapticMedium } = useHaptics();
-
-  const [showReminderModal, setShowReminderModal] = useState(false);
-  const [showGoalsModal, setShowGoalsModal] = useState(false);
-  const [weeklySessionGoal, setWeeklySessionGoal] = useState(3);
   const [latestHRV, setLatestHRV] = useState<number | null>(null);
   const [avgHRV, setAvgHRV] = useState<number | null>(null);
 
@@ -139,37 +132,6 @@ export const ProfileScreen: React.FC = () => {
       }
     }
   };
-  const [weeklyMinutesGoal, setWeeklyMinutesGoal] = useState(30);
-  const [tempTime, setTempTime] = useState(reminderSettings.time);
-  const [tempDays, setTempDays] = useState<number[]>(reminderSettings.days);
-
-  useEffect(() => {
-    if (!showReminderModal) return;
-    setTempTime(reminderSettings.time);
-    setTempDays(reminderSettings.days);
-  }, [showReminderModal, reminderSettings.days, reminderSettings.time]);
-
-  const handleReminderToggle = async (enabled: boolean) => {
-    await saveSettings({ enabled });
-    if (enabled) {
-      Alert.alert('Reminders Enabled', `You'll be reminded at ${reminderSettings.time}`);
-    }
-  };
-
-  const handleTestNotification = async () => {
-    await sendTestNotification();
-    Alert.alert('Test Sent', 'Check your notifications in a few seconds!');
-  };
-
-  const formatReminderDays = () => {
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    if (reminderSettings.days.length === 7) return 'Every day';
-    if (reminderSettings.days.length === 5 &&
-        reminderSettings.days.every((d: number) => d >= 1 && d <= 5)) return 'Weekdays';
-    if (reminderSettings.days.length === 2 &&
-        reminderSettings.days.includes(0) && reminderSettings.days.includes(6)) return 'Weekends';
-    return reminderSettings.days.map((n: number) => dayNames[n]).join(', ');
-  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -182,66 +144,12 @@ export const ProfileScreen: React.FC = () => {
     );
   };
 
-  const handleSoundSettings = () => {
-    Alert.alert(
-      'Sound Settings',
-      'Choose your preferred sound',
-      [
-        { text: 'Calm Bell', onPress: () => {} },
-        { text: 'Gentle Chime', onPress: () => {} },
-        { text: 'Nature Sound', onPress: () => {} },
-        { text: 'Silent', onPress: () => {} },
-        { text: 'Cancel', style: 'cancel' },
-      ]
-    );
-  };
-
   const handleHapticToggle = async (enabled: boolean) => {
     await setHapticEnabled(enabled);
     // Give haptic feedback when enabling
     if (enabled) {
       hapticMedium();
     }
-  };
-
-  const handleExportData = () => {
-    Alert.alert(
-      'Export My Data',
-      'We will prepare your data export and send it to your email address.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Export',
-          onPress: () => {
-            Alert.alert('Export Requested', 'You will receive an email with your data within 24 hours.');
-          }
-        },
-      ]
-    );
-  };
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              'Confirm Deletion',
-              'Type DELETE to confirm account deletion.',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                // TODO: Implement actual account deletion
-              ]
-            );
-          }
-        },
-      ]
-    );
   };
 
   const handleMedicalDisclaimer = () => {
@@ -253,26 +161,7 @@ export const ProfileScreen: React.FC = () => {
   };
 
   const handlePrivacyPolicy = () => {
-    Linking.openURL('https://recalibra.com/privacy');
-  };
-
-  const handleSaveReminder = async () => {
-    await saveSettings({ time: tempTime, days: tempDays });
-    setShowReminderModal(false);
-  };
-
-  const toggleDay = (day: number) => {
-    if (tempDays.includes(day)) {
-      setTempDays(tempDays.filter((d) => d !== day));
-    } else {
-      setTempDays([...tempDays, day].sort());
-    }
-  };
-
-  const handleSaveGoals = () => {
-    // TODO: Persist goals
-    setShowGoalsModal(false);
-    Alert.alert('Goals Updated', `Weekly goal: ${weeklySessionGoal} sessions, ${weeklyMinutesGoal} minutes`);
+    Linking.openURL('https://recalibra.it/privacy');
   };
 
   return (
@@ -296,8 +185,7 @@ export const ProfileScreen: React.FC = () => {
             </View>
             <Text style={styles.premiumTitle}>You're Premium!</Text>
             <Text style={styles.premiumSubtitle}>
-              {subscription?.plan === 'lifetime' ? 'Lifetime access' :
-               subscription?.plan === 'yearly' ? 'Yearly subscription' : 'Monthly subscription'}
+              {subscription?.plan === 'yearly' ? 'Yearly subscription' : 'Monthly subscription'}
             </Text>
             <TouchableOpacity
               style={styles.manageButton}
@@ -309,7 +197,14 @@ export const ProfileScreen: React.FC = () => {
         ) : (
           <TouchableOpacity
             style={styles.upgradeCard}
-            onPress={presentPaywall}
+            onPress={() => {
+              const parent = navigation.getParent?.();
+              if (parent?.navigate) {
+                parent.navigate('Paywall');
+                return;
+              }
+              navigation.navigate('Paywall');
+            }}
           >
             <View style={styles.upgradeContent}>
               <Text style={styles.upgradeEmoji}>✨</Text>
@@ -321,55 +216,6 @@ export const ProfileScreen: React.FC = () => {
             <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
           </TouchableOpacity>
         )}
-
-        {/* Reminders */}
-        <Text style={styles.sectionTitle}>Daily Reminders</Text>
-        <View style={styles.settingsSection}>
-          <SettingsItem
-            icon="notifications-outline"
-            iconColor={Colors.primary}
-            label="Enable Reminders"
-            hasSwitch
-            hasArrow={false}
-            switchValue={reminderSettings.enabled}
-            onSwitchChange={handleReminderToggle}
-          />
-          <SettingsItem
-            icon="time-outline"
-            label="Reminder Time"
-            value={reminderSettings.time}
-            onPress={() => setShowReminderModal(true)}
-          />
-          <SettingsItem
-            icon="calendar-outline"
-            label="Reminder Days"
-            value={formatReminderDays()}
-            onPress={() => setShowReminderModal(true)}
-          />
-          <SettingsItem
-            icon="paper-plane-outline"
-            label="Test Notification"
-            onPress={handleTestNotification}
-          />
-        </View>
-
-        {/* Weekly Goals */}
-        <Text style={styles.sectionTitle}>Weekly Goals</Text>
-        <View style={styles.settingsSection}>
-          <SettingsItem
-            icon="flag-outline"
-            iconColor={Colors.success}
-            label="Sessions per Week"
-            value={`${weeklySessionGoal} sessions`}
-            onPress={() => setShowGoalsModal(true)}
-          />
-          <SettingsItem
-            icon="timer-outline"
-            label="Minutes per Week"
-            value={`${weeklyMinutesGoal} min`}
-            onPress={() => setShowGoalsModal(true)}
-          />
-        </View>
 
         {/* Connections */}
         <Text style={styles.sectionTitle}>Connections</Text>
@@ -411,11 +257,6 @@ export const ProfileScreen: React.FC = () => {
             onPress={() => navigation.navigate('QuickStartPreferences', { from: 'settings' })}
           />
           <SettingsItem
-            icon="volume-high-outline"
-            label="Sound Settings"
-            onPress={handleSoundSettings}
-          />
-          <SettingsItem
             icon="phone-portrait-outline"
             label="Haptic Feedback"
             hasSwitch
@@ -428,18 +269,6 @@ export const ProfileScreen: React.FC = () => {
         {/* Data & Privacy */}
         <Text style={styles.sectionTitle}>Data & Privacy</Text>
         <View style={styles.settingsSection}>
-          <SettingsItem
-            icon="download-outline"
-            label="Export My Data"
-            onPress={handleExportData}
-          />
-          <SettingsItem
-            icon="trash-outline"
-            iconColor={Colors.error}
-            label="Delete My Account"
-            danger
-            onPress={handleDeleteAccount}
-          />
           <SettingsItem
             icon="medical-outline"
             label="Medical Disclaimer"
@@ -458,128 +287,6 @@ export const ProfileScreen: React.FC = () => {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
-
-      {/* Reminder Settings Modal */}
-      <Modal
-        visible={showReminderModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowReminderModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Reminder Settings</Text>
-
-            <Text style={styles.modalLabel}>Time</Text>
-            <View style={styles.timeRow}>
-              {['07:00', '08:00', '09:00', '12:00', '18:00', '20:00'].map((time) => (
-                <TouchableOpacity
-                  key={time}
-                  style={[styles.timeChip, tempTime === time && styles.timeChipActive]}
-                  onPress={() => setTempTime(time)}
-                >
-                  <Text style={[styles.timeChipText, tempTime === time && styles.timeChipTextActive]}>
-                    {time}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.modalLabel}>Days</Text>
-            <View style={styles.daysRow}>
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[styles.dayChip, tempDays.includes(index) && styles.dayChipActive]}
-                  onPress={() => toggleDay(index)}
-                >
-                  <Text style={[styles.dayChipText, tempDays.includes(index) && styles.dayChipTextActive]}>
-                    {day}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalButtonCancel}
-                onPress={() => setShowReminderModal(false)}
-              >
-                <Text style={styles.modalButtonCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButtonSave}
-                onPress={handleSaveReminder}
-              >
-                <Text style={styles.modalButtonSaveText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Goals Modal */}
-      <Modal
-        visible={showGoalsModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowGoalsModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Weekly Goals</Text>
-
-            <Text style={styles.modalLabel}>Sessions per Week</Text>
-            <View style={styles.goalRow}>
-              <TouchableOpacity
-                style={styles.goalButton}
-                onPress={() => setWeeklySessionGoal(Math.max(1, weeklySessionGoal - 1))}
-              >
-                <Ionicons name="remove" size={24} color={Colors.textPrimary} />
-              </TouchableOpacity>
-              <Text style={styles.goalValue}>{weeklySessionGoal}</Text>
-              <TouchableOpacity
-                style={styles.goalButton}
-                onPress={() => setWeeklySessionGoal(Math.min(14, weeklySessionGoal + 1))}
-              >
-                <Ionicons name="add" size={24} color={Colors.textPrimary} />
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.modalLabel}>Minutes per Week</Text>
-            <View style={styles.goalRow}>
-              <TouchableOpacity
-                style={styles.goalButton}
-                onPress={() => setWeeklyMinutesGoal(Math.max(5, weeklyMinutesGoal - 5))}
-              >
-                <Ionicons name="remove" size={24} color={Colors.textPrimary} />
-              </TouchableOpacity>
-              <Text style={styles.goalValue}>{weeklyMinutesGoal}</Text>
-              <TouchableOpacity
-                style={styles.goalButton}
-                onPress={() => setWeeklyMinutesGoal(Math.min(300, weeklyMinutesGoal + 5))}
-              >
-                <Ionicons name="add" size={24} color={Colors.textPrimary} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalButtonCancel}
-                onPress={() => setShowGoalsModal(false)}
-              >
-                <Text style={styles.modalButtonCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalButtonSave}
-                onPress={handleSaveGoals}
-              >
-                <Text style={styles.modalButtonSaveText}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </Screen>
   );
 };
@@ -663,127 +370,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: FontWeight.medium,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: Colors.backgroundCard,
-    borderTopLeftRadius: BorderRadius.xl,
-    borderTopRightRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xl,
-  },
-  modalTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-    fontFamily: FontFamily.heading,
-    textAlign: 'center',
-    marginBottom: Spacing.lg,
-  },
-  modalLabel: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-    marginBottom: Spacing.sm,
-    marginTop: Spacing.md,
-  },
-  timeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  timeChip: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.backgroundLight,
-  },
-  timeChipActive: {
-    backgroundColor: Colors.primary,
-  },
-  timeChipText: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-  },
-  timeChipTextActive: {
-    color: Colors.textPrimary,
-    fontWeight: FontWeight.semibold,
-  },
-  daysRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  dayChip: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.backgroundLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayChipActive: {
-    backgroundColor: Colors.primary,
-  },
-  dayChipText: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.medium,
-  },
-  dayChipTextActive: {
-    color: Colors.textPrimary,
-  },
-  goalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.lg,
-  },
-  goalButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Colors.backgroundLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  goalValue: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.xxl,
-    fontWeight: FontWeight.bold,
-    minWidth: 60,
-    textAlign: 'center',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-    marginTop: Spacing.xl,
-  },
-  modalButtonCancel: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.backgroundLight,
-    alignItems: 'center',
-  },
-  modalButtonCancelText: {
-    color: Colors.textMuted,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.medium,
-  },
-  modalButtonSave: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-  },
-  modalButtonSaveText: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
   },
   // Premium styles
   premiumCard: {

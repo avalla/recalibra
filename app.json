@@ -1,10 +1,10 @@
 {
   "expo": {
     "android": {
-      "package": "com.avalla.recalibra"
+      "package": "com.recalibra.mobile"
     },
     "ios": {
-      "bundleIdentifier": "com.avalla.recalibra"
+      "bundleIdentifier": "com.recalibra.mobile"
     },
     "extra": {
       "eas": {

@@ -1,4 +1,4 @@
-package com.avalla.recalibra
+package com.recalibra.mobile
 
 import android.os.Build
 import android.os.Bundle

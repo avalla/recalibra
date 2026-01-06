@@ -1,4 +1,9 @@
-import Purchases, { LOG_LEVEL, type CustomerInfo, type PurchasesOffering } from 'react-native-purchases';
+import Purchases, {
+  LOG_LEVEL,
+  type CustomerInfo,
+  type PurchasesOffering,
+  type PurchasesPackage,
+} from 'react-native-purchases';
 import { Platform } from 'react-native';
 import { AppConfig } from '../config';
 
@@ -17,14 +22,23 @@ const getApiKey = (): string => {
   return AppConfig.REVENUECAT_IOS_KEY;
 };
 
+export const isRevenueCatConfigured = (): boolean => {
+  return Boolean(getApiKey());
+};
+
+const assertRevenueCatConfigured = (): void => {
+  if (!isRevenueCatConfigured()) {
+    throw new Error('RevenueCat not configured');
+  }
+};
+
 // Entitlement ID - this should match what you configured in RevenueCat dashboard
-export const ENTITLEMENT_ID = 'Recalibra Pro';
+export const ENTITLEMENT_ID = 'recalibra_pro';
 
 // Product IDs - these should match your offerings in RevenueCat
 export const PRODUCT_IDS = {
-  MONTHLY: 'monthly',
-  YEARLY: 'yearly', 
-  LIFETIME: 'lifetime',
+  MONTHLY: 'com.recalibra.subscription.monthly',
+  YEARLY: 'com.recalibra.subscription.yearly',
 };
 
 /**
@@ -38,14 +52,18 @@ export const initializeRevenueCat = async (userId?: string, isAnonymous?: boolea
       Purchases.setLogLevel(LOG_LEVEL.DEBUG);
     }
 
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      console.warn('[RevenueCat] Missing API key - skipping initialization');
+      return;
+    }
+
     // Configure with API key
     // Using the simpler configuration method for better compatibility
     Purchases.configure({
-      apiKey: getApiKey(),
+      apiKey,
       appUserID: isAnonymous ? userId || null : userId || null,
     });
-
-    console.log('[RevenueCat] Initialized successfully', { userId, isAnonymous });
   } catch (error) {
     console.error('[RevenueCat] Initialization error:', error);
     // Don't throw - let app continue without RevenueCat if it fails
@@ -59,6 +77,7 @@ export const initializeRevenueCat = async (userId?: string, isAnonymous?: boolea
  */
 export const loginUser = async (userId: string, previousAnonymousId?: string): Promise<CustomerInfo> => {
   try {
+    assertRevenueCatConfigured();
     // If upgrading from anonymous, identify with the same anonymous ID first
     if (previousAnonymousId) {
       await Purchases.logIn(previousAnonymousId);
@@ -79,6 +98,7 @@ export const loginUser = async (userId: string, previousAnonymousId?: string): P
  */
 export const logoutUser = async (): Promise<CustomerInfo> => {
   try {
+    assertRevenueCatConfigured();
     const customerInfo = await Purchases.logOut();
     console.log('[RevenueCat] User logged out');
     return customerInfo;
@@ -93,6 +113,7 @@ export const logoutUser = async (): Promise<CustomerInfo> => {
  */
 export const getCustomerInfo = async (): Promise<CustomerInfo> => {
   try {
+    assertRevenueCatConfigured();
     const customerInfo = await Purchases.getCustomerInfo();
     return customerInfo;
   } catch (error) {
@@ -125,10 +146,26 @@ export const getExpirationDate = (customerInfo: CustomerInfo): Date | null => {
  */
 export const getOfferings = async (): Promise<PurchasesOffering | null> => {
   try {
+    assertRevenueCatConfigured();
     const offerings = await Purchases.getOfferings();
     return offerings.current;
   } catch (error) {
     console.error('[RevenueCat] Error getting offerings:', error);
+    throw error;
+  }
+};
+
+export const purchasePackage = async (selectedPackage: PurchasesPackage): Promise<CustomerInfo | null> => {
+  try {
+    assertRevenueCatConfigured();
+    const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
+    return customerInfo;
+  } catch (error: unknown) {
+    const maybeError = error as { userCancelled?: boolean };
+    if (maybeError?.userCancelled === true) {
+      return null;
+    }
+    console.error('[RevenueCat] Error purchasing package:', error);
     throw error;
   }
 };
@@ -138,6 +175,7 @@ export const getOfferings = async (): Promise<PurchasesOffering | null> => {
  */
 export const restorePurchases = async (): Promise<CustomerInfo> => {
   try {
+    assertRevenueCatConfigured();
     const customerInfo = await Purchases.restorePurchases();
     console.log('[RevenueCat] Purchases restored');
     return customerInfo;

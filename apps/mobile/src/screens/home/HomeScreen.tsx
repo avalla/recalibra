@@ -76,8 +76,17 @@ export const HomeScreen: React.FC = () => {
   const stressTrend = useMemo(() => createStressTrend(), []);
 
   const suggestedExercise = useMemo(() => {
-    return exercises.find((e) => e.category === 'breathing') || exercises[0];
-  }, [exercises]);
+    const lastStressLevel =
+      (lastSession as any)?.post_stress_level ?? (lastSession as any)?.pre_stress_level;
+
+    const suggested = getExerciseForQuickStart(
+      { mode: 'smart' },
+      exercises,
+      { now: new Date(), lastStressLevel }
+    );
+
+    return suggested;
+  }, [exercises, lastSession]);
   
   const handleQuickStart = () => {
     if (!quickStartPreference) {
@@ -170,19 +179,7 @@ export const HomeScreen: React.FC = () => {
                   screen: 'ExercisesTab',
                   params: {
                     screen: 'ExerciseSession',
-                    params: {
-                      exerciseId: suggestedExercise.id,
-                      exerciseName: suggestedExercise.name,
-                      durationMinutes: suggestedExercise.duration_minutes,
-                      audioPreset: suggestedExercise.audio_preset || 'silence',
-                      exerciseCategory: suggestedExercise.category,
-                      breathingPattern: suggestedExercise.breathing_pattern,
-                      origin: suggestedExercise.origin || 'universal',
-                      history: suggestedExercise.history || '',
-                      benefits: suggestedExercise.benefits || [],
-                      tips: suggestedExercise.tips || [],
-                      instructions: suggestedExercise.instructions || [],
-                    },
+                    params: toExerciseSessionParams(suggestedExercise),
                   },
                 })
               }

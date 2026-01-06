@@ -1,6 +1,6 @@
 import type { CustomerInfo } from 'react-native-purchases';
 
-export type SubscriptionPlan = 'monthly' | 'yearly' | 'lifetime';
+export type SubscriptionPlan = 'monthly' | 'yearly';
 export type SubscriptionStatus = 'active' | 'cancelled' | 'expired' | 'trial' | 'none';
 
 export interface SubscriptionInfo {
@@ -32,7 +32,6 @@ export function parseSubscriptionInfo(
   if (entitlement?.productIdentifier) {
     if (entitlement.productIdentifier.includes('monthly')) plan = 'monthly';
     else if (entitlement.productIdentifier.includes('yearly')) plan = 'yearly';
-    else if (entitlement.productIdentifier.includes('lifetime')) plan = 'lifetime';
   }
 
   return {

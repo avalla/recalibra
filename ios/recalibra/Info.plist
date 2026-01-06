@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.avalla.recalibra</string>
+          <string>com.recalibra.mobile</string>
         </array>
       </dict>
     </array>

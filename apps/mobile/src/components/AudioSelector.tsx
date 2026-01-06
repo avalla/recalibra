@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../constants';
 import { AUDIO_PRESETS, useAudio } from '../hooks/useAudio';
 import type { AudioPresetKey } from '../hooks/useAudio';
+import { useSubscription } from '../hooks/useSubscription';
 
 export type AudioType = 'silence' | 'frequency' | 'nature' | 'tibetan';
 
@@ -85,6 +86,14 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
   recommendedId,
   showPreviewButton = true,
 }) => {
+  const { canAccessAudio, presentPaywall, isPremium } = useSubscription();
+
+  useEffect(() => {
+    if (isPremium) return;
+    if (canAccessAudio(selectedAudioId)) return;
+    onSelect('silence');
+  }, [canAccessAudio, isPremium, onSelect, selectedAudioId]);
+
   useEffect(() => {
     if (Platform.OS !== 'android') return;
     if (!UIManager.setLayoutAnimationEnabledExperimental) return;
@@ -317,6 +326,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
           const isRecommended = option.id === recommendedId;
           const isPreviewingThis = isPreviewPlaying && previewAudioId === option.id;
           const isBinauralOption = option.id.startsWith('binaural_');
+          const isLocked = !isPremium && !canAccessAudio(option.id);
 
           return (
             <Pressable
@@ -324,11 +334,18 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
               style={({ pressed }) => [
                 styles.optionCard,
                 isSelected && styles.optionCardActive,
+                isLocked && styles.optionCardLocked,
                 pressed && styles.optionCardPressed,
               ]}
-              onPress={() => {
+              onPress={async () => {
                 animateNextLayout();
-                onSelect(option.id);
+                if (!isLocked) {
+                  onSelect(option.id);
+                  return;
+                }
+
+                const didPurchase = await presentPaywall();
+                if (didPurchase) onSelect(option.id);
               }}
               hitSlop={10}
             >
@@ -346,6 +363,12 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                       <Text style={[styles.optionTitle, isSelected && styles.optionTitleActive]}>
                         {option.name}
                       </Text>
+                      {isLocked && (
+                        <View style={styles.proBadge}>
+                          <Ionicons name="lock-closed" size={12} color={Colors.warning} />
+                          <Text style={styles.proBadgeText}>PRO</Text>
+                        </View>
+                      )}
                       {isBinauralOption && (
                         <View style={[styles.headphonesBadge, isSelected && styles.headphonesBadgeActive]}>
                           <Ionicons
@@ -389,6 +412,10 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                         style={[styles.previewButton, isPreviewingThis && styles.previewButtonActive]}
                         onPress={async () => {
                           animateNextLayout();
+                          if (isLocked) {
+                            const didPurchase = await presentPaywall();
+                            if (!didPurchase) return;
+                          }
                           if (previewTimeoutRef.current) {
                             clearTimeout(previewTimeoutRef.current);
                             previewTimeoutRef.current = null;
@@ -607,6 +634,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.backgroundCard,
   },
+  optionCardLocked: {
+    opacity: 0.75,
+    borderColor: 'rgba(245, 158, 11, 0.35)',
+  },
   optionCardRecommended: {
     borderColor: Colors.primary,
   },
@@ -635,6 +666,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
+  },
+  proBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.35)',
+  },
+  proBadgeText: {
+    color: Colors.warning,
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.semibold,
   },
   optionTitle: {
     color: Colors.textPrimary,

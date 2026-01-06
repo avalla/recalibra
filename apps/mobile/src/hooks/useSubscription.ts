@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Alert, Linking, Platform } from 'react-native';
+import Purchases from 'react-native-purchases';
 import type { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 import {
   getCustomerInfo,
   checkPremiumStatus,
   getOfferings,
+  isRevenueCatConfigured,
+  purchasePackage as rcPurchasePackage,
   restorePurchases as rcRestorePurchases,
   addCustomerInfoUpdateListener,
   ENTITLEMENT_ID,
@@ -26,15 +29,12 @@ export type { SubscriptionPlan, SubscriptionStatus };
 
 export { PREMIUM_FEATURES } from '../features/subscription';
 
-// ⚠️ DEVELOPMENT ONLY - Set to true to bypass RevenueCat and grant all users premium access
-const DEV_FORCE_PREMIUM = true;
-
 export const useSubscription = () => {
   const { user } = useAuth();
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
-  const [isPremium, setIsPremium] = useState(DEV_FORCE_PREMIUM);
-  const [isLoading, setIsLoading] = useState(!DEV_FORCE_PREMIUM);
+  const [isPremium, setIsPremium] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo>({
     plan: null,
     status: 'none',
@@ -49,10 +49,17 @@ export const useSubscription = () => {
 
   // Fetch subscription status from RevenueCat
   const fetchSubscription = useCallback(async () => {
-    // Skip RevenueCat if forcing premium in dev
-    if (DEV_FORCE_PREMIUM) {
-      console.log('[useSubscription] DEV_FORCE_PREMIUM enabled - skipping RevenueCat');
-      setIsPremium(true);
+    if (!isRevenueCatConfigured()) {
+      setCustomerInfo(null);
+      setOffering(null);
+      setIsPremium(false);
+      setSubscriptionInfo({
+        plan: null,
+        status: 'none',
+        expirationDate: null,
+        managementURL: null,
+        willRenew: false,
+      });
       setIsLoading(false);
       return;
     }
@@ -76,9 +83,53 @@ export const useSubscription = () => {
     }
   }, [parseCustomerInfo]);
 
+  const purchasePackage = useCallback(
+    async (selectedPackage: PurchasesPackage): Promise<boolean> => {
+      try {
+        const info = await rcPurchasePackage(selectedPackage);
+        if (!info) {
+          return false;
+        }
+
+        setCustomerInfo(info);
+        setIsPremium(checkPremiumStatus(info));
+        setSubscriptionInfo(parseCustomerInfo(info));
+        return true;
+      } catch (error) {
+        console.error('[useSubscription] Error purchasing package:', error);
+        Alert.alert('Error', 'Unable to complete purchase. Please try again.');
+        return false;
+      }
+    },
+    [parseCustomerInfo]
+  );
+
+  useEffect(() => {
+    const syncRevenueCatUser = async () => {
+      try {
+        if (!isRevenueCatConfigured()) {
+          return;
+        }
+        if (user?.id) {
+          await Purchases.logIn(user.id);
+        } else {
+          await Purchases.logOut();
+        }
+      } catch (error) {
+        console.error('[useSubscription] Error syncing RevenueCat user:', error);
+      }
+    };
+
+    syncRevenueCatUser();
+  }, [user?.id]);
+
   // Listen for customer info updates
   useEffect(() => {
     fetchSubscription();
+
+    if (!isRevenueCatConfigured()) {
+      return;
+    }
     
     const unsubscribe = addCustomerInfoUpdateListener((info) => {
       console.log('[useSubscription] Customer info updated');
@@ -90,8 +141,8 @@ export const useSubscription = () => {
     return unsubscribe;
   }, [fetchSubscription, parseCustomerInfo]);
 
-  const isExerciseFree = useCallback((exerciseName: string, isPremiumFlag?: boolean) => {
-    return isExerciseFreeRule(exerciseName, isPremiumFlag);
+  const isExerciseFree = useCallback((exerciseSlug: string, isPremiumFlag?: boolean) => {
+    return isExerciseFreeRule(exerciseSlug, isPremiumFlag);
   }, []);
 
   const isAudioFree = useCallback((audioPresetId: string) => {
@@ -99,8 +150,8 @@ export const useSubscription = () => {
   }, []);
 
   const canAccessExercise = useCallback(
-    (exerciseName: string, isPremiumFlag?: boolean) => {
-      return canAccessExerciseRule(isPremium, exerciseName, isPremiumFlag);
+    (exerciseSlug: string, isPremiumFlag?: boolean) => {
+      return canAccessExerciseRule(isPremium, exerciseSlug, isPremiumFlag);
     },
     [isPremium]
   );
@@ -117,6 +168,9 @@ export const useSubscription = () => {
    * Returns true if purchase was successful
    */
   const presentPaywall = useCallback(async (): Promise<boolean> => {
+    if (!isRevenueCatConfigured()) {
+      return false;
+    }
     try {
       const result = await RevenueCatUI.presentPaywall();
       
@@ -148,6 +202,9 @@ export const useSubscription = () => {
    * Present paywall only if user doesn't have premium
    */
   const presentPaywallIfNeeded = useCallback(async (): Promise<boolean> => {
+    if (!isRevenueCatConfigured()) {
+      return false;
+    }
     try {
       const result = await RevenueCatUI.presentPaywallIfNeeded({
         requiredEntitlementIdentifier: ENTITLEMENT_ID,
@@ -211,6 +268,10 @@ export const useSubscription = () => {
    * Self-service UI for subscription management, cancellation, refunds
    */
   const presentCustomerCenter = useCallback(async (): Promise<void> => {
+    if (!isRevenueCatConfigured()) {
+      await openManagement();
+      return;
+    }
     try {
       await RevenueCatUI.presentCustomerCenter({
         callbacks: {
@@ -262,6 +323,7 @@ export const useSubscription = () => {
     presentPaywallIfNeeded,
     presentCustomerCenter,
     restorePurchases,
+    purchasePackage,
     openManagement,
     getPackages,
     refresh: fetchSubscription,

@@ -15,7 +15,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 
 import { Card, ExerciseIllustration, Screen } from '@/components';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '@/constants';
-import { useExercises } from '@/hooks';
+import { useExercises, useSubscription } from '@/hooks';
 import type { RootStackParamList } from '@/types';
 import type { RouteProp } from '@react-navigation/native';
 
@@ -26,6 +26,7 @@ export const ExerciseDetailScreen: React.FC = () => {
   const route = useRoute<DetailRouteProps>();
   const insets = useSafeAreaInsets();
   const { exercises, isLoading, toggleFavorite } = useExercises();
+  const { canAccessExercise, presentPaywall } = useSubscription();
 
   const footerHeight = 56 + Spacing.md + Spacing.sm + insets.bottom;
 
@@ -50,6 +51,13 @@ export const ExerciseDetailScreen: React.FC = () => {
 
   const handleStartSession = () => {
     if (!exercise) return;
+
+    if (!canAccessExercise(exercise.slug)) {
+      presentPaywall().then((didPurchase) => {
+        if (!didPurchase) navigation.navigate('Paywall');
+      });
+      return;
+    }
 
     navigation.navigate('ExerciseSession', {
       exerciseId: exercise.id,

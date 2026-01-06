@@ -85,7 +85,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
   }, [guidedAvoidWater, guidedIntensity, guidedMinutes, guidedObjective]);
 
   const renderShelfItem = ({ item }: { item: ExerciseWithFavorite }) => {
-    const isLocked = !canAccessExercise(item.name, item.is_premium);
+    const isLocked = !canAccessExercise(item.slug);
 
     return (
       <Card
@@ -114,10 +114,14 @@ export const ExerciseCatalogScreen: React.FC = () => {
             </TouchableOpacity>
           )}
         </View>
-        <Text style={[styles.shelfTitle, isLocked && styles.exerciseNameLocked]} numberOfLines={2}>
+        <Text
+          style={[styles.shelfTitle, isLocked && styles.exerciseNameLocked]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {item.name}
         </Text>
-        <Text style={styles.shelfSubtitle} numberOfLines={2}>
+        <Text style={styles.shelfSubtitle} numberOfLines={1} ellipsizeMode="tail">
           {item.description}
         </Text>
       </Card>
@@ -125,7 +129,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
   };
 
   const renderGridItem = ({ item }: { item: ExerciseWithFavorite }) => {
-    const isLocked = !canAccessExercise(item.name, item.is_premium);
+    const isLocked = !canAccessExercise(item.slug);
 
     return (
       <View style={styles.gridItemWrapper}>
@@ -155,10 +159,14 @@ export const ExerciseCatalogScreen: React.FC = () => {
               </TouchableOpacity>
             )}
           </View>
-          <Text style={[styles.gridTitle, isLocked && styles.exerciseNameLocked]} numberOfLines={2}>
+          <Text
+            style={[styles.gridTitle, isLocked && styles.exerciseNameLocked]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
             {item.name}
           </Text>
-          <Text style={styles.gridSubtitle} numberOfLines={2}>
+          <Text style={styles.gridSubtitle} numberOfLines={1} ellipsizeMode="tail">
             {item.description}
           </Text>
         </Card>
@@ -258,10 +266,10 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
   const handleExercisePress = async (exercise: ExerciseWithFavorite) => {
     // Check if user can access this exercise
-    if (!canAccessExercise(exercise.name, exercise.is_premium)) {
-      // Show RevenueCat paywall
-      const purchased = await presentPaywall();
-      if (!purchased) return;
+    if (!canAccessExercise(exercise.slug)) {
+      const didPurchase = await presentPaywall();
+      if (!didPurchase) navigation.navigate('Paywall');
+      return;
     }
 
     navigation.navigate('ExerciseDetail', {
@@ -1106,12 +1114,16 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: FontWeight.bold,
-    marginBottom: Spacing.xs,
+    fontFamily: FontFamily.heading,
+    marginTop: Spacing.sm,
+    flexShrink: 1,
   },
   shelfSubtitle: {
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     fontSize: FontSize.sm,
     lineHeight: 18,
+    marginTop: 2,
+    flexShrink: 1,
   },
   catalogContent: {
     paddingBottom: Spacing.xl,
@@ -1148,12 +1160,16 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: FontWeight.bold,
-    marginBottom: Spacing.xs,
+    fontFamily: FontFamily.heading,
+    marginTop: Spacing.sm,
+    flexShrink: 1,
   },
   gridSubtitle: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.xs,
-    lineHeight: 16,
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
+    lineHeight: 18,
+    marginTop: 2,
+    flexShrink: 1,
   },
   emptyState: {
     paddingHorizontal: Spacing.lg,

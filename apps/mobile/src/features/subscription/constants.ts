@@ -1,20 +1,17 @@
 import type { PremiumFeature } from './types';
 
 export const PREMIUM_FEATURES: PremiumFeature[] = [
-  { icon: '🌍', title: 'All Traditions', description: '8 cultural breathing traditions' },
-  { icon: '🎵', title: 'All Audio', description: '19 ambient sounds & frequencies' },
-  { icon: '📊', title: 'Advanced Stats', description: 'Detailed progress tracking' },
-  { icon: '🎯', title: 'AI Recommendations', description: 'Personalized exercise suggestions' },
-  { icon: '📴', title: 'Offline Mode', description: 'Practice without internet' },
-  { icon: '🔔', title: 'Custom Reminders', description: 'Unlimited reminder settings' },
+  { icon: '🧘', title: 'More Exercises', description: 'Unlock the full catalog' },
+  { icon: '🎧', title: 'Binaural Beats', description: 'Access binaural alpha/theta/delta' },
+  { icon: '🎵', title: 'Premium Audio', description: 'More ambient sounds & tones' },
 ];
 
-export const FREE_EXERCISE_NAMES = [
-  'Box Breathing',
-  '4-7-8 Breathing',
-  'Diaphragmatic Breathing',
-  'Resonant Breathing',
-  'Physiological Sigh',
-];
+export const FREE_EXERCISE_SLUGS = [
+  'box-breathing',
+  '4-7-8-breathing',
+  'diaphragmatic-breathing',
+  'resonant-breathing',
+  'physiological-sigh',
+] as const;
 
-export const FREE_AUDIO_PRESETS = ['silence', 'nature_rain', 'binaural_alpha'] as const;
+export const FREE_AUDIO_PRESETS = ['silence', 'nature_rain', 'nature_ocean', 'tibetan_bowl'] as const;

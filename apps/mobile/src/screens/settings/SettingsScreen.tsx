@@ -202,24 +202,18 @@ export const SettingsScreen: React.FC = () => {
             <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.settingRow}>
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => Linking.openURL('https://recalibra.it/privacy')}
+            activeOpacity={0.8}
+          >
             <View style={styles.settingInfo}>
               <Ionicons name="document-text" size={24} color={Colors.textMuted} />
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Privacy Policy</Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.settingRow}>
-            <View style={styles.settingInfo}>
-              <Ionicons name="document" size={24} color={Colors.textMuted} />
-              <View style={styles.settingText}>
-                <Text style={styles.settingLabel}>Terms of Service</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.textMuted} />
+            <Ionicons name="open-outline" size={20} color={Colors.textMuted} />
           </TouchableOpacity>
 
           <View style={styles.settingRow}>
