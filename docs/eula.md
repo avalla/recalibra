@@ -1,7 +1,7 @@
 # End User License Agreement (EULA) - Recalibra
 
-**Effective Date**: December 2025
-**Last Updated**: December 16, 2025
+**Effective Date**: January 2026
+**Last Updated**: January 6, 2026
 
 This End User License Agreement ("EULA") is a binding legal agreement between you ("User" or "you") and Andrea Valla ("Company," "we," "us," or "our"). By downloading, installing, or using the Recalibra mobile application ("App"), you agree to be bound by the terms of this EULA.
 
@@ -129,7 +129,6 @@ For questions about this EULA, please contact:
 **Andrea Valla**
 Email: contact@recalibra.it
 Website: https://recalibra.it
-Address: [Your registered address in Italy]
 
 ## 15. Entire Agreement
 
@@ -139,6 +138,6 @@ Address: [Your registered address in Italy]
 
 ---
 
-**Last updated: December 16, 2025**
+**Last updated: January 06, 2026**
 
 By using Recalibra, you acknowledge that you have read, understood, and agree to be bound by this End User License Agreement.
