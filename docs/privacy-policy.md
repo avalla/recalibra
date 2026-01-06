@@ -10,8 +10,8 @@ Andrea Valla ("we," "us," or "our") is committed to protecting your privacy. Thi
 ## Information We Collect
 
 ### 1. Personal Information
-- **Account Information**: Email address, name (when you create an account)
-- **Payment Information**: Processed through Apple App Store (we do not store credit card details)
+- **Account Information**: Recalibra does not require creating an account.
+- **Payment Information**: Processed through Apple App Store / Google Play Store (we do not store credit card details)
 
 ### 2. Health and Wellness Data
 - **HRV Data**: Heart Rate Variability measurements from Apple Health/Google Fit (with your explicit consent)
@@ -21,18 +21,18 @@ Andrea Valla ("we," "us," or "our") is committed to protecting your privacy. Thi
 
 ### 3. Technical Data
 - **Device Information**: Device type, operating system version
-- **Usage Data**: App features used, session length, crash reports
-- **Analytics**: Anonymous usage patterns to improve our services
+- **Usage Data**: We do not collect usage analytics. Data about your sessions is stored locally on your device.
+- **Analytics**: We do not use third-party analytics services.
 
 ### 4. Communications
-- **Support Requests**: When you contact our support team
-- **Feedback**: Responses to surveys or feedback requests
+- **Support Requests**: If you contact our support team, we may process the contact details you provide (e.g., email address) and the contents of your message.
+- **Feedback**: If you choose to send feedback, we process the information you include.
 
 ## How We Use Your Information
 
 1. **Provide Services**: To deliver and personalize your Recalibra experience
 2. **Health Tracking**: To monitor your progress and provide personalized recommendations
-3. **Improve Services**: To analyze usage patterns and enhance app functionality
+3. **Improve Services**: To improve app functionality based on direct user feedback and app maintenance
 4. **Customer Support**: To respond to your inquiries and provide technical assistance
 5. **Safety**: To ensure the app functions properly and to prevent misuse
 
@@ -41,19 +41,18 @@ Andrea Valla ("we," "us," or "our") is committed to protecting your privacy. Thi
 We do not sell, rent, or trade your personal information. We may share your data only in the following circumstances:
 
 1. **Service Providers**: With trusted third-party services that help us operate the app:
-   - Supabase (database hosting)
-   - Mixpanel (analytics)
-   - Apple/Google (for payment processing and health data integration)
+   - Apple / Google (for payment processing and, if you enable it, health data integration)
+   - RevenueCat (subscription management)
 
 2. **Legal Requirements**: When required by law or to protect our rights
 
-3. **Aggregate Data**: We may share anonymized, aggregated data that cannot be linked to you
+3. **No Sale of Data**: We do not sell your personal information
 
 ## Data Security
 
 We implement appropriate security measures including:
-- Encryption of data in transit and at rest
-- Secure authentication mechanisms
+- Encryption in transit where applicable (e.g., communications with Apple/Google/RevenueCat)
+- Limiting access to data and following best practices to keep your information secure
 - Regular security audits
 - Compliance with GDPR and other applicable regulations
 
