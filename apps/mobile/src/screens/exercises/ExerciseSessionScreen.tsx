@@ -13,7 +13,7 @@ import {
  } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,13 +22,24 @@ import { useSessions, useAudio, getAudioRecommendation, useHaptics, useSubscript
 import type { AudioPresetKey, ExerciseCategory } from '../../hooks';
 import type { RootStackParamList } from '../../types';
 import { Screen } from '../../components';
+import { BreathingGraph, type GraphCurvePreset, type GraphMarker } from '../../components/BreathingGraph';
 import { TutorialOverlay } from '../../components/TutorialOverlay';
 import { OriginIcon } from '../../components/OriginIcon';
 import { getExerciseBackground } from '../../constants/backgrounds';
 import { AUDIO_OPTIONS, type AudioOption, AudioSelector } from '../../components/AudioSelector';
+import { logger } from '../../utils/logger';
+import {
+  loadBreathingVisualizationMode,
+  loadBreathingCurvePresetOverride,
+  saveBreathingVisualizationMode,
+  saveBreathingCurvePresetOverride,
+  type BreathingCurvePresetOverride,
+  type BreathingVisualizationMode,
+} from '../../utils/breath-visualization';
 
 const { width } = Dimensions.get('window');
 const CIRCLE_SIZE = width * 0.7;
+const GRAPH_HEIGHT = Math.min(260, Math.max(180, CIRCLE_SIZE * 0.58));
 const BOTTOM_BAR_HEIGHT = 76;
 
 // Default fallback values when database data is not available
@@ -171,6 +182,7 @@ export const ExerciseSessionScreen: React.FC = () => {
   const {
     breathingPhase: hapticBreathingPhase,
     success: hapticSuccess,
+    medium: hapticMedium,
     selection: hapticSelection,
   } = useHaptics();
 
@@ -208,11 +220,13 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   // Audio hook - use the user-selected audio
   const audioPresetKey = selectedAudioId;
-  console.log('[ExerciseSession] Selected audio:', selectedAudioId, '-> key:', audioPresetKey);
+  logger.debug(`Selected audio: ${selectedAudioId} -> key: ${audioPresetKey}`, 'ExerciseSession');
 
   const [audioVolume, setAudioVolume] = useState(0.7);
   const [showVolumeControl, setShowVolumeControl] = useState(false);
   const [showExerciseInfo, setShowExerciseInfo] = useState(false);
+  const [breathingVisualizationMode, setBreathingVisualizationMode] = useState<BreathingVisualizationMode>('circle');
+  const [curvePresetOverride, setCurvePresetOverride] = useState<BreathingCurvePresetOverride>('auto');
 
   // Onboarding state
   const [currentPage, setCurrentPage] = useState(0);
@@ -561,6 +575,13 @@ export const ExerciseSessionScreen: React.FC = () => {
     };
     checkTutorialStatus();
   }, []);
+
+  const toggleVisualizationMode = async () => {
+    const nextMode: BreathingVisualizationMode =
+      breathingVisualizationMode === 'graph' ? 'circle' : 'graph';
+    setBreathingVisualizationMode(nextMode);
+    await saveBreathingVisualizationMode(nextMode);
+  };
 
   // Check if onboarding should be shown for this exercise
   useEffect(() => {
@@ -1131,10 +1152,141 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   const phaseColor = activePhaseColor;
 
+  const cycleProgress = useMemo(() => {
+    const elapsedBefore = cycleSegments
+      .slice(0, activeSegmentIndex)
+      .reduce((sum, segment) => sum + segment.duration, 0);
+    const currentDuration = cycleSegments[activeSegmentIndex]?.duration ?? 1;
+    const progressInSegment = clampNumber(smoothPhaseProgress, 0, 1) * currentDuration;
+    return clampNumber((elapsedBefore + progressInSegment) / cycleTotalSeconds, 0, 1);
+  }, [activeSegmentIndex, cycleSegments, cycleTotalSeconds, smoothPhaseProgress]);
+
+  const graphMarkers = useMemo<GraphMarker[]>(() => {
+    if (!presetInfo || audioPresetKey === 'silence') return [];
+    const option = AUDIO_OPTIONS.find((audio) => audio.id === audioPresetKey);
+    const tone = (() => {
+      if (audioPresetKey.includes('binaural')) return 'binaural';
+      if (audioPresetKey === 'om') return 'om';
+      if (audioPresetKey.includes('ocean') || audioPresetKey.includes('rain') || audioPresetKey.includes('creek')) {
+        return 'water';
+      }
+      if (option?.type === 'nature') return 'nature';
+      if (option?.type === 'tibetan') return 'tibetan';
+      if (option?.type === 'frequency') return 'frequency';
+      return 'default';
+    })();
+
+    return [
+      {
+        id: `audio-${audioPresetKey}`,
+        label: presetInfo.name,
+        icon: option?.icon ?? 'musical-notes-outline',
+        offset: 0.5,
+        tone,
+      },
+    ];
+  }, [audioPresetKey, presetInfo]);
+
+  const curvePreset = useMemo<GraphCurvePreset>(() => {
+    if (preStressLevel >= 7) return 'energy';
+    if (preStressLevel <= 3) return 'relax';
+    return 'default';
+  }, [preStressLevel]);
+
+  const resolvedCurvePreset = useMemo<GraphCurvePreset>(() => {
+    if (curvePresetOverride === 'auto') return curvePreset;
+    return curvePresetOverride;
+  }, [curvePreset, curvePresetOverride]);
+
+  const suggestedPresetLabel = useMemo(() => {
+    switch (curvePreset) {
+      case 'relax':
+        return 'Relax';
+      case 'energy':
+        return 'Energy';
+      default:
+        return 'Balanced';
+    }
+  }, [curvePreset]);
+
+  const suggestedPresetColor = useMemo(() => {
+    switch (curvePreset) {
+      case 'relax':
+        return Colors.success;
+      case 'energy':
+        return Colors.warning;
+      default:
+        return Colors.primary;
+    }
+  }, [curvePreset]);
+
   const phaseTimeText = useMemo(() => {
     if (sessionState === 'countdown') return '';
     return `${phaseTime}s`;
   }, [phaseTime, sessionState]);
+
+  useEffect(() => {
+    const loadVisualization = async () => {
+      const [mode, presetOverride] = await Promise.all([
+        loadBreathingVisualizationMode(),
+        loadBreathingCurvePresetOverride(),
+      ]);
+      setBreathingVisualizationMode(mode);
+      setCurvePresetOverride(presetOverride);
+    };
+    loadVisualization();
+  }, []);
+
+  const presetSnapAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    presetSnapAnim.stopAnimation();
+    presetSnapAnim.setValue(0.98);
+    Animated.sequence([
+      Animated.timing(presetSnapAnim, {
+        toValue: 1.02,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.spring(presetSnapAnim, {
+        toValue: 1,
+        speed: 18,
+        bounciness: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [resolvedCurvePreset, presetSnapAnim]);
+
+  const handlePresetOverrideChange = async (preset: BreathingCurvePresetOverride) => {
+    setCurvePresetOverride(preset);
+    if (preset === 'relax') {
+      hapticBreathingPhase();
+    } else if (preset === 'energy') {
+      hapticMedium();
+    } else {
+      hapticSelection();
+    }
+    await saveBreathingCurvePresetOverride(preset);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+      const syncPreferences = async () => {
+        const [mode, presetOverride] = await Promise.all([
+          loadBreathingVisualizationMode(),
+          loadBreathingCurvePresetOverride(),
+        ]);
+        if (!isActive) return;
+        setBreathingVisualizationMode(mode);
+        setCurvePresetOverride(presetOverride);
+      };
+      syncPreferences();
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   return (
     <Screen edges={['top']} disableGradient>
@@ -1398,153 +1550,229 @@ export const ExerciseSessionScreen: React.FC = () => {
                     </>
                   )}
 
-                  <View style={styles.circleWrapper}>
-                    <View style={styles.outerRing}>
-                      <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE} style={styles.phaseRingSvg}>
-                        {(() => {
-                          const cx = CIRCLE_SIZE / 2;
-                          const cy = CIRCLE_SIZE / 2;
-                          const r = CIRCLE_SIZE / 2 - 8;
-                          const strokeWidth = 6;
-                          let angleCursor = -90;
-
-                          const AnimatedPath = Animated.createAnimatedComponent(Path);
-                          const AnimatedSvgCircle = Animated.createAnimatedComponent(Circle);
-
-                          return cycleSegments.map((segment, index) => {
-                            const sweep = (segment.duration / cycleTotalSeconds) * 360;
-                            const startAngle = angleCursor;
-                            const endAngle = angleCursor + sweep;
-                            angleCursor += sweep;
-
-                            const basePath = describeArcPath(cx, cy, r, startAngle, endAngle);
-                            const isActive = index === activeSegmentIndex;
-                            const activeEndAngle = startAngle + sweep * smoothPhaseProgress;
-                            const activeSweep = activeEndAngle - startAngle;
-                            const safeActiveEndAngle = activeSweep < 0.5 ? startAngle + 0.5 : activeEndAngle;
-                            const activePath = describeArcPath(cx, cy, r, startAngle, safeActiveEndAngle);
-
-                            const segmentColor = getPhaseColor(segment.phase, phasePalette);
-
-                            return (
-                              <React.Fragment key={`${segment.phase}-${index}`}>
-                                <Path
-                                  d={basePath}
-                                  stroke={segmentColor}
-                                  strokeWidth={strokeWidth}
-                                  strokeLinecap="round"
-                                  fill="transparent"
-                                  opacity={isActive ? 0.35 : 0.14}
-                                />
-                                {isActive && (
-                                  <>
-                                    <AnimatedPath
-                                      d={activePath}
-                                      stroke={prevPhaseColorRef.current}
-                                      strokeWidth={strokeWidth}
-                                      strokeLinecap="round"
-                                      fill="transparent"
-                                      opacity={phaseFadeAnim.interpolate({
-                                        inputRange: [0, 1],
-                                        outputRange: [0.95, 0],
-                                      })}
-                                    />
-                                    <AnimatedPath
-                                      d={activePath}
-                                      stroke={segmentColor}
-                                      strokeWidth={strokeWidth}
-                                      strokeLinecap="round"
-                                      fill="transparent"
-                                      opacity={phaseFadeAnim.interpolate({
-                                        inputRange: [0, 1],
-                                        outputRange: [0, 0.95],
-                                      })}
-                                    />
-                                    {(() => {
-                                      const dotPos = polarToCartesian(cx, cy, r, safeActiveEndAngle);
-                                      return (
-                                        <>
-                                          <AnimatedSvgCircle
-                                            cx={dotPos.x}
-                                            cy={dotPos.y}
-                                            r={10}
-                                            fill={prevPhaseColorRef.current}
-                                            opacity={phaseFadeAnim.interpolate({
-                                              inputRange: [0, 1],
-                                              outputRange: [0.18, 0],
-                                            })}
-                                          />
-                                          <AnimatedSvgCircle
-                                            cx={dotPos.x}
-                                            cy={dotPos.y}
-                                            r={7}
-                                            fill={prevPhaseColorRef.current}
-                                            opacity={phaseFadeAnim.interpolate({
-                                              inputRange: [0, 1],
-                                              outputRange: [0.28, 0],
-                                            })}
-                                          />
-                                          <AnimatedSvgCircle
-                                            cx={dotPos.x}
-                                            cy={dotPos.y}
-                                            r={4}
-                                            fill={prevPhaseColorRef.current}
-                                            opacity={phaseFadeAnim.interpolate({
-                                              inputRange: [0, 1],
-                                              outputRange: [0.95, 0],
-                                            })}
-                                          />
-                                          <AnimatedSvgCircle
-                                            cx={dotPos.x}
-                                            cy={dotPos.y}
-                                            r={10}
-                                            fill={segmentColor}
-                                            opacity={phaseFadeAnim.interpolate({
-                                              inputRange: [0, 1],
-                                              outputRange: [0, 0.18],
-                                            })}
-                                          />
-                                          <AnimatedSvgCircle
-                                            cx={dotPos.x}
-                                            cy={dotPos.y}
-                                            r={7}
-                                            fill={segmentColor}
-                                            opacity={phaseFadeAnim.interpolate({
-                                              inputRange: [0, 1],
-                                              outputRange: [0, 0.28],
-                                            })}
-                                          />
-                                          <AnimatedSvgCircle
-                                            cx={dotPos.x}
-                                            cy={dotPos.y}
-                                            r={4}
-                                            fill={segmentColor}
-                                            opacity={phaseFadeAnim.interpolate({
-                                              inputRange: [0, 1],
-                                              outputRange: [0, 0.95],
-                                            })}
-                                          />
-                                        </>
-                                      );
-                                    })()}
-                                  </>
-                                )}
-                              </React.Fragment>
-                            );
-                          });
-                        })()}
-                      </Svg>
-                    </View>
-                    <Animated.View
-                      style={[
-                        styles.breathingCircle,
-                        { backgroundColor: Colors.backgroundElevated },
-                        { transform: [{ scale: scaleAnim }] },
-                      ]}
-                    >
-                      <View style={[styles.innerCircle, { backgroundColor: phaseColor, opacity: 0.14 }]} />
+                  {breathingVisualizationMode === 'graph' ? (
+                    <Animated.View style={[styles.graphWrapper, { transform: [{ scale: presetSnapAnim }] }]}>
+                      <BreathingGraph
+                        width={CIRCLE_SIZE}
+                        height={GRAPH_HEIGHT}
+                        segments={cycleSegments}
+                        cycleTotalSeconds={cycleTotalSeconds}
+                        cycleProgress={cycleProgress}
+                        activePhaseColor={phaseColor}
+                        strokeColor={Colors.textMuted}
+                        markers={graphMarkers}
+                        curvePreset={resolvedCurvePreset}
+                      />
+                      <View style={styles.graphLegendRow}>
+                        {([
+                          { key: 'inhale', label: 'Inhale' },
+                          { key: 'hold', label: 'Hold' },
+                          { key: 'exhale', label: 'Exhale' },
+                        ] as const).map((item) => (
+                          <View key={item.key} style={styles.graphLegendItem}>
+                            <View
+                              style={[
+                                styles.graphLegendDot,
+                                { backgroundColor: getPhaseColor(item.key, phasePalette) },
+                              ]}
+                            />
+                            <Text style={styles.graphLegendLabel}>{item.label}</Text>
+                          </View>
+                        ))}
+                      </View>
+                      <View style={styles.graphPresetRow}>
+                        <Text style={styles.graphPresetLabel}>Curve</Text>
+                        {([
+                          { id: 'auto', label: 'Auto' },
+                          { id: 'relax', label: 'Relax' },
+                          { id: 'energy', label: 'Energy' },
+                        ] as const).map((item) => {
+                          const isActive = curvePresetOverride === item.id;
+                          return (
+                            <TouchableOpacity
+                              key={item.id}
+                              style={[styles.graphPresetPill, isActive && styles.graphPresetPillActive]}
+                              onPress={() => handlePresetOverrideChange(item.id)}
+                            >
+                              <Text
+                                style={[
+                                  styles.graphPresetPillText,
+                                  isActive && styles.graphPresetPillTextActive,
+                                ]}
+                              >
+                                {item.label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                        {curvePresetOverride === 'auto' && (
+                          <View
+                            style={[
+                              styles.graphSuggestedPill,
+                              {
+                                borderColor: suggestedPresetColor + '33',
+                                backgroundColor: suggestedPresetColor + '14',
+                              },
+                            ]}
+                          >
+                            <Ionicons name="sparkles-outline" size={12} color={suggestedPresetColor} />
+                            <Text style={[styles.graphSuggestedText, { color: suggestedPresetColor }]}
+                            >
+                              Suggested {suggestedPresetLabel}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </Animated.View>
-                  </View>
+                  ) : (
+                    <View style={styles.circleWrapper}>
+                      <View style={styles.outerRing}>
+                        <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE} style={styles.phaseRingSvg}>
+                          {(() => {
+                            const cx = CIRCLE_SIZE / 2;
+                            const cy = CIRCLE_SIZE / 2;
+                            const r = CIRCLE_SIZE / 2 - 8;
+                            const strokeWidth = 6;
+                            let angleCursor = -90;
+
+                            const AnimatedPath = Animated.createAnimatedComponent(Path);
+                            const AnimatedSvgCircle = Animated.createAnimatedComponent(Circle);
+
+                            return cycleSegments.map((segment, index) => {
+                              const sweep = (segment.duration / cycleTotalSeconds) * 360;
+                              const startAngle = angleCursor;
+                              const endAngle = angleCursor + sweep;
+                              angleCursor += sweep;
+
+                              const basePath = describeArcPath(cx, cy, r, startAngle, endAngle);
+                              const isActive = index === activeSegmentIndex;
+                              const activeEndAngle = startAngle + sweep * smoothPhaseProgress;
+                              const activeSweep = activeEndAngle - startAngle;
+                              const safeActiveEndAngle = activeSweep < 0.5 ? startAngle + 0.5 : activeEndAngle;
+                              const activePath = describeArcPath(cx, cy, r, startAngle, safeActiveEndAngle);
+
+                              const segmentColor = getPhaseColor(segment.phase, phasePalette);
+
+                              return (
+                                <React.Fragment key={`${segment.phase}-${index}`}>
+                                  <Path
+                                    d={basePath}
+                                    stroke={segmentColor}
+                                    strokeWidth={strokeWidth}
+                                    strokeLinecap="round"
+                                    fill="transparent"
+                                    opacity={isActive ? 0.35 : 0.14}
+                                  />
+                                  {isActive && (
+                                    <>
+                                      <AnimatedPath
+                                        d={activePath}
+                                        stroke={prevPhaseColorRef.current}
+                                        strokeWidth={strokeWidth}
+                                        strokeLinecap="round"
+                                        fill="transparent"
+                                        opacity={phaseFadeAnim.interpolate({
+                                          inputRange: [0, 1],
+                                          outputRange: [0.95, 0],
+                                        })}
+                                      />
+                                      <AnimatedPath
+                                        d={activePath}
+                                        stroke={segmentColor}
+                                        strokeWidth={strokeWidth}
+                                        strokeLinecap="round"
+                                        fill="transparent"
+                                        opacity={phaseFadeAnim.interpolate({
+                                          inputRange: [0, 1],
+                                          outputRange: [0, 0.95],
+                                        })}
+                                      />
+                                      {(() => {
+                                        const dotPos = polarToCartesian(cx, cy, r, safeActiveEndAngle);
+                                        return (
+                                          <>
+                                            <AnimatedSvgCircle
+                                              cx={dotPos.x}
+                                              cy={dotPos.y}
+                                              r={10}
+                                              fill={prevPhaseColorRef.current}
+                                              opacity={phaseFadeAnim.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0.18, 0],
+                                              })}
+                                            />
+                                            <AnimatedSvgCircle
+                                              cx={dotPos.x}
+                                              cy={dotPos.y}
+                                              r={7}
+                                              fill={prevPhaseColorRef.current}
+                                              opacity={phaseFadeAnim.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0.28, 0],
+                                              })}
+                                            />
+                                            <AnimatedSvgCircle
+                                              cx={dotPos.x}
+                                              cy={dotPos.y}
+                                              r={4}
+                                              fill={prevPhaseColorRef.current}
+                                              opacity={phaseFadeAnim.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0.95, 0],
+                                              })}
+                                            />
+                                            <AnimatedSvgCircle
+                                              cx={dotPos.x}
+                                              cy={dotPos.y}
+                                              r={10}
+                                              fill={segmentColor}
+                                              opacity={phaseFadeAnim.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0, 0.18],
+                                              })}
+                                            />
+                                            <AnimatedSvgCircle
+                                              cx={dotPos.x}
+                                              cy={dotPos.y}
+                                              r={7}
+                                              fill={segmentColor}
+                                              opacity={phaseFadeAnim.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0, 0.28],
+                                              })}
+                                            />
+                                            <AnimatedSvgCircle
+                                              cx={dotPos.x}
+                                              cy={dotPos.y}
+                                              r={4}
+                                              fill={segmentColor}
+                                              opacity={phaseFadeAnim.interpolate({
+                                                inputRange: [0, 1],
+                                                outputRange: [0, 0.95],
+                                              })}
+                                            />
+                                          </>
+                                        );
+                                      })()}
+                                    </>
+                                  )}
+                                </React.Fragment>
+                              );
+                            });
+                          })()}
+                        </Svg>
+                      </View>
+                      <Animated.View
+                        style={[
+                          styles.breathingCircle,
+                          { backgroundColor: Colors.backgroundElevated },
+                          { transform: [{ scale: scaleAnim }] },
+                        ]}
+                      >
+                        <View style={[styles.innerCircle, { backgroundColor: phaseColor, opacity: 0.14 }]} />
+                      </Animated.View>
+                    </View>
+                  )}
 
                   <View style={styles.progressContainerInline}>
                     <View style={styles.progressBar}>
@@ -1638,6 +1866,22 @@ export const ExerciseSessionScreen: React.FC = () => {
                     onPress={() => setShowExerciseInfo(true)}
                   >
                     <Ionicons name="information-circle-outline" size={22} color={Colors.textPrimary} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      styles.controlButton,
+                      breathingVisualizationMode === 'graph' && styles.controlButtonActive,
+                    ]}
+                    onPress={toggleVisualizationMode}
+                  >
+                    <Ionicons
+                      name={breathingVisualizationMode === 'graph' ? 'analytics-outline' : 'radio-button-off'}
+                      size={22}
+                      color={
+                        breathingVisualizationMode === 'graph' ? Colors.primary : Colors.textPrimary
+                      }
+                    />
                   </TouchableOpacity>
                 </View>
               )}
@@ -1875,6 +2119,81 @@ const styles = StyleSheet.create({
     height: CIRCLE_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  graphWrapper: {
+    width: CIRCLE_SIZE,
+    height: GRAPH_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  graphLegendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  graphLegendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  graphLegendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  graphLegendLabel: {
+    color: Colors.textMuted,
+    fontSize: FontSize.xs,
+  },
+  graphPresetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  graphPresetLabel: {
+    color: Colors.textMuted,
+    fontSize: FontSize.xs,
+    marginRight: Spacing.xs,
+  },
+  graphPresetPill: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: 999,
+    backgroundColor: Colors.backgroundElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  graphPresetPillActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  graphPresetPillText: {
+    color: Colors.textMuted,
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.semibold,
+  },
+  graphPresetPillTextActive: {
+    color: Colors.background,
+  },
+  graphSuggestedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: Colors.primary + '33',
+    backgroundColor: Colors.primary + '14',
+  },
+  graphSuggestedText: {
+    color: Colors.primary,
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.semibold,
   },
   outerRing: {
     position: 'absolute',

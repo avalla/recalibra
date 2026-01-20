@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { UserMetadata } from '../types';
-import { getDeviceUUID, isFirstLaunch } from '../utils/device';
+import { getDeviceUUID } from '../utils/device';
 import type { AuthContextType, LocalSession, LocalUser } from '../features/auth';
 import {
   clearPersistedUser,
@@ -34,8 +34,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState(false);
   const [deviceUUID, setDeviceUUID] = useState<string | null>(null);
-
-  console.log('🔍 AuthProvider render - onboardingCompleted:', onboardingCompleted);
 
   const setAuthenticatedUser = async (nextUser: LocalUser) => {
     const nextSession: LocalSession = { user: nextUser };
@@ -227,18 +225,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const completeOnboarding = async () => {
-    console.log('🔍 completeOnboarding called');
     try {
       await persistOnboardingCompleted(true);
-      console.log('🔍 AsyncStorage updated');
-      // Force a re-render by using a functional update
-      setOnboardingCompleted(prev => {
-        console.log('🔍 setOnboardingCompleted called with prev:', prev);
-        return true;
-      });
-      console.log('🔍 onboardingCompleted state set to true');
+      setOnboardingCompleted(() => true);
     } catch (error) {
-      console.error('🔍 Error in completeOnboarding:', error);
+      console.error('[Auth] Error in completeOnboarding:', error);
     }
   };
 

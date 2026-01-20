@@ -1,6 +1,7 @@
 import type { Exercise } from "../types";
 
 import { buildUniqueSlugs } from './slug';
+import { inferObjective } from '../utils/infer-objective';
 
 type RawExerciseRow = {
   id: string;
@@ -50,32 +51,6 @@ function safeJsonParseOptional<T>(raw: string | null): T | undefined {
   } catch {
     return undefined;
   }
-}
-
-function inferObjective(input: {
-  name: string;
-  description: string;
-  category: Exercise['category'];
-  breathingPattern?: NonNullable<Exercise['breathing_pattern']>;
-}): Exercise['objective'] {
-  const name = input.name.trim().toLowerCase();
-  const description = input.description.trim().toLowerCase();
-  const haystack = `${name} ${description}`;
-
-  if (/(sleep|insomnia|bedtime|night)/.test(haystack)) return 'sleep';
-  if (/(focus|concentration|study|clarity|attention)/.test(haystack)) return 'focus';
-  if (/(energy|energ|boost|wake|berserker|power|ignite)/.test(haystack)) return 'energy';
-  if (/(relax|calm|downshift|soothe|release|unwind|ground)/.test(haystack)) return 'relax';
-
-  const special = input.breathingPattern?.special;
-  if (special === 'wim_hof' || special === 'rapid' || special === 'holotropic') return 'energy';
-  if (special === 'humming') return 'relax';
-
-  if (input.category === 'movement') return 'energy';
-  if (input.category === 'sensory') return 'relax';
-  if (input.category === 'water') return 'energy';
-
-  return 'relax';
 }
 
 const rawRows = loadRawRows();

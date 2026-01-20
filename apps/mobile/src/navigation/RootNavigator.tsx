@@ -16,17 +16,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const RootNavigator: React.FC = () => {
   const { isLoading, onboardingCompleted } = useAuth();
-  
-  console.log('🔍 RootNavigator render:', { 
-    onboardingCompleted,
-    shouldShowOnboarding: !onboardingCompleted,
-    shouldShowMain: onboardingCompleted,
-  });
-  
-  // Additional log to track state changes
-  React.useEffect(() => {
-    console.log('🔍 RootNavigator useEffect - onboardingCompleted changed to:', onboardingCompleted);
-  }, [onboardingCompleted]);
 
   if (isLoading) {
     return (
@@ -41,6 +30,7 @@ export const RootNavigator: React.FC = () => {
 
   return (
     <Stack.Navigator
+      key={`root-${onboardingCompleted ? 'main' : 'onboarding'}`}
       initialRouteName={onboardingCompleted ? 'Main' : 'Onboarding'}
       screenOptions={{
         headerShown: false,

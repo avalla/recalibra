@@ -3,6 +3,7 @@ import { Alert, Linking, Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
 import type { CustomerInfo, PurchasesOffering, PurchasesPackage } from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
+import { logger } from '../utils/logger';
 import {
   getCustomerInfo,
   checkPremiumStatus,
@@ -132,7 +133,7 @@ export const useSubscription = () => {
     }
     
     const unsubscribe = addCustomerInfoUpdateListener((info) => {
-      console.log('[useSubscription] Customer info updated');
+      logger.debug('Customer info updated', 'useSubscription');
       setCustomerInfo(info);
       setIsPremium(checkPremiumStatus(info));
       setSubscriptionInfo(parseCustomerInfo(info));
@@ -180,13 +181,13 @@ export const useSubscription = () => {
           await fetchSubscription();
           return true;
         case PAYWALL_RESULT.NOT_PRESENTED:
-          console.log('[useSubscription] Paywall not presented');
+          logger.info('Paywall not presented', 'useSubscription');
           return false;
         case PAYWALL_RESULT.ERROR:
           console.error('[useSubscription] Paywall error');
           return false;
         case PAYWALL_RESULT.CANCELLED:
-          console.log('[useSubscription] Paywall cancelled');
+          logger.info('Paywall cancelled', 'useSubscription');
           return false;
         default:
           return false;
@@ -276,7 +277,7 @@ export const useSubscription = () => {
       await RevenueCatUI.presentCustomerCenter({
         callbacks: {
           onRestoreCompleted: ({ customerInfo }) => {
-            console.log('[CustomerCenter] Restore completed');
+            logger.info('Restore completed', 'CustomerCenter');
             setCustomerInfo(customerInfo);
             setIsPremium(checkPremiumStatus(customerInfo));
             setSubscriptionInfo(parseCustomerInfo(customerInfo));
@@ -286,7 +287,7 @@ export const useSubscription = () => {
             Alert.alert('Error', 'Failed to restore purchases. Please try again.');
           },
           onFeedbackSurveyCompleted: ({ feedbackSurveyOptionId }) => {
-            console.log('[CustomerCenter] Feedback completed:', feedbackSurveyOptionId);
+            logger.debug(`Feedback completed: ${feedbackSurveyOptionId}`, 'CustomerCenter');
           },
         },
       });

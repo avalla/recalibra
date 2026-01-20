@@ -16,6 +16,39 @@ import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from 
 import { useSubscription, PREMIUM_FEATURES } from '@/hooks';
 import { Screen } from '../../components';
 
+const PRIVACY_URL = 'https://recalibra.it/privacy';
+const TERMS_URL = 'https://recalibra.it/terms';
+
+const formatCurrency = (value: number, currencyCode?: string) => {
+  if (!Number.isFinite(value)) return '';
+  if (!currencyCode) return value.toFixed(2);
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currencyCode }).format(value);
+  } catch (error) {
+    return value.toFixed(2);
+  }
+};
+
+const buildPlanDetails = (
+  planLabel: string,
+  packageItem: PurchasesPackage,
+  monthlyPrice?: number,
+  monthlyCurrency?: string
+) => {
+  const price = packageItem.product?.priceString ?? '';
+  const priceValue = packageItem.product?.price;
+  const currencyCode = packageItem.product?.currencyCode ?? monthlyCurrency;
+  const isYearly = planLabel === 'Yearly';
+  const perMonthPrice =
+    isYearly && typeof priceValue === 'number'
+      ? formatCurrency(priceValue / 12, currencyCode)
+      : null;
+  const perMonthText = perMonthPrice ? ` (${perMonthPrice} / month)` : '';
+  const billingText = isYearly ? 'Billed yearly' : 'Billed monthly';
+
+  return `${planLabel}: ${price} · ${billingText}${perMonthText}`.trim();
+};
+
 /**
  * PaywallScreen - Wrapper that presents RevenueCat's native paywall
  * This screen immediately presents the RevenueCat paywall and handles the result
@@ -115,8 +148,21 @@ export const PaywallScreen: React.FC = () => {
   };
 
   const handlePrivacy = async () => {
-    await Linking.openURL('https://recalibra.it/privacy');
+    await Linking.openURL(PRIVACY_URL);
   };
+
+  const handleTerms = async () => {
+    await Linking.openURL(TERMS_URL);
+  };
+
+  const planDetails = useMemo(() => {
+    const monthlyPrice = monthlyPackage?.product?.price;
+    const monthlyCurrency = monthlyPackage?.product?.currencyCode;
+    return orderedPackages.map((pkg) => {
+      const label = pkg === yearlyPackage ? 'Yearly' : 'Monthly';
+      return buildPlanDetails(label, pkg, monthlyPrice, monthlyCurrency);
+    });
+  }, [monthlyPackage, orderedPackages, yearlyPackage]);
 
   return (
     <Screen style={styles.container} edges={['top']}>
@@ -149,6 +195,10 @@ export const PaywallScreen: React.FC = () => {
 
           <TouchableOpacity style={styles.linkButton} onPress={handlePrivacy} activeOpacity={0.85}>
             <Text style={styles.linkText}>Privacy Policy</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.linkButton} onPress={handleTerms} activeOpacity={0.85}>
+            <Text style={styles.linkText}>Terms of Use (EULA)</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -204,6 +254,19 @@ export const PaywallScreen: React.FC = () => {
             ))}
           </View>
 
+          <View style={styles.detailsCard}>
+            <Text style={styles.detailsTitle}>Subscription details</Text>
+            {planDetails.map((detail) => (
+              <Text key={detail} style={styles.detailsText}>
+                {detail}
+              </Text>
+            ))}
+            <Text style={styles.detailsText}>
+              Auto-renewable. Payment is charged to your Apple ID. Renews unless canceled at least 24 hours
+              before the end of the current period.
+            </Text>
+          </View>
+
           <TouchableOpacity
             style={[styles.cta, (!selectedPackage || isPurchasing) && styles.ctaDisabled]}
             onPress={handleContinue}
@@ -230,6 +293,10 @@ export const PaywallScreen: React.FC = () => {
 
           <TouchableOpacity style={styles.linkButton} onPress={handlePrivacy} activeOpacity={0.85}>
             <Text style={styles.linkText}>Privacy Policy</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.linkButton} onPress={handleTerms} activeOpacity={0.85}>
+            <Text style={styles.linkText}>Terms of Use (EULA)</Text>
           </TouchableOpacity>
         </ScrollView>
       )}
@@ -363,6 +430,27 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontFamily: FontFamily.regular,
+  },
+  detailsCard: {
+    backgroundColor: Colors.backgroundCard,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  detailsTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.md,
+    fontFamily: FontFamily.semibold,
+    marginBottom: Spacing.sm,
+  },
+  detailsText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    fontFamily: FontFamily.regular,
+    lineHeight: 20,
+    marginBottom: 6,
   },
   cta: {
     backgroundColor: Colors.primary,

@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Card, ExerciseIllustration } from '../../components';
+import { OriginIcon } from '../../components/OriginIcon';
 import { useExercises, useSessions, useSubscription } from '../../hooks';
 import type { ExerciseWithFavorite, ExerciseCategory, ExerciseObjective, ExerciseLevel } from '../../types';
 
@@ -23,6 +24,11 @@ const CATEGORIES: { id: ExerciseCategory; label: string; icon: keyof typeof Ioni
   { id: 'water', label: 'Water', icon: 'water-outline', color: '#45B7D1' },
   { id: 'movement', label: 'Movement', icon: 'body-outline', color: '#96CEB4' },
   { id: 'sensory', label: 'Sensory', icon: 'ear-outline', color: '#DDA0DD' },
+];
+
+const CATEGORY_TABS: { id: ExerciseCategory | 'all'; label: string }[] = [
+  { id: 'all', label: 'All' },
+  ...CATEGORIES.map((category) => ({ id: category.id, label: category.label })),
 ];
 
 const OBJECTIVES: {
@@ -55,6 +61,20 @@ export const ExerciseCatalogScreen: React.FC = () => {
   const [guidedMinutes, setGuidedMinutes] = useState<3 | 5 | 10 | null>(null);
   const [guidedAvoidWater, setGuidedAvoidWater] = useState(false);
   const [guidedIntensity, setGuidedIntensity] = useState<'gentle' | 'energizing' | null>(null);
+
+  const openFullCatalog = () => {
+    setSearchQuery('');
+    setSelectedCategory('all');
+    setSelectedDuration('all');
+    setSelectedLevel('all');
+    setGuidedObjective(null);
+    setGuidedMinutes(null);
+    setGuidedAvoidWater(false);
+    setGuidedIntensity(null);
+    setGuidedStep(1);
+    setIsGuidedResults(false);
+    setShowCatalog(true);
+  };
 
   const applyGuidedFiltersAndBrowse = () => {
     setSearchQuery('');
@@ -121,6 +141,12 @@ export const ExerciseCatalogScreen: React.FC = () => {
         >
           {item.name}
         </Text>
+        {item.origin ? (
+          <View style={styles.originRow}>
+            <OriginIcon origin={item.origin} size={14} color={Colors.textSecondary} />
+            <Text style={styles.originText}>{formatOrigin(item.origin)}</Text>
+          </View>
+        ) : null}
         <Text style={styles.shelfSubtitle} numberOfLines={1} ellipsizeMode="tail">
           {item.description}
         </Text>
@@ -166,6 +192,12 @@ export const ExerciseCatalogScreen: React.FC = () => {
           >
             {item.name}
           </Text>
+          {item.origin ? (
+            <View style={styles.originRow}>
+              <OriginIcon origin={item.origin} size={14} color={Colors.textSecondary} />
+              <Text style={styles.originText}>{formatOrigin(item.origin)}</Text>
+            </View>
+          ) : null}
           <Text style={styles.gridSubtitle} numberOfLines={1} ellipsizeMode="tail">
             {item.description}
           </Text>
@@ -303,6 +335,9 @@ export const ExerciseCatalogScreen: React.FC = () => {
               <Text style={styles.heroSubtitle}>
                 Answer 3 quick questions and we’ll surface the best matches.
               </Text>
+              <TouchableOpacity style={styles.heroButtonOutline} onPress={openFullCatalog} activeOpacity={0.9}>
+                <Text style={styles.heroButtonOutlineText}>Browse all exercises</Text>
+              </TouchableOpacity>
 
               {guidedStep === 1 ? (
                 <View style={styles.guidedOptionsGrid}>
@@ -507,7 +542,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.categoryTabsRow}
                   >
-                    {CATEGORIES.map((c) => {
+                    {CATEGORY_TABS.map((c) => {
                       const isActive = selectedCategory === c.id;
                       return (
                         <TouchableOpacity
@@ -644,6 +679,14 @@ export const ExerciseCatalogScreen: React.FC = () => {
       )}
     </SafeAreaView>
   );
+};
+
+const formatOrigin = (origin: string): string => {
+  return origin
+    .replaceAll('_', ' ')
+    .split(' ')
+    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(' ');
 };
 
 const styles = StyleSheet.create({
@@ -812,6 +855,23 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: FontWeight.semibold,
     color: '#667EEA',
+    textAlign: 'center',
+  },
+  heroButtonOutline: {
+    borderWidth: 1,
+    borderColor: Colors.background + 'CC',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 180,
+    marginTop: Spacing.sm,
+  },
+  heroButtonOutlineText: {
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    color: Colors.background,
     textAlign: 'center',
   },
   timeButtons: {
@@ -1016,16 +1076,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.full,
     paddingHorizontal: Spacing.md,
     paddingVertical: 8,
-  },
-  chipText: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.medium,
-  },
-  chipTextActive: {
-    color: Colors.background,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
   },
   shelfSection: {
     paddingTop: Spacing.md,
@@ -1396,6 +1446,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.sm,
     gap: Spacing.sm,
+  },
+  originRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginBottom: Spacing.xs,
+  },
+  originText: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.medium,
   },
   originBadge: {
     width: 28,

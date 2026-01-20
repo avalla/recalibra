@@ -1,8 +1,8 @@
 import { FREE_AUDIO_PRESETS, FREE_EXERCISE_SLUGS } from './constants';
 
 export function isExerciseFree(exerciseSlug: string, isPremiumFlag?: boolean) {
-  if (isPremiumFlag === false) return true;
   if (isPremiumFlag === true) return false;
+  if (isPremiumFlag === false) return true;
 
   return (FREE_EXERCISE_SLUGS as readonly string[]).includes(exerciseSlug);
 }

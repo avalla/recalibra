@@ -5,6 +5,7 @@ import Purchases, {
   type PurchasesPackage,
 } from 'react-native-purchases';
 import { Platform } from 'react-native';
+import { logger } from '../utils/logger';
 import { AppConfig } from '../config';
 
 // RevenueCat Configuration
@@ -54,7 +55,7 @@ export const initializeRevenueCat = async (userId?: string, isAnonymous?: boolea
 
     const apiKey = getApiKey();
     if (!apiKey) {
-      console.warn('[RevenueCat] Missing API key - skipping initialization');
+      logger.warn('Missing API key - skipping initialization', 'RevenueCat');
       return;
     }
 
@@ -67,7 +68,7 @@ export const initializeRevenueCat = async (userId?: string, isAnonymous?: boolea
   } catch (error) {
     console.error('[RevenueCat] Initialization error:', error);
     // Don't throw - let app continue without RevenueCat if it fails
-    console.warn('[RevenueCat] App will continue without subscription features');
+    logger.warn('App will continue without subscription features', 'RevenueCat');
   }
 };
 
@@ -78,14 +79,9 @@ export const initializeRevenueCat = async (userId?: string, isAnonymous?: boolea
 export const loginUser = async (userId: string, previousAnonymousId?: string): Promise<CustomerInfo> => {
   try {
     assertRevenueCatConfigured();
-    // If upgrading from anonymous, identify with the same anonymous ID first
-    if (previousAnonymousId) {
-      await Purchases.logIn(previousAnonymousId);
-    }
-    
-    // Then log in with the new user ID
+    // Log in with the new user ID; RevenueCat will merge with the current anonymous user if present.
     const { customerInfo } = await Purchases.logIn(userId);
-    console.log('[RevenueCat] User logged in:', userId);
+    logger.info(`User logged in: ${userId}`, 'RevenueCat');
     return customerInfo;
   } catch (error) {
     console.error('[RevenueCat] Login error:', error);
@@ -100,7 +96,7 @@ export const logoutUser = async (): Promise<CustomerInfo> => {
   try {
     assertRevenueCatConfigured();
     const customerInfo = await Purchases.logOut();
-    console.log('[RevenueCat] User logged out');
+    logger.info('User logged out', 'RevenueCat');
     return customerInfo;
   } catch (error) {
     console.error('[RevenueCat] Logout error:', error);
@@ -177,7 +173,7 @@ export const restorePurchases = async (): Promise<CustomerInfo> => {
   try {
     assertRevenueCatConfigured();
     const customerInfo = await Purchases.restorePurchases();
-    console.log('[RevenueCat] Purchases restored');
+    logger.info('Purchases restored', 'RevenueCat');
     return customerInfo;
   } catch (error) {
     console.error('[RevenueCat] Error restoring purchases:', error);

@@ -19,6 +19,9 @@ import { useSubscription } from '@/hooks';
 import { useAppleHealth } from '@/hooks';
 import { useHaptics } from '@/hooks';
 
+const PRIVACY_URL = 'https://recalibra.it/privacy';
+const TERMS_URL = 'https://recalibra.it/terms';
+
 interface SettingsItemProps {
   icon: keyof typeof Ionicons.glyphMap;
   iconColor?: string;
@@ -150,7 +153,11 @@ export const ProfileScreen: React.FC = () => {
   };
 
   const handlePrivacyPolicy = () => {
-    Linking.openURL('https://recalibra.it/privacy');
+    Linking.openURL(PRIVACY_URL);
+  };
+
+  const handleTermsOfUse = () => {
+    Linking.openURL(TERMS_URL);
   };
 
   return (
@@ -219,6 +226,10 @@ export const ProfileScreen: React.FC = () => {
               switchValue={healthAuthorized}
               onSwitchChange={handleHealthToggle}
             />
+            <Text style={styles.healthDisclosure}>
+              Recalibra can read your Heart Rate Variability (HRV) from Apple Health to personalize stress
+              insights and will write mindful minutes to Health when you complete sessions.
+            </Text>
             {healthAuthorized && (latestHRV || avgHRV) && (
               <View style={styles.hrvContainer}>
                 <View style={styles.hrvItem}>
@@ -267,6 +278,11 @@ export const ProfileScreen: React.FC = () => {
             icon="shield-outline"
             label="Privacy Policy"
             onPress={handlePrivacyPolicy}
+          />
+          <SettingsItem
+            icon="document-text-outline"
+            label="Terms of Use (EULA)"
+            onPress={handleTermsOfUse}
           />
         </View>
       </ScrollView>
@@ -338,6 +354,14 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontSize: FontSize.sm,
     marginRight: Spacing.sm,
+  },
+  healthDisclosure: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    fontFamily: FontFamily.regular,
+    lineHeight: 18,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.sm,
   },
   // Premium styles
   premiumCard: {

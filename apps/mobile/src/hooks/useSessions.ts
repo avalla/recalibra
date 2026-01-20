@@ -1,17 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { Session, SessionWithExercise } from '../types';
 import { listSessions, startSession as startDbSession, updateSessionStatus as updateDbSessionStatus, completeSession as completeDbSession } from '../db';
+import { logger } from '../utils/logger';
 
 export const useSessions = () => {
   const [sessions, setSessions] = useState<SessionWithExercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const log = (...args: unknown[]) => {
-    if (!__DEV__) return;
-    // eslint-disable-next-line no-console
-    console.log('[useSessions:local]', ...args);
-  };
 
   const fetchSessions = useCallback(async (limit = 20) => {
     try {
@@ -19,11 +14,12 @@ export const useSessions = () => {
       setError(null);
 
       const data = await listSessions(limit);
-      log('fetch:ok', { returned: data.length });
+      logger.debug(`fetch:ok returned=${data.length}`, 'useSessions');
       setSessions(data);
     } catch (err) {
-      log('fetch:error', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch sessions');
+      const error = err instanceof Error ? err : new Error('Failed to fetch sessions');
+      logger.error('fetch:error', error, 'useSessions');
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -39,15 +35,15 @@ export const useSessions = () => {
     _exerciseMeta?: { name: string; category?: unknown; durationMinutes: number }
   ): Promise<{ data: Session | null; error: Error | null }> => {
     try {
-      log('startSession:start', { exerciseId, preStressLevel });
+      logger.debug(`startSession:start exerciseId=${exerciseId}`, 'useSessions');
       const result = await startDbSession({ exerciseId, preStressLevel });
       if (result.error) return { data: null, error: result.error };
       await fetchSessions();
       return { data: result.data, error: null };
     } catch (err) {
-      log('startSession:error', err);
-      if (err instanceof Error) return { data: null, error: err };
-      return { data: null, error: new Error(typeof err === 'string' ? err : 'Failed to start session') };
+      const error = err instanceof Error ? err : new Error(typeof err === 'string' ? err : 'Failed to start session');
+      logger.error('startSession:error', error, 'useSessions');
+      return { data: null, error };
     }
   };
 
@@ -57,15 +53,16 @@ export const useSessions = () => {
     durationSeconds?: number
   ): Promise<{ error: Error | null }> => {
     try {
-      log('updateSessionStatus:start', { sessionId, status, durationSeconds });
+      logger.debug(`updateSessionStatus:start status=${status}`, 'useSessions');
       const result = await updateDbSessionStatus({ sessionId, status, durationSeconds });
       if (result.error) return { error: result.error };
       await fetchSessions();
-      log('updateSessionStatus:ok');
+      logger.debug('updateSessionStatus:ok', 'useSessions');
       return { error: null };
     } catch (err) {
-      log('updateSessionStatus:error', err);
-      return { error: err as Error };
+      const error = err instanceof Error ? err : new Error('Failed to update session');
+      logger.error('updateSessionStatus:error', error, 'useSessions');
+      return { error };
     }
   };
 
@@ -76,15 +73,16 @@ export const useSessions = () => {
     notes?: string
   ): Promise<{ error: Error | null }> => {
     try {
-      log('completeSession:start', { sessionId, durationSeconds, postStressLevel, hasNotes: !!notes });
+      logger.debug('completeSession:start', 'useSessions');
       const result = await completeDbSession({ sessionId, durationSeconds, postStressLevel, notes });
       if (result.error) return { error: result.error };
       await fetchSessions();
-      log('completeSession:ok');
+      logger.debug('completeSession:ok', 'useSessions');
       return { error: null };
     } catch (err) {
-      log('completeSession:error', err);
-      return { error: err as Error };
+      const error = err instanceof Error ? err : new Error('Failed to complete session');
+      logger.error('completeSession:error', error, 'useSessions');
+      return { error };
     }
   };
 

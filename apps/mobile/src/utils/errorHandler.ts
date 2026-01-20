@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 export class AppError extends Error {
   constructor(
     message: string,
@@ -11,12 +13,20 @@ export class AppError extends Error {
 
 export const handleError = (error: unknown, context: string) => {
   if (error instanceof AppError) {
-    console.log(`[${error.level}] ${context}: ${error.message} (${error.code})`);
+    if (error.level === 'warning') {
+      logger.warn(`${context}: ${error.message} (${error.code})`, 'AppError');
+      return;
+    }
+    if (error.level === 'info') {
+      logger.info(`${context}: ${error.message} (${error.code})`, 'AppError');
+      return;
+    }
+    logger.error(`${context}: ${error.message} (${error.code})`, error, 'AppError');
     // Log a servizi di monitoring se necessario
   } else if (error instanceof Error) {
-    console.error(`[error] ${context}: ${error.message}`, error.stack);
+    logger.error(`${context}: ${error.message}`, error, 'AppError');
   } else {
-    console.error(`[error] ${context}: Unknown error`, error);
+    logger.error(`${context}: Unknown error`, new Error('Unknown error'), 'AppError');
   }
 };
 

@@ -8,7 +8,7 @@ let AppleHealthKit: any = null;
 try {
   AppleHealthKit = require('react-native-health').default;
 } catch (e) {
-  console.log('[AppleHealth] react-native-health not available');
+  logger.warn('react-native-health not available', 'AppleHealth');
 }
 
 type HealthKitPermissions = any;
@@ -175,7 +175,7 @@ export const useAppleHealth = () => {
     return new Promise((resolve) => {
       AppleHealthKit.getHeartRateVariabilitySamples(options, (err: any, results: any) => {
         if (err) {
-          console.log('[AppleHealth] Error getting HRV:', err);
+          logger.warn('Error getting HRV', 'AppleHealth');
           resolve([]);
         } else {
           const data: HRVData[] = (results || []).map((sample: HealthValue) => ({
@@ -208,7 +208,7 @@ export const useAppleHealth = () => {
     return new Promise((resolve) => {
       AppleHealthKit.getHeartRateSamples(options, (err: any, results: any) => {
         if (err) {
-          console.log('[AppleHealth] Error getting heart rate:', err);
+          logger.warn('Error getting heart rate', 'AppleHealth');
           resolve([]);
         } else {
           const data: HeartRateData[] = (results || []).map((sample: HealthValue) => ({
@@ -240,7 +240,7 @@ export const useAppleHealth = () => {
     return new Promise((resolve) => {
       AppleHealthKit.getMindfulSession(options, (err: any, results: any) => {
         if (err) {
-          console.log('[AppleHealth] Error getting mindful sessions:', err);
+          logger.warn('Error getting mindful sessions', 'AppleHealth');
           resolve([]);
         } else {
           const data: MindfulSessionData[] = (results || []).map((sample: any) => ({

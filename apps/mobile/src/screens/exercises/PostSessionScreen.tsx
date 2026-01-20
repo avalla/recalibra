@@ -15,6 +15,7 @@ import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../const
 import { Button, Card } from '../../components';
 import { useSessions, useAppleHealth } from '../../hooks';
 import type { RootStackParamList } from '../../types';
+import { logger } from '../../utils/logger';
 
 const STRESS_EMOJIS = ['😇', '🙂', '😌', '😟', '😰'];
 
@@ -54,7 +55,7 @@ export const PostSessionScreen: React.FC = () => {
       setHealthSaved(saved);
       
       if (saved) {
-        console.log('[PostSession] Mindful session saved to Apple Health');
+        logger.info('Mindful session saved to Apple Health', 'PostSession');
       }
     }
 

@@ -56,7 +56,6 @@ export const OnboardingScreen: React.FC = () => {
     if (isCompleting) return;
     
     setIsCompleting(true);
-    console.log('🔍 Skip button pressed');
     try {
       await completeOnboarding();
       rootNavigation.reset({
@@ -77,7 +76,6 @@ export const OnboardingScreen: React.FC = () => {
       if (isCompleting) return;
       
       setIsCompleting(true);
-      console.log('🔍 Get Started button pressed');
       try {
         await completeOnboarding();
         rootNavigation.reset({

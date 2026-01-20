@@ -17,8 +17,18 @@ import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../const
 import { Screen } from '../../components';
 import { useAppleHealth, useSubscription } from '../../hooks';
 import { useAuth } from '@/contexts';
+import {
+  loadBreathingVisualizationMode,
+  loadBreathingCurvePresetOverride,
+  saveBreathingVisualizationMode,
+  saveBreathingCurvePresetOverride,
+  type BreathingCurvePresetOverride,
+  type BreathingVisualizationMode,
+} from '../../utils/breath-visualization';
 
 const HEALTH_SYNC_KEY = '@recalibra:health_sync_enabled';
+const PRIVACY_URL = 'https://recalibra.it/privacy';
+const TERMS_URL = 'https://recalibra.it/terms';
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -36,6 +46,10 @@ export const SettingsScreen: React.FC = () => {
   const [latestHRV, setLatestHRV] = useState<number | null>(null);
   const [avgHRV, setAvgHRV] = useState<number | null>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(false);
+  const [breathingVisualizationMode, setBreathingVisualizationMode] =
+    useState<BreathingVisualizationMode>('circle');
+  const [curvePresetOverride, setCurvePresetOverride] =
+    useState<BreathingCurvePresetOverride>('auto');
 
   // Load health sync preference
   useEffect(() => {
@@ -44,6 +58,18 @@ export const SettingsScreen: React.FC = () => {
       setHealthSyncEnabled(value === 'true');
     };
     loadPreference();
+  }, []);
+
+  useEffect(() => {
+    const loadVisualizationPreference = async () => {
+      const [mode, presetOverride] = await Promise.all([
+        loadBreathingVisualizationMode(),
+        loadBreathingCurvePresetOverride(),
+      ]);
+      setBreathingVisualizationMode(mode);
+      setCurvePresetOverride(presetOverride);
+    };
+    loadVisualizationPreference();
   }, []);
 
   // Fetch HRV data if authorized
@@ -82,6 +108,17 @@ export const SettingsScreen: React.FC = () => {
     await AsyncStorage.setItem(HEALTH_SYNC_KEY, value ? 'true' : 'false');
   };
 
+  const handleVisualizationToggle = async (value: boolean) => {
+    const nextMode: BreathingVisualizationMode = value ? 'graph' : 'circle';
+    setBreathingVisualizationMode(nextMode);
+    await saveBreathingVisualizationMode(nextMode);
+  };
+
+  const handleCurvePresetOverride = async (preset: BreathingCurvePresetOverride) => {
+    setCurvePresetOverride(preset);
+    await saveBreathingCurvePresetOverride(preset);
+  };
+
   return (
     <Screen style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -116,6 +153,11 @@ export const SettingsScreen: React.FC = () => {
                 thumbColor={Colors.textPrimary}
               />
             </View>
+
+            <Text style={styles.healthDisclosure}>
+              Recalibra can read your Heart Rate Variability (HRV) from Apple Health to personalize stress
+              insights and will write mindful minutes to Health when you complete sessions.
+            </Text>
 
             {healthAuthorized && (
               <View style={styles.healthStats}>
@@ -176,6 +218,52 @@ export const SettingsScreen: React.FC = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>App</Text>
 
+          <View style={styles.settingRow}>
+            <View style={styles.settingInfo}>
+              <Ionicons name="pulse-outline" size={24} color={Colors.primary} />
+              <View style={styles.settingText}>
+                <Text style={styles.settingLabel}>Breathing Visual</Text>
+                <Text style={styles.settingDescription}>Use the animated graph view</Text>
+              </View>
+            </View>
+            <Switch
+              value={breathingVisualizationMode === 'graph'}
+              onValueChange={handleVisualizationToggle}
+              trackColor={{ false: Colors.border, true: Colors.primary + '55' }}
+              thumbColor={breathingVisualizationMode === 'graph' ? Colors.primary : Colors.textMuted}
+            />
+          </View>
+
+          <View style={styles.settingRow}>
+            <View style={styles.settingInfo}>
+              <Ionicons name="analytics-outline" size={24} color={Colors.primary} />
+              <View style={styles.settingText}>
+                <Text style={styles.settingLabel}>Breathing Curve</Text>
+                <Text style={styles.settingDescription}>Control the graph intensity</Text>
+              </View>
+            </View>
+            <View style={styles.curvePresetRow}>
+              {([
+                { id: 'auto', label: 'Auto' },
+                { id: 'relax', label: 'Relax' },
+                { id: 'energy', label: 'Energy' },
+              ] as const).map((item) => {
+                const isActive = curvePresetOverride === item.id;
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[styles.curvePresetPill, isActive && styles.curvePresetPillActive]}
+                    onPress={() => handleCurvePresetOverride(item.id)}
+                  >
+                    <Text style={[styles.curvePresetText, isActive && styles.curvePresetTextActive]}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
           <TouchableOpacity
             style={styles.settingRow}
             onPress={() => navigation.navigate('QuickStartPreferences', { from: 'settings' })}
@@ -193,13 +281,27 @@ export const SettingsScreen: React.FC = () => {
 
           <TouchableOpacity
             style={styles.settingRow}
-            onPress={() => Linking.openURL('https://recalibra.it/privacy')}
+            onPress={() => Linking.openURL(PRIVACY_URL)}
             activeOpacity={0.8}
           >
             <View style={styles.settingInfo}>
               <Ionicons name="document-text" size={24} color={Colors.textMuted} />
               <View style={styles.settingText}>
                 <Text style={styles.settingLabel}>Privacy Policy</Text>
+              </View>
+            </View>
+            <Ionicons name="open-outline" size={20} color={Colors.textMuted} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => Linking.openURL(TERMS_URL)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.settingInfo}>
+              <Ionicons name="document-text-outline" size={24} color={Colors.textMuted} />
+              <View style={styles.settingText}>
+                <Text style={styles.settingLabel}>Terms of Use (EULA)</Text>
               </View>
             </View>
             <Ionicons name="open-outline" size={20} color={Colors.textMuted} />
@@ -282,6 +384,31 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     marginTop: 2,
   },
+  curvePresetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  curvePresetPill: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: 999,
+    backgroundColor: Colors.backgroundElevated,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  curvePresetPillActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  curvePresetText: {
+    fontSize: FontSize.xs,
+    color: Colors.textMuted,
+    fontWeight: FontWeight.semibold,
+  },
+  curvePresetTextActive: {
+    color: Colors.background,
+  },
   healthStats: {
     flexDirection: 'row',
     backgroundColor: Colors.backgroundCard,
@@ -307,6 +434,13 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: FontWeight.bold,
     color: Colors.primary,
+  },
+  healthDisclosure: {
+    fontSize: FontSize.sm,
+    color: Colors.textMuted,
+    lineHeight: 18,
+    marginTop: 4,
+    marginBottom: Spacing.sm,
   },
   healthNotAvailable: {
     fontSize: FontSize.sm,

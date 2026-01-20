@@ -71,7 +71,7 @@ export const useNotifications = () => {
       const data = await getRemindersFromDb();
       setReminderSettings(data);
     } catch (err) {
-      console.log('[Notifications] No settings found, using defaults');
+      logger.info('No settings found, using defaults', 'useNotifications');
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +88,7 @@ export const useNotifications = () => {
       // Reschedule notifications
       await scheduleReminders(newSettings);
     } catch (err) {
-      console.error('[Notifications] Error saving settings:', err);
+      logger.error('Error saving settings', err as Error, 'useNotifications');
     }
   };
 
@@ -118,7 +118,7 @@ export const useNotifications = () => {
       });
     }
 
-    console.log('[Notifications] Scheduled reminders for days:', settings.days);
+    logger.info(`Scheduled reminders for days: ${settings.days.join(',')}`, 'useNotifications');
   };
 
   // Random motivational messages
@@ -153,13 +153,13 @@ export const useNotifications = () => {
     loadSettings();
 
     // Listen for incoming notifications
-    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-      console.log('[Notifications] Received:', notification);
+    notificationListener.current = Notifications.addNotificationReceivedListener(() => {
+      logger.debug('Notification received', 'useNotifications');
     });
 
     // Listen for notification taps
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('[Notifications] Response:', response);
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(() => {
+      logger.debug('Notification response received', 'useNotifications');
       // Could navigate to specific screen here
     });
 

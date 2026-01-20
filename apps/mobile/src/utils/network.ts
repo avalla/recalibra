@@ -3,6 +3,8 @@
  * Using Expo's built-in capabilities
  */
 
+import { logger } from './logger';
+
 // Simple network connectivity check using fetch
 export const checkNetworkConnectivity = async (): Promise<boolean> => {
   try {
@@ -20,7 +22,7 @@ export const checkNetworkConnectivity = async (): Promise<boolean> => {
 
     return response.ok;
   } catch (error) {
-    console.log('[Network] Connectivity check failed:', error);
+    logger.warn('Connectivity check failed', 'Network');
     return false;
   }
 };

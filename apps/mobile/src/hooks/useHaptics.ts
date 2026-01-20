@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logger } from '../utils/logger';
 
 const HAPTICS_ENABLED_KEY = '@recalibra:haptics_enabled';
 
@@ -17,7 +18,7 @@ export const useHaptics = () => {
           setIsEnabled(value === 'true');
         }
       } catch (e) {
-        console.log('[useHaptics] Error loading setting:', e);
+        logger.warn('Error loading setting', 'useHaptics');
       }
       setIsLoaded(true);
     };
@@ -30,7 +31,7 @@ export const useHaptics = () => {
     try {
       await AsyncStorage.setItem(HAPTICS_ENABLED_KEY, enabled ? 'true' : 'false');
     } catch (e) {
-      console.log('[useHaptics] Error saving setting:', e);
+      logger.warn('Error saving setting', 'useHaptics');
     }
   }, []);
 
@@ -40,7 +41,7 @@ export const useHaptics = () => {
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch (e) {
-      console.log('[useHaptics] Light haptic error:', e);
+      logger.debug('Light haptic error', 'useHaptics');
     }
   }, [isEnabled]);
 
@@ -50,7 +51,7 @@ export const useHaptics = () => {
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } catch (e) {
-      console.log('[useHaptics] Medium haptic error:', e);
+      logger.debug('Medium haptic error', 'useHaptics');
     }
   }, [isEnabled]);
 
@@ -60,7 +61,7 @@ export const useHaptics = () => {
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     } catch (e) {
-      console.log('[useHaptics] Heavy haptic error:', e);
+      logger.debug('Heavy haptic error', 'useHaptics');
     }
   }, [isEnabled]);
 
@@ -70,7 +71,7 @@ export const useHaptics = () => {
     try {
       await Haptics.selectionAsync();
     } catch (e) {
-      console.log('[useHaptics] Selection haptic error:', e);
+      logger.debug('Selection haptic error', 'useHaptics');
     }
   }, [isEnabled]);
 
@@ -80,7 +81,7 @@ export const useHaptics = () => {
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e) {
-      console.log('[useHaptics] Success haptic error:', e);
+      logger.debug('Success haptic error', 'useHaptics');
     }
   }, [isEnabled]);
 
@@ -90,7 +91,7 @@ export const useHaptics = () => {
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     } catch (e) {
-      console.log('[useHaptics] Warning haptic error:', e);
+      logger.debug('Warning haptic error', 'useHaptics');
     }
   }, [isEnabled]);
 
@@ -100,7 +101,7 @@ export const useHaptics = () => {
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } catch (e) {
-      console.log('[useHaptics] Error haptic error:', e);
+      logger.debug('Error haptic error', 'useHaptics');
     }
   }, [isEnabled]);
 
@@ -110,7 +111,7 @@ export const useHaptics = () => {
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
     } catch (e) {
-      console.log('[useHaptics] Breathing haptic error:', e);
+      logger.debug('Breathing haptic error', 'useHaptics');
     }
   }, [isEnabled]);
 

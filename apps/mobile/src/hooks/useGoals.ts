@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSessions } from './useSessions';
 import { getGoals as getGoalsFromDb, setGoals as setGoalsInDb } from '../db';
+import { logger } from '../utils/logger';
 
 export interface WeeklyGoals {
   sessionGoal: number;
@@ -26,7 +27,7 @@ export const useGoals = () => {
         minutesGoal: data.minutesGoal,
       });
     } catch (err) {
-      console.log('[Goals] No settings found, using defaults');
+      logger.info('No settings found, using defaults', 'useGoals');
     } finally {
       setIsLoading(false);
     }

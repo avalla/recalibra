@@ -1,7 +1,10 @@
 import * as SQLite from 'expo-sqlite';
+import type { ExerciseCategory } from '../types';
 
 import { seedExercises } from '../data/exercises';
 import { buildUniqueSlugs } from '../data/slug';
+import { inferObjective } from '../utils/infer-objective';
+import { logger } from '../utils/logger';
 import { SCHEMA_SQL } from './schema';
 
 const DB_NAME = 'recalibra_v3.db';
@@ -35,15 +38,12 @@ export async function initDb(): Promise<void> {
   if (__DEV__) {
     try {
       const row = await db.getFirstAsync<{ count: number }>('SELECT COUNT(*) as count FROM exercises');
-      // eslint-disable-next-line no-console
-      console.log('[db] initDb ok', {
-        dbName: DB_NAME,
-        exercisesInDb: row?.count ?? 0,
-        seedExercises: seedExercises.length,
-      });
+      logger.debug(
+        `initDb ok db=${DB_NAME} exercisesInDb=${row?.count ?? 0} seedExercises=${seedExercises.length}`,
+        'db'
+      );
     } catch {
-      // eslint-disable-next-line no-console
-      console.log('[db] initDb ok', { dbName: DB_NAME });
+      logger.debug(`initDb ok db=${DB_NAME}`, 'db');
     }
   }
 }
@@ -131,39 +131,6 @@ async function ensureExercisesObjectiveColumn(db: SQLite.SQLiteDatabase): Promis
   await db.execAsync("UPDATE exercises SET objective = 'relax' WHERE objective IS NULL OR objective = ''; ");
 }
 
-function inferObjective(input: {
-  name: string;
-  description: string;
-  category: string;
-  breathingPatternJson: string | null;
-}): 'relax' | 'energy' | 'focus' | 'sleep' {
-  const name = input.name.trim().toLowerCase();
-  const description = input.description.trim().toLowerCase();
-  const haystack = `${name} ${description}`;
-
-  if (/(sleep|insomnia|bedtime|night)/.test(haystack)) return 'sleep';
-  if (/(focus|concentration|study|clarity|attention)/.test(haystack)) return 'focus';
-  if (/(energy|energ|boost|wake|berserker|power|ignite)/.test(haystack)) return 'energy';
-  if (/(relax|calm|downshift|soothe|release|unwind|ground)/.test(haystack)) return 'relax';
-
-  try {
-    if (input.breathingPatternJson) {
-      const parsed = JSON.parse(input.breathingPatternJson) as { special?: string };
-      const special = parsed?.special;
-      if (special === 'wim_hof' || special === 'rapid' || special === 'holotropic') return 'energy';
-      if (special === 'humming') return 'relax';
-    }
-  } catch {
-    // ignore
-  }
-
-  if (input.category === 'movement') return 'energy';
-  if (input.category === 'sensory') return 'relax';
-  if (input.category === 'water') return 'energy';
-
-  return 'relax';
-}
-
 async function ensureExercisesObjectiveBackfill(db: SQLite.SQLiteDatabase): Promise<void> {
   const seedObjectiveById = new Map(seedExercises.map((e) => [e.id, e.objective] as const));
   const seedObjectiveBySlug = new Map(seedExercises.map((e) => [e.slug, e.objective] as const));
@@ -173,7 +140,7 @@ async function ensureExercisesObjectiveBackfill(db: SQLite.SQLiteDatabase): Prom
     slug: string;
     name: string;
     description: string;
-    category: string;
+    category: ExerciseCategory;
     objective: string;
     breathing_pattern_json: string | null;
   }>('SELECT id, slug, name, description, category, objective, breathing_pattern_json FROM exercises');
