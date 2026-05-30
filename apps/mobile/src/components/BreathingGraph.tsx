@@ -265,7 +265,12 @@ export function BreathingGraph({
     [points, normalizedProgress]
   );
 
-  const translateX = -normalizedProgress * width;
+  // Center the current cycle-progress under the fixed center playhead.
+  // The wave renders CYCLES_RENDERED cycles side by side; we scroll so that
+  // fraction `p` of the middle cycle (layer x = width + p*width) lands at
+  // screen x = width/2. Without the -width/2 offset the wave under the
+  // playhead is half a cycle out of sync with the breathing phase / dot.
+  const translateX = -normalizedProgress * width - width / 2;
 
   const nowPoint = useMemo(
     () => getValueAtProgress(segments, cycleTotalSeconds, normalizedProgress, curvePreset),

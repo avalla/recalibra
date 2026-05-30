@@ -177,7 +177,11 @@ export const ExerciseSessionScreen: React.FC = () => {
     benefits: dbBenefits,
     tips: dbTips,
     instructions: dbInstructions,
+    preStressLevel: entryPreStress,
   } = route.params;
+  // When the feeling-first Home captured stress at entry, skip the in-session
+  // stress step entirely (the post-session still measures the delta).
+  const stressStepEnabled = typeof entryPreStress !== 'number';
   const { startSession, updateSessionStatus } = useSessions();
   const {
     breathingPhase: hapticBreathingPhase,
@@ -231,6 +235,9 @@ export const ExerciseSessionScreen: React.FC = () => {
   // Onboarding state
   const [currentPage, setCurrentPage] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  // Avoids a one-frame flash of the onboarding for users who have already seen
+  // it: we don't render the body until the persisted status has been read.
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
 
   const onboardingPages = useMemo(() => {
     const pages: Array<Record<string, any>> = [
@@ -299,7 +306,7 @@ export const ExerciseSessionScreen: React.FC = () => {
       // Mark onboarding as seen for this exercise
       await AsyncStorage.setItem(`onboarding_${exerciseId}`, 'seen');
       setShowOnboarding(false);
-      setPreSessionStep(2);
+      setPreSessionStep(stressStepEnabled ? 2 : 3);
     }
   };
 
@@ -555,7 +562,7 @@ export const ExerciseSessionScreen: React.FC = () => {
   });
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [preStressLevel, setPreStressLevel] = useState(5);
+  const [preStressLevel, setPreStressLevel] = useState(entryPreStress ?? 5);
   const [preSessionStep, setPreSessionStep] = useState<1 | 2 | 3>(1);
   const [sessionState, setSessionState] = useState<'stress_prompt' | 'countdown' | 'playing' | 'paused'>('stress_prompt');
   const [showTutorial, setShowTutorial] = useState(false);
@@ -586,9 +593,13 @@ export const ExerciseSessionScreen: React.FC = () => {
   // Check if onboarding should be shown for this exercise
   useEffect(() => {
     const checkOnboardingStatus = async () => {
-      const onboardingSeen = await AsyncStorage.getItem(`onboarding_${exerciseId}`);
-      if (onboardingSeen) {
-        setShowOnboarding(false);
+      try {
+        const onboardingSeen = await AsyncStorage.getItem(`onboarding_${exerciseId}`);
+        if (onboardingSeen) {
+          setShowOnboarding(false);
+        }
+      } finally {
+        setOnboardingChecked(true);
       }
     };
     checkOnboardingStatus();
@@ -648,6 +659,9 @@ export const ExerciseSessionScreen: React.FC = () => {
   const phaseStartedAtMsRef = useRef<number | null>(null);
   const phasePausedAtMsRef = useRef<number | null>(null);
   const phasePausedTotalMsRef = useRef<number>(0);
+  // Tracks the phase we last reset progress for, so resuming from pause does
+  // not restart the current phase's progress (only a real phase change does).
+  const lastResetPhaseRef = useRef<BreathingPhase>('inhale');
 
   // Get label for current phase (with special pattern support)
   const getPhaseLabel = (phase: BreathingPhase): string => {
@@ -830,6 +844,12 @@ export const ExerciseSessionScreen: React.FC = () => {
       duration: getPhaseDuration(currentPhase) * 1000,
       useNativeDriver: true,
     }).start();
+
+    // Freeze the circle where it is when the session pauses (or the phase
+    // changes) instead of letting the running animation play on in the background.
+    return () => {
+      scaleAnim.stopAnimation();
+    };
   }, [currentPhase, isPlaying]);
 
   useEffect(() => {
@@ -1021,7 +1041,10 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   const handleHeaderLeft = async () => {
     if (sessionState === 'stress_prompt' && preSessionStep > 1) {
-      setPreSessionStep((prev) => (prev > 1 ? ((prev - 1) as 1 | 2 | 3) : prev));
+      setPreSessionStep((prev) => {
+        const back = (prev - 1) as 1 | 2 | 3;
+        return !stressStepEnabled && back === 2 ? 1 : back;
+      });
       return;
     }
 
@@ -1108,6 +1131,11 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   useEffect(() => {
     if (sessionState !== 'playing') return;
+    // Only restart phase progress on an actual phase change. On resume from
+    // pause the phase is unchanged, so we let the pause-accounting effect above
+    // keep the progress continuous instead of snapping the graph back to 0.
+    if (lastResetPhaseRef.current === currentPhase) return;
+    lastResetPhaseRef.current = currentPhase;
     phaseStartedAtMsRef.current = Date.now();
     phasePausedAtMsRef.current = null;
     phasePausedTotalMsRef.current = 0;
@@ -1291,7 +1319,7 @@ export const ExerciseSessionScreen: React.FC = () => {
   return (
     <Screen edges={['top']} disableGradient>
       <View style={styles.container}>
-        {showOnboarding ? (
+        {!onboardingChecked ? null : showOnboarding ? (
           <View style={styles.onboardingContainer}>
             <View style={styles.onboardingHeader}>
               <TouchableOpacity onPress={handleSkipOnboarding}>
@@ -1828,7 +1856,10 @@ export const ExerciseSessionScreen: React.FC = () => {
                   style={styles.primaryCta}
                   onPress={() => {
                     if (preSessionStep < 3) {
-                      setPreSessionStep((prev) => ((prev + 1) as 1 | 2 | 3));
+                      setPreSessionStep((prev) => {
+                        const next = (prev + 1) as 1 | 2 | 3;
+                        return !stressStepEnabled && next === 2 ? 3 : next;
+                      });
                       return;
                     }
                     handleStartSession();

@@ -1,117 +1,97 @@
 import React, { useMemo, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  RefreshControl,
-} from 'react-native';
+import { StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { Card, Screen } from '../../components';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+
+import { Colors, FontFamily, FontSize, FontWeight, Spacing } from '../../constants';
+import { Screen } from '../../components';
 import { useAuth } from '../../contexts';
-import { useSessions, useExercises, useGoals } from '../../hooks';
+import { useSessions, useExercises, useSubscription } from '../../hooks';
 import {
   getExerciseForQuickStart,
   loadQuickStartPreference,
   toExerciseSessionParams,
   type QuickStartPreference,
 } from '../../utils/quick-start';
+import type { ExerciseWithFavorite } from '../../types';
 import { GREETING_PHRASES } from './home-constants';
-import { createStressTrend, getUserFirstName } from './home-helpers';
-import { useHomeAnimations } from './use-home-animations';
-import {
-  GreetingCard,
-  HomeHeader,
-  StartSessionButton,
-  StressTrendChart,
-  SuggestedExerciseCard,
-  TodayStatusCards,
-  WeeklyGoalsCard,
-} from './components';
-
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { getUserFirstName } from './home-helpers';
+import { FeelingEntry, GreetingCard, HomeHeader } from './components';
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { userMetadata } = useAuth();
-  const { sessions, getSessionStats, refetch: refreshSessions } = useSessions();
+  const { sessions, refetch: refreshSessions } = useSessions();
   const { exercises } = useExercises();
-  const { goals, weekProgress } = useGoals();
+  const { canAccessExercise } = useSubscription();
   const [refreshing, setRefreshing] = useState(false);
   const [quickStartPreference, setQuickStartPreference] = useState<QuickStartPreference | null>(null);
 
-  const { animatedButtonStyle, fadeStyle } = useHomeAnimations();
-
   const userName = getUserFirstName(userMetadata?.full_name);
-  
-  // Random greeting phrase (memoized to stay consistent during session)
-  const greetingPhrase = useMemo(() => {
-    return GREETING_PHRASES[Math.floor(Math.random() * GREETING_PHRASES.length)];
-  }, []);
-  
-  // Get stats
-  const stats = getSessionStats();
+
+  const greetingPhrase = useMemo(
+    () => GREETING_PHRASES[Math.floor(Math.random() * GREETING_PHRASES.length)],
+    []
+  );
+
   const lastSession = sessions[0];
+  const lastStress =
+    (lastSession as any)?.post_stress_level ?? (lastSession as any)?.pre_stress_level;
+  const excludeIds = useMemo(
+    () => (lastSession?.exercise_id ? [lastSession.exercise_id] : []),
+    [lastSession?.exercise_id]
+  );
 
   useFocusEffect(
     React.useCallback(() => {
-      const load = async () => {
-        const pref = await loadQuickStartPreference();
-        setQuickStartPreference(pref);
+      let active = true;
+      loadQuickStartPreference().then((pref) => {
+        if (active) setQuickStartPreference(pref);
+      });
+      return () => {
+        active = false;
       };
-      load();
-      return () => {};
     }, [])
   );
-  
-  // Pull to refresh handler
+
   const onRefresh = async () => {
     setRefreshing(true);
     await refreshSessions();
     setRefreshing(false);
   };
-  
-  const stressTrend = useMemo(() => createStressTrend(), []);
 
-  const suggestedExercise = useMemo(() => {
-    const lastStressLevel =
-      (lastSession as any)?.post_stress_level ?? (lastSession as any)?.pre_stress_level;
+  const beginSession = (exercise: ExerciseWithFavorite, preStress: number) => {
+    navigation.navigate('Main', {
+      screen: 'ExercisesTab',
+      params: {
+        screen: 'ExerciseSession',
+        params: { ...toExerciseSessionParams(exercise), preStressLevel: preStress },
+      },
+    });
+  };
 
-    const suggested = getExerciseForQuickStart(
-      { mode: 'smart' },
-      exercises,
-      { now: new Date(), lastStressLevel }
-    );
+  const openCatalog = () => {
+    navigation.navigate('Main', {
+      screen: 'ExercisesTab',
+      params: { screen: 'ExerciseCatalog' },
+    });
+  };
 
-    return suggested;
-  }, [exercises, lastSession]);
-  
+  // Header quick-start button: repeat the user's preferred quick practice.
   const handleQuickStart = () => {
     if (!quickStartPreference) {
       navigation.navigate('QuickStartPreferences', { from: 'home' });
       return;
     }
-
     const exercise = getExerciseForQuickStart(quickStartPreference, exercises, {
       now: new Date(),
-      lastStressLevel:
-        (lastSession as any)?.post_stress_level ?? (lastSession as any)?.pre_stress_level,
+      lastStressLevel: lastStress,
     });
-
     if (!exercise) {
       navigation.navigate('QuickStartPreferences', { from: 'home' });
       return;
     }
-
-    navigation.navigate('Main', {
-      screen: 'ExercisesTab',
-      params: {
-        screen: 'ExerciseSession',
-        params: toExerciseSessionParams(exercise),
-      },
-    });
+    beginSession(exercise, lastStress ?? 5);
   };
 
   return (
@@ -120,6 +100,7 @@ export const HomeScreen: React.FC = () => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -129,68 +110,23 @@ export const HomeScreen: React.FC = () => {
           />
         }
       >
-        {/* Header */}
-        <Animated.View entering={FadeInDown.delay(100).duration(500)}>
+        <Animated.View entering={FadeInDown.delay(80).duration(450)}>
           <HomeHeader onQuickStartPress={handleQuickStart} />
         </Animated.View>
 
-        {/* Greeting with gradient background */}
-        <Animated.View entering={FadeInDown.delay(200).duration(500)}>
+        <Animated.View entering={FadeInDown.delay(160).duration(450)}>
           <GreetingCard userName={userName} greetingPhrase={greetingPhrase} />
         </Animated.View>
 
-        {/* Start Session Button */}
-        <Animated.View entering={FadeInDown.delay(700).duration(500)}>
-          <StartSessionButton
-            animatedStyle={animatedButtonStyle}
-            onPress={() =>
-              navigation.navigate('Main', {
-                screen: 'ExercisesTab',
-                params: {
-                  screen: 'ExerciseCatalog',
-                },
-              })
-            }
+        <Animated.View entering={FadeInDown.delay(240).duration(450)}>
+          <FeelingEntry
+            exercises={exercises}
+            lastStress={lastStress}
+            excludeIds={excludeIds}
+            canAccess={(exercise) => canAccessExercise(exercise.slug)}
+            onBegin={beginSession}
+            onBrowse={openCatalog}
           />
-        </Animated.View>
-
-        {/* Weekly Goals */}
-        <Animated.View entering={FadeInDown.delay(300).duration(500)}>
-          <Text style={styles.sectionTitle}>Weekly Goals</Text>
-          <WeeklyGoalsCard goals={goals} weekProgress={weekProgress} fadeStyle={fadeStyle} />
-        </Animated.View>
-
-        {/* Today's Status */}
-        <Animated.View entering={FadeInDown.delay(400).duration(500)}>
-          <Text style={styles.sectionTitle}>Today's status</Text>
-          <Animated.View entering={FadeIn.delay(500).duration(300)}>
-            <TodayStatusCards totalSessions={stats.totalSessions} totalMinutes={stats.totalMinutes} />
-          </Animated.View>
-        </Animated.View>
-
-        {/* Suggested Exercise */}
-        <Animated.View entering={FadeInDown.delay(800).duration(500)}>
-          <Text style={styles.sectionTitle}>Suggested for you today</Text>
-          {suggestedExercise && (
-            <SuggestedExerciseCard
-              exercise={suggestedExercise}
-              onPress={() =>
-                navigation.navigate('Main', {
-                  screen: 'ExercisesTab',
-                  params: {
-                    screen: 'ExerciseSession',
-                    params: toExerciseSessionParams(suggestedExercise),
-                  },
-                })
-              }
-            />
-          )}
-        </Animated.View>
-
-        {/* Stress Trend */}
-        <Animated.View entering={FadeInDown.delay(900).duration(500)}>
-          <Text style={styles.sectionTitle}>Stress Trend</Text>
-          <StressTrendChart stressTrend={stressTrend} avgStressReduction={stats.avgStressReduction} />
         </Animated.View>
       </ScrollView>
     </Screen>
@@ -209,75 +145,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.md,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  headerTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.semibold,
-    fontFamily: FontFamily.heading,
-  },
-  quickStartButton: {
-    borderRadius: BorderRadius.full,
-    overflow: 'hidden',
-  },
-  quickStartGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-  },
-  quickStartIcon: {
-    marginRight: 6,
-  },
-  quickStartText: {
-    color: Colors.background,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.bold,
-  },
-  greeting: {
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.xl,
-    position: 'relative',
-  },
-  greetingGradient: {
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    marginHorizontal: 0,
-  },
-  greetingTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.xxl,
-    fontWeight: FontWeight.bold,
-    lineHeight: 40,
-    fontFamily: FontFamily.heading,
-  },
-  greetingSubtitle: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.xl,
-    fontWeight: FontWeight.medium,
-    marginTop: Spacing.xs,
-  },
-  greetingAccent: {
-    position: 'absolute',
-    left: -10,
-    bottom: -5,
-    width: 60,
-    height: 3,
-    backgroundColor: Colors.primary,
-    borderRadius: 2,
-    opacity: 0.3,
-  },
   sectionTitle: {
     color: Colors.textSecondary,
     fontSize: FontSize.sm,
@@ -286,288 +153,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xl,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-  },
-  goalsCardGradient: {
-    borderRadius: BorderRadius.lg,
-    padding: 1,
-  },
-  goalsCard: {
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.lg - 1,
-    padding: Spacing.lg,
-  },
-  goalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-  },
-  goalDivider: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginVertical: Spacing.sm,
-  },
-  goalInfo: {
-    flex: 1,
-  },
-  goalLabel: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    marginBottom: Spacing.xs,
-  },
-  goalProgress: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-  },
-  goalBarContainer: {
-    flex: 2,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  goalBarBackground: {
-    flex: 1,
-    height: 8,
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.full,
-    overflow: 'hidden',
-  },
-  goalBar: {
-    height: '100%',
-    borderRadius: BorderRadius.full,
-  },
-  goalPercentage: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.medium,
-    minWidth: 35,
-    textAlign: 'right',
-  },
-  goalCheckContainer: {
-    marginLeft: Spacing.sm,
-  },
-  chartCardGradient: {
-    borderRadius: BorderRadius.lg,
-    padding: 1,
-    marginHorizontal: 0,
-  },
-  chartCard: {
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.lg - 1,
-    padding: Spacing.lg,
-  },
-  chartHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.md,
-  },
-  chartTitle: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    flex: 1,
-    marginLeft: Spacing.sm,
-  },
-  chartValue: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-  },
-  chartContainer: {
-    alignItems: 'center',
-  },
-  chartLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.xs,
-  },
-  chartLabel: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.xs,
-  },
-  statusCards: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  statusCardEnhanced: {
-    flex: 1,
-    paddingVertical: Spacing.lg,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  statusIcon: {
-    marginBottom: Spacing.sm,
-  },
-  statusLabel: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.xs,
-    marginBottom: Spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  statusValue: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.xl,
-    fontWeight: FontWeight.bold,
-  },
-  statusAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: Colors.primary,
-    opacity: 0.2,
-  },
-  // Enhanced Start Button
-  startButtonContainer: {
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.md,
-  },
-  startButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.xl,
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.xl,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  startButtonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-  },
-  startButtonText: {
-    color: Colors.background,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.semibold,
-  },
-  startIcon: {
-    marginLeft: Spacing.xs,
-  },
-  startButtonGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  // Enhanced Suggested Card
-  suggestedCardWrapper: {
-    backgroundColor: Colors.backgroundElevated,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
-    borderRadius: BorderRadius.lg,
-  },
-  suggestedCard: {
-    backgroundColor: 'transparent',
-  },
-  suggestedContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-  },
-  suggestedIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.full,
-    backgroundColor: Colors.backgroundCard,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  suggestedIconEnhanced: {
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  suggestedInfo: {
-    flex: 1,
-  },
-  suggestedTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
-    marginBottom: Spacing.xs,
-  },
-  suggestedDuration: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-  },
-  suggestedCategory: {
-    color: Colors.primary,
-    fontSize: FontSize.xs,
-    marginTop: Spacing.xs,
-    textTransform: 'capitalize',
-  },
-  suggestedArrow: {
-    padding: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    backgroundColor: Colors.backgroundCard,
-  },
-  // Enhanced Progress Cards
-  progressCards: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  progressCardEnhanced: {
-    flex: 1,
-    paddingVertical: Spacing.lg,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  progressIcon: {
-    marginBottom: Spacing.sm,
-  },
-  progressLabel: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.xs,
-    marginBottom: Spacing.sm,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  progressValue: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
-  },
-  progressSubValue: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    marginTop: Spacing.xs,
-  },
-  progressAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: Colors.primary,
-    opacity: 0.2,
-  },
-  weekDots: {
-    flexDirection: 'row',
-    gap: Spacing.xs,
-    marginTop: Spacing.sm,
-  },
-  weekDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-  },
-  weekDotCompleted: {
-    backgroundColor: Colors.primary,
-  },
-  weekDotPending: {
-    backgroundColor: Colors.backgroundLight,
+    fontFamily: FontFamily.regular,
   },
 });

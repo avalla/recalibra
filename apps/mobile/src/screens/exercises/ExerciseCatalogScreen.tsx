@@ -12,12 +12,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Card, ExerciseIllustration } from '../../components';
 import { OriginIcon } from '../../components/OriginIcon';
 import { useExercises, useSessions, useSubscription } from '../../hooks';
-import type { ExerciseWithFavorite, ExerciseCategory, ExerciseObjective, ExerciseLevel } from '../../types';
+import type { ExerciseWithFavorite, ExerciseCategory } from '../../types';
 
 const CATEGORIES: { id: ExerciseCategory; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
   { id: 'breathing', label: 'Breathing', icon: 'leaf-outline', color: '#4ECDC4' },
@@ -31,78 +30,15 @@ const CATEGORY_TABS: { id: ExerciseCategory | 'all'; label: string }[] = [
   ...CATEGORIES.map((category) => ({ id: category.id, label: category.label })),
 ];
 
-const OBJECTIVES: {
-  id: ExerciseObjective;
-  label: string;
-  subtitle: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-}[] = [
-  { id: 'relax', label: 'Relax', subtitle: 'Calm down & reset', icon: 'leaf-outline', color: '#4ECDC4' },
-  { id: 'energy', label: 'Energy', subtitle: 'Boost & wake up', icon: 'flash-outline', color: '#F59E0B' },
-  { id: 'focus', label: 'Focus', subtitle: 'Clarity & attention', icon: 'sparkles-outline', color: '#60A5FA' },
-  { id: 'sleep', label: 'Sleep', subtitle: 'Wind down', icon: 'moon-outline', color: '#A78BFA' },
-];
-
 export const ExerciseCatalogScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { exercises, isLoading, toggleFavorite } = useExercises();
   const { sessions } = useSessions();
   const { canAccessExercise, presentPaywall } = useSubscription();
-  const [showCatalog, setShowCatalog] = useState(false);
-  const [isGuidedResults, setIsGuidedResults] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
   const [selectedDuration, setSelectedDuration] = useState<'all' | 'short' | 'medium' | 'long'>('all');
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
-
-  const [guidedStep, setGuidedStep] = useState<1 | 2 | 3>(1);
-  const [guidedObjective, setGuidedObjective] = useState<ExerciseObjective | null>(null);
-  const [guidedMinutes, setGuidedMinutes] = useState<3 | 5 | 10 | null>(null);
-  const [guidedAvoidWater, setGuidedAvoidWater] = useState(false);
-  const [guidedIntensity, setGuidedIntensity] = useState<'gentle' | 'energizing' | null>(null);
-
-  const openFullCatalog = () => {
-    setSearchQuery('');
-    setSelectedCategory('all');
-    setSelectedDuration('all');
-    setSelectedLevel('all');
-    setGuidedObjective(null);
-    setGuidedMinutes(null);
-    setGuidedAvoidWater(false);
-    setGuidedIntensity(null);
-    setGuidedStep(1);
-    setIsGuidedResults(false);
-    setShowCatalog(true);
-  };
-
-  const applyGuidedFiltersAndBrowse = () => {
-    setSearchQuery('');
-    setSelectedCategory(guidedAvoidWater ? 'breathing' : 'all');
-
-    if (guidedMinutes === 3) setSelectedDuration('short');
-    if (guidedMinutes === 5) setSelectedDuration('medium');
-    if (guidedMinutes === 10) setSelectedDuration('long');
-
-    const nextLevel: ExerciseLevel | 'all' = guidedIntensity === 'gentle' ? 'beginner' : 'all';
-    setSelectedLevel(nextLevel);
-
-    setIsGuidedResults(true);
-    setShowCatalog(true);
-  };
-
-  const guidedSummaryLabels = useMemo(() => {
-    if (!guidedObjective || !guidedMinutes) return [];
-
-    const objectiveLabel = OBJECTIVES.find((o) => o.id === guidedObjective)?.label ?? guidedObjective;
-    const labels: string[] = [`${objectiveLabel}`, `${guidedMinutes} min`];
-
-    if (guidedIntensity === 'gentle') labels.push('Gentle');
-    if (guidedIntensity === 'energizing') labels.push('Energizing');
-    if (guidedAvoidWater) labels.push('No water');
-
-    return labels;
-  }, [guidedAvoidWater, guidedIntensity, guidedMinutes, guidedObjective]);
 
   const renderShelfItem = ({ item }: { item: ExerciseWithFavorite }) => {
     const isLocked = !canAccessExercise(item.slug);
@@ -220,23 +156,6 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
       if (selectedCategory !== 'all' && e.category !== selectedCategory) return false;
 
-      if (guidedAvoidWater && e.category === 'water') return false;
-
-      if (guidedObjective && e.objective !== guidedObjective) return false;
-
-      if (guidedIntensity === 'gentle') {
-        if (e.level !== 'beginner') return false;
-        if (e.category === 'movement') return false;
-        const special = e.breathing_pattern?.special;
-        if (special === 'wim_hof' || special === 'rapid' || special === 'holotropic') return false;
-      }
-
-      if (guidedIntensity === 'energizing') {
-        if (e.level === 'beginner') return false;
-        const special = e.breathing_pattern?.special;
-        if (special === 'humming') return false;
-      }
-
       if (selectedLevel !== 'all' && e.level !== selectedLevel) return false;
 
       if (selectedDuration !== 'all') {
@@ -254,9 +173,6 @@ export const ExerciseCatalogScreen: React.FC = () => {
     selectedCategory,
     selectedDuration,
     selectedLevel,
-    guidedAvoidWater,
-    guidedObjective,
-    guidedIntensity,
   ]);
 
   const recentExercises = useMemo(() => {
@@ -321,362 +237,160 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {!showCatalog ? (
-        <ScrollView style={styles.simpleFlow} showsVerticalScrollIndicator={false}>
-          <View style={styles.heroCard}>
-            {/* @ts-ignore - LinearGradient type issue with React 19 */}
-            <LinearGradient
-              colors={['#667EEA', '#764BA2'] as any}
-              style={styles.heroGradient}
-            />
-            <View style={styles.heroContent}>
-              <Text style={styles.heroLabel}>Find the right exercise</Text>
-              <Text style={styles.heroTitle}>What do you need right now?</Text>
-              <Text style={styles.heroSubtitle}>
-                Answer 3 quick questions and we’ll surface the best matches.
-              </Text>
-              <TouchableOpacity style={styles.heroButtonOutline} onPress={openFullCatalog} activeOpacity={0.9}>
-                <Text style={styles.heroButtonOutlineText}>Browse all exercises</Text>
+      <FlatList
+        data={filteredExercises}
+        keyExtractor={(item) => item.id}
+        renderItem={renderGridItem}
+        numColumns={2}
+        initialNumToRender={10}
+        maxToRenderPerBatch={12}
+        windowSize={7}
+        removeClippedSubviews
+        contentContainerStyle={styles.catalogContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={
+          <View>
+            <View style={styles.topBar}>
+              <Text style={styles.pageTitle}>Explore Exercises</Text>
+              <TouchableOpacity style={styles.searchIconButton}>
+                <Ionicons name="search" size={22} color={Colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoryTabsRow}
+            >
+              {CATEGORY_TABS.map((c) => {
+                const isActive = selectedCategory === c.id;
+                return (
+                  <TouchableOpacity
+                    key={c.id}
+                    style={styles.categoryTab}
+                    onPress={() => setSelectedCategory(c.id)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={isActive ? styles.categoryTabTextActive : styles.categoryTabText}>{c.label}</Text>
+                    <View style={isActive ? styles.categoryTabUnderlineActive : styles.categoryTabUnderline} />
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            <View style={styles.filterPillsRow}>
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => setSelectedDuration((prev) => (prev === 'short' ? 'all' : 'short'))}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.filterPillText}>Duration</Text>
+                <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
               </TouchableOpacity>
 
-              {guidedStep === 1 ? (
-                <View style={styles.guidedOptionsGrid}>
-                  {OBJECTIVES.map((o) => {
-                    const isSelected = guidedObjective === o.id;
-                    return (
-                      <TouchableOpacity
-                        key={o.id}
-                        style={isSelected ? [styles.guidedOptionCard, styles.guidedOptionCardSelected] : styles.guidedOptionCard}
-                        onPress={() => {
-                          setGuidedObjective(o.id);
-                          setGuidedStep(2);
-                        }}
-                        activeOpacity={0.9}
-                      >
-                        <View style={[styles.guidedOptionIcon, { backgroundColor: `${o.color}22` }]}>
-                          <Ionicons name={o.icon} size={20} color={o.color} />
-                        </View>
-                        <View style={styles.guidedOptionText}>
-                          <Text style={styles.guidedOptionTitle}>{o.label}</Text>
-                          <Text style={styles.guidedOptionSubtitle}>{o.subtitle}</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={18} color={Colors.background + 'CC'} />
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              ) : null}
+              <TouchableOpacity
+                style={styles.filterPill}
+                onPress={() => setSelectedLevel((prev) => (prev === 'beginner' ? 'all' : 'beginner'))}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.filterPillText}>Level</Text>
+                <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
 
-              {guidedStep === 2 ? (
-                <View style={styles.guidedStepBlock}>
-                  <Text style={styles.guidedStepTitle}>How much time do you have?</Text>
-                  <View style={styles.timeButtons}>
+            <View style={styles.searchContainer}>
+              <View style={styles.searchBar}>
+                <Ionicons name="search" size={18} color={Colors.textMuted} style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search exercises..."
+                  placeholderTextColor={Colors.textMuted}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  clearButtonMode="while-editing"
+                  returnKeyType="search"
+                />
+              </View>
+            </View>
+
+            <View style={styles.categoryBrowseSection}>
+              <Text style={styles.shelfSectionTitle}>Browse by category</Text>
+              <View style={styles.categoryGrid}>
+                {CATEGORIES.map((c) => {
+                  const isActive = selectedCategory === c.id;
+                  return (
                     <TouchableOpacity
-                      style={guidedMinutes === 3 ? [styles.timeButton, styles.timeButtonSelected] : styles.timeButton}
-                      onPress={() => {
-                        setGuidedMinutes(3);
-                        setGuidedStep(3);
-                      }}
+                      key={c.id}
+                      style={isActive ? [styles.categoryTile, styles.categoryTileActive] : styles.categoryTile}
+                      onPress={() => setSelectedCategory((prev) => (prev === c.id ? 'all' : c.id))}
                       activeOpacity={0.9}
                     >
-                      <Text style={styles.timeButtonText}>3 min</Text>
-                      <Text style={styles.timeButtonSubtext}>Quick</Text>
+                      <View style={[styles.categoryTileIcon, { backgroundColor: `${c.color}22` }]}>
+                        <Ionicons name={c.icon} size={22} color={c.color} />
+                      </View>
+                      <View style={styles.categoryTileInfo}>
+                        <Text style={styles.categoryTileTitle}>{c.label}</Text>
+                        <Text style={styles.categoryTileCount}>{categoryCounts[c.id]} exercises</Text>
+                      </View>
+                      <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
                     </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
 
-                    <TouchableOpacity
-                      style={guidedMinutes === 5 ? [styles.timeButton, styles.timeButtonSelected] : styles.timeButton}
-                      onPress={() => {
-                        setGuidedMinutes(5);
-                        setGuidedStep(3);
-                      }}
-                      activeOpacity={0.9}
-                    >
-                      <Text style={styles.timeButtonText}>5 min</Text>
-                      <Text style={styles.timeButtonSubtext}>Standard</Text>
-                    </TouchableOpacity>
+            {recentExercises.length > 0 ? (
+              <View style={styles.shelfSection}>
+                <Text style={styles.shelfSectionTitle}>Recently</Text>
+                <FlatList
+                  data={recentExercises}
+                  keyExtractor={(item) => item.id}
+                  renderItem={renderShelfItem}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.shelfList}
+                />
+              </View>
+            ) : null}
 
-                    <TouchableOpacity
-                      style={guidedMinutes === 10 ? [styles.timeButton, styles.timeButtonSelected] : styles.timeButton}
-                      onPress={() => {
-                        setGuidedMinutes(10);
-                        setGuidedStep(3);
-                      }}
-                      activeOpacity={0.9}
-                    >
-                      <Text style={styles.timeButtonText}>10 min</Text>
-                      <Text style={styles.timeButtonSubtext}>Deep</Text>
-                    </TouchableOpacity>
-                  </View>
+            {favoriteExercises.length > 0 ? (
+              <View style={styles.shelfSection}>
+                <Text style={styles.shelfSectionTitle}>Favorites</Text>
+                <FlatList
+                  data={favoriteExercises}
+                  keyExtractor={(item) => item.id}
+                  renderItem={renderShelfItem}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.shelfList}
+                />
+              </View>
+            ) : null}
 
-                  <TouchableOpacity style={styles.guidedBackLink} onPress={() => setGuidedStep(1)}>
-                    <Ionicons name="arrow-back" size={18} color={Colors.background + 'CC'} />
-                    <Text style={styles.guidedBackText}>Back</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : null}
-
-              {guidedStep === 3 ? (
-                <View style={styles.guidedStepBlock}>
-                  <Text style={styles.guidedStepTitle}>Anything else?</Text>
-
-                  <TouchableOpacity
-                    style={guidedAvoidWater ? [styles.guidedToggle, styles.guidedToggleSelected] : styles.guidedToggle}
-                    onPress={() => setGuidedAvoidWater((v) => !v)}
-                    activeOpacity={0.9}
-                  >
-                    <View style={styles.guidedToggleLeft}>
-                      <Ionicons name="water-outline" size={18} color={Colors.background} />
-                      <Text style={styles.guidedToggleText}>Avoid water-based exercises</Text>
-                    </View>
-                    <Ionicons name={guidedAvoidWater ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={Colors.background} />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={guidedIntensity === 'gentle' ? [styles.guidedToggle, styles.guidedToggleSelected] : styles.guidedToggle}
-                    onPress={() => setGuidedIntensity((prev) => (prev === 'gentle' ? null : 'gentle'))}
-                    activeOpacity={0.9}
-                  >
-                    <View style={styles.guidedToggleLeft}>
-                      <Ionicons name="leaf-outline" size={18} color={Colors.background} />
-                      <Text style={styles.guidedToggleText}>Gentle</Text>
-                    </View>
-                    <Ionicons name={guidedIntensity === 'gentle' ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={Colors.background} />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={guidedIntensity === 'energizing' ? [styles.guidedToggle, styles.guidedToggleSelected] : styles.guidedToggle}
-                    onPress={() => setGuidedIntensity((prev) => (prev === 'energizing' ? null : 'energizing'))}
-                    activeOpacity={0.9}
-                  >
-                    <View style={styles.guidedToggleLeft}>
-                      <Ionicons name="flash-outline" size={18} color={Colors.background} />
-                      <Text style={styles.guidedToggleText}>Energizing</Text>
-                    </View>
-                    <Ionicons name={guidedIntensity === 'energizing' ? 'checkmark-circle' : 'ellipse-outline'} size={20} color={Colors.background} />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.heroButton}
-                    onPress={() => {
-                      applyGuidedFiltersAndBrowse();
-                    }}
-                    disabled={!guidedObjective || !guidedMinutes}
-                    activeOpacity={0.9}
-                  >
-                    <Text style={styles.heroButtonText}>Show matches</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.guidedBackLink} onPress={() => setGuidedStep(2)}>
-                    <Ionicons name="arrow-back" size={18} color={Colors.background + 'CC'} />
-                    <Text style={styles.guidedBackText}>Back</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : null}
+            <View style={styles.allHeader}>
+              <Text style={styles.shelfSectionTitle}>All exercises</Text>
+              <Text style={styles.allCount}>{filteredExercises.length}</Text>
             </View>
           </View>
-
-        </ScrollView>
-      ) : (
-        <FlatList
-          data={filteredExercises}
-          keyExtractor={(item) => item.id}
-          renderItem={renderGridItem}
-          numColumns={2}
-          initialNumToRender={10}
-          maxToRenderPerBatch={12}
-          windowSize={7}
-          removeClippedSubviews
-          contentContainerStyle={styles.catalogContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={
-            <View>
-              <View style={styles.topBar}>
-                <TouchableOpacity
-                  style={styles.backIconButton}
-                  onPress={() => {
-                    setShowCatalog(false);
-                    setIsGuidedResults(false);
-                  }}
-                >
-                  <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
-                </TouchableOpacity>
-
-                <Text style={styles.pageTitle}>{isGuidedResults ? 'Your matches' : 'Explore Exercises'}</Text>
-
-                {isGuidedResults ? (
-                  <TouchableOpacity
-                    style={styles.searchIconButton}
-                    onPress={() => {
-                      setShowCatalog(false);
-                      setIsGuidedResults(false);
-                      setGuidedStep(1);
-                    }}
-                  >
-                    <Ionicons name="options-outline" size={22} color={Colors.textPrimary} />
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity style={styles.searchIconButton}>
-                    <Ionicons name="search" size={22} color={Colors.textPrimary} />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {isGuidedResults ? (
-                <View style={styles.guidedResultsHeader}>
-                  <Text style={styles.guidedResultsCount}>{filteredExercises.length} results</Text>
-                  {guidedSummaryLabels.length > 0 ? (
-                    <View style={styles.guidedChipsRow}>
-                      {guidedSummaryLabels.map((label) => (
-                        <View key={label} style={styles.guidedChip}>
-                          <Text style={styles.guidedChipText}>{label}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  ) : null}
-                </View>
-              ) : (
-                <>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.categoryTabsRow}
-                  >
-                    {CATEGORY_TABS.map((c) => {
-                      const isActive = selectedCategory === c.id;
-                      return (
-                        <TouchableOpacity
-                          key={c.id}
-                          style={styles.categoryTab}
-                          onPress={() => setSelectedCategory(c.id)}
-                          activeOpacity={0.85}
-                        >
-                          <Text style={isActive ? styles.categoryTabTextActive : styles.categoryTabText}>{c.label}</Text>
-                          <View style={isActive ? styles.categoryTabUnderlineActive : styles.categoryTabUnderline} />
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-
-                  <View style={styles.filterPillsRow}>
-                    <TouchableOpacity
-                      style={styles.filterPill}
-                      onPress={() =>
-                        setSelectedDuration((prev) => (prev === 'short' ? 'all' : 'short'))
-                      }
-                      activeOpacity={0.85}
-                    >
-                      <Text style={styles.filterPillText}>Duration</Text>
-                      <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.filterPill}
-                      onPress={() =>
-                        setSelectedLevel((prev) => (prev === 'beginner' ? 'all' : 'beginner'))
-                      }
-                      activeOpacity={0.85}
-                    >
-                      <Text style={styles.filterPillText}>Level</Text>
-                      <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={styles.searchContainer}>
-                    <View style={styles.searchBar}>
-                      <Ionicons name="search" size={18} color={Colors.textMuted} style={styles.searchIcon} />
-                      <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search exercises..."
-                        placeholderTextColor={Colors.textMuted}
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                        clearButtonMode="while-editing"
-                        returnKeyType="search"
-                      />
-                    </View>
-                  </View>
-
-                  <View style={styles.categoryBrowseSection}>
-                    <Text style={styles.shelfSectionTitle}>Browse by category</Text>
-                    <View style={styles.categoryGrid}>
-                      {CATEGORIES.map((c) => {
-                        const isActive = selectedCategory === c.id;
-                        return (
-                          <TouchableOpacity
-                            key={c.id}
-                            style={isActive ? [styles.categoryTile, styles.categoryTileActive] : styles.categoryTile}
-                            onPress={() => setSelectedCategory((prev) => (prev === c.id ? 'all' : c.id))}
-                            activeOpacity={0.9}
-                          >
-                            <View style={[styles.categoryTileIcon, { backgroundColor: `${c.color}22` }]}>
-                              <Ionicons name={c.icon} size={22} color={c.color} />
-                            </View>
-                            <View style={styles.categoryTileInfo}>
-                              <Text style={styles.categoryTileTitle}>{c.label}</Text>
-                              <Text style={styles.categoryTileCount}>{categoryCounts[c.id]} exercises</Text>
-                            </View>
-                            <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-                  </View>
-
-                  {recentExercises.length > 0 ? (
-                    <View style={styles.shelfSection}>
-                      <Text style={styles.shelfSectionTitle}>Recently</Text>
-                      <FlatList
-                        data={recentExercises}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderShelfItem}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.shelfList}
-                      />
-                    </View>
-                  ) : null}
-
-                  {favoriteExercises.length > 0 ? (
-                    <View style={styles.shelfSection}>
-                      <Text style={styles.shelfSectionTitle}>Favorites</Text>
-                      <FlatList
-                        data={favoriteExercises}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderShelfItem}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.shelfList}
-                      />
-                    </View>
-                  ) : null}
-
-                  <View style={styles.allHeader}>
-                    <Text style={styles.shelfSectionTitle}>All exercises</Text>
-                    <Text style={styles.allCount}>{filteredExercises.length}</Text>
-                  </View>
-                </>
-              )}
-            </View>
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>No exercises found</Text>
-              <Text style={styles.emptySubtitle}>Try a different search or clear filters.</Text>
-              <TouchableOpacity
-                style={styles.clearFiltersButton}
-                onPress={() => {
-                  setSearchQuery('');
-                  setSelectedCategory('all');
-                  setSelectedDuration('all');
-                }}
-              >
-                <Text style={styles.clearFiltersText}>Clear filters</Text>
-              </TouchableOpacity>
-            </View>
-          }
-        />
-      )}
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>No exercises found</Text>
+            <Text style={styles.emptySubtitle}>Try a different search or clear filters.</Text>
+            <TouchableOpacity
+              style={styles.clearFiltersButton}
+              onPress={() => {
+                setSearchQuery('');
+                setSelectedCategory('all');
+                setSelectedDuration('all');
+              }}
+            >
+              <Text style={styles.clearFiltersText}>Clear filters</Text>
+            </TouchableOpacity>
+          </View>
+        }
+      />
     </SafeAreaView>
   );
 };

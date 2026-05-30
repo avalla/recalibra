@@ -1,3 +1,4 @@
+export { FeelingEntry } from './FeelingEntry';
 export { GreetingCard } from './GreetingCard';
 export { HomeHeader } from './HomeHeader';
 export { StartSessionButton } from './StartSessionButton';

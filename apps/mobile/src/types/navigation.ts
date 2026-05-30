@@ -48,6 +48,7 @@ export type ExerciseFlowParamList = {
     benefits?: string[];
     tips?: string[];
     instructions?: { step: number; instruction: string }[];
+    preStressLevel?: number;
   };
   PostSession: { sessionId: string; exerciseName: string; durationSeconds: number; preStressLevel: number };
 };

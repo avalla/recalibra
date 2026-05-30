@@ -26,6 +26,7 @@ export interface ExerciseSessionParams {
   benefits?: Exercise['benefits'];
   tips?: Exercise['tips'];
   instructions?: Exercise['instructions'];
+  preStressLevel?: number;
 }
 
 const QUICK_START_KEY = '@recalibra:quick_start_preference';
