@@ -43,7 +43,7 @@ offline resilience, and fast OTA deployments.
 
 ## 🗄️ Local data (SQLite)
 
-- New persistent, user-owned data should prefer a local SQLite database (Expo-compatible) rather than adding new Supabase tables/queries.
+- Persistent, user-owned data lives in a local SQLite database (expo-sqlite). There is no remote backend; do not add one.
 
 ---
 

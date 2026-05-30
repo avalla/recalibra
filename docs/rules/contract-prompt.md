@@ -23,7 +23,7 @@ Provided Inputs
 • Data: local-first only (SQLite / local storage). No remote backend.
 
 Optional Inputs
-• Legacy Supabase references may exist; do not expand their usage.
+• The app is local-first; there is no remote backend. Do not introduce one.
 • External services should be treated as disabled unless explicitly requested.
 
 ⸻
@@ -54,7 +54,7 @@ When code is requested, produce:
 ⸻
 
 6. Constraints
-   • No new remote backend integrations (REST/GraphQL/Supabase) unless explicitly requested.
+   • No new remote backend integrations (REST/GraphQL/remote DB) unless explicitly requested.
    • No hardcoded secrets or API keys.
    • Prefer local SQLite for persistent data.
 

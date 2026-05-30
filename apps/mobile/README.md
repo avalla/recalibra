@@ -41,7 +41,7 @@ src/
 │   └── ui/            # Base UI components (Button, Input, Card)
 ├── constants/         # Theme, colors, spacing
 ├── hooks/             # Custom React hooks
-├── lib/               # External libraries (Supabase client)
+├── lib/               # External libraries (RevenueCat)
 ├── navigation/        # React Navigation configuration
 │   ├── AuthNavigator.tsx
 │   ├── MainTabNavigator.tsx

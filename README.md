@@ -96,10 +96,9 @@ bun run --cwd apps/mobile android
 | Mobile | React Native + Expo (TypeScript) |
 | Web | Vite + React (Bun runtime) |
 | Data | Local SQLite (user-owned) |
-| Billing | RevenueCat |
-| Analytics | Mixpanel |
-| AI tooling | LangChain (via MCP server `mcp-servers/llm-router`) |
-| Backend | No remote backend required for core flows (Supabase may exist for legacy/unused flows) |
+| Billing | RevenueCat (gated by entitlements) |
+| AI tooling | LangChain (dev-only, via MCP server `mcp-servers/llm-router`) |
+| Backend | None — local-first, no remote backend |
 
 ---
 
@@ -113,7 +112,6 @@ bun run --cwd apps/mobile android
   /llm-router        # MCP server (LangChain) used to review/enrich exercise seed data
 /docs
   ...
-/supabase            # Legacy/experimental schema & migrations
 ```
 
 ---
@@ -157,7 +155,7 @@ Font: Julius Sans One / Inter / Source Sans Pro
 ---
 
 ✔ Ready to save and use as a starting point for the project.
-👉 I can also generate a **Supabase schema** or an **exercise protocol.json**. Or Windsurf rules for the monorepo.
+👉 I can also generate an **exercise protocol.json**. Or Windsurf rules for the monorepo.
 
 Tell me what you want to build first!
 
