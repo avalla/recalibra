@@ -22,7 +22,7 @@ export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { userMetadata } = useAuth();
   const { sessions, refetch: refreshSessions } = useSessions();
-  const { exercises } = useExercises();
+  const { exercises, isLoading } = useExercises();
   const { canAccessExercise } = useSubscription();
   const [refreshing, setRefreshing] = useState(false);
   const [quickStartPreference, setQuickStartPreference] = useState<QuickStartPreference | null>(null);
@@ -123,6 +123,7 @@ export const HomeScreen: React.FC = () => {
             exercises={exercises}
             lastStress={lastStress}
             excludeIds={excludeIds}
+            loading={isLoading}
             canAccess={(exercise) => canAccessExercise(exercise.slug)}
             onBegin={beginSession}
             onBrowse={openCatalog}

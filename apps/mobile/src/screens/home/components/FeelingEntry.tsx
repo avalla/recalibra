@@ -1,6 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 
 import type { ExerciseWithFavorite } from '../../../types';
@@ -21,6 +27,7 @@ interface FeelingEntryProps {
   exercises: ExerciseWithFavorite[];
   lastStress?: number;
   excludeIds?: string[];
+  loading?: boolean;
   canAccess: (exercise: ExerciseWithFavorite) => boolean;
   onBegin: (exercise: ExerciseWithFavorite, preStress: number) => void;
   onBrowse: () => void;
@@ -28,10 +35,28 @@ interface FeelingEntryProps {
 
 const capitalize = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1);
 
+const SkeletonHero: React.FC = () => {
+  const pulse = useSharedValue(0.5);
+  useEffect(() => {
+    pulse.value = withRepeat(withTiming(1, { duration: 800 }), -1, true);
+  }, [pulse]);
+  const pulseStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
+
+  return (
+    <View style={styles.heroCard} accessibilityLabel="Finding your practice">
+      <Animated.View style={[styles.skelBar, styles.skelEyebrow, pulseStyle]} />
+      <Animated.View style={[styles.skelBar, styles.skelTitle, pulseStyle]} />
+      <Animated.View style={[styles.skelBar, styles.skelBody, pulseStyle]} />
+      <Animated.View style={[styles.skelButton, pulseStyle]} />
+    </View>
+  );
+};
+
 export const FeelingEntry: React.FC<FeelingEntryProps> = ({
   exercises,
   lastStress,
   excludeIds,
+  loading,
   canAccess,
   onBegin,
   onBrowse,
@@ -185,6 +210,8 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
                 </View>
               ) : null}
             </>
+          ) : loading ? (
+            <SkeletonHero />
           ) : (
             <View style={styles.emptyCard}>
               <Text style={styles.emptyText}>Nothing fits that time right now.</Text>
@@ -417,5 +444,29 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: FontSize.sm,
     fontWeight: FontWeight.semibold,
+  },
+  skelBar: {
+    backgroundColor: Colors.backgroundCard,
+    borderRadius: BorderRadius.sm,
+  },
+  skelEyebrow: {
+    width: 96,
+    height: 10,
+  },
+  skelTitle: {
+    width: '68%',
+    height: 22,
+    marginTop: Spacing.md,
+  },
+  skelBody: {
+    width: '100%',
+    height: 12,
+    marginTop: Spacing.md,
+  },
+  skelButton: {
+    height: 48,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.backgroundCard,
+    marginTop: Spacing.lg,
   },
 });

@@ -1381,7 +1381,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                 onPress={handleNextPage}
               >
                 <LinearGradient
-                  colors={['#667EEA', '#764BA2'] as any}
+                  colors={['#2DD4BF', '#14B8A6'] as any}
                   style={styles.nextButtonGradient}
                 >
                   <View style={styles.nextButtonContent}>
@@ -1866,7 +1866,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                   }}
                 >
                   {/* @ts-ignore - LinearGradient type issue with React 19 */}
-                  <LinearGradient colors={['#667EEA', '#764BA2'] as any} style={styles.primaryCtaGradient}>
+                  <LinearGradient colors={['#2DD4BF', '#14B8A6'] as any} style={styles.primaryCtaGradient}>
                     <Ionicons
                       name={preSessionStep < 3 ? 'chevron-forward' : 'play'}
                       size={20}
