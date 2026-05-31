@@ -117,13 +117,14 @@ function buildCycleSegments(pattern: BreathingPattern): CycleSegment[] {
   }
 
   if (pattern.special === 'wim_hof') {
-    const segments: CycleSegment[] = [
+    // The repeating cycle is the rapid breath (inhale + exhale). Retention is a
+    // long hold reached once per round, shown as its own phase rather than as a
+    // segment of the rhythm curve (otherwise the dot would sit in a 90s block it
+    // only enters every 30 breaths).
+    return [
       { phase: 'inhale', duration: pattern.inhale },
       { phase: 'exhale', duration: pattern.exhale },
     ];
-    const retention = pattern.retention_seconds || 60;
-    if (retention > 0) segments.push({ phase: 'retention', duration: retention });
-    return segments;
   }
 
   const segments: CycleSegment[] = [{ phase: 'inhale', duration: pattern.inhale }];
@@ -662,6 +663,9 @@ export const ExerciseSessionScreen: React.FC = () => {
   // Tracks the phase we last reset progress for, so resuming from pause does
   // not restart the current phase's progress (only a real phase change does).
   const lastResetPhaseRef = useRef<BreathingPhase>('inhale');
+  // Counts completed rapid breaths in the current Wim Hof round so the state
+  // machine knows when to switch from rapid cycling into the retention hold.
+  const wimHofBreathCountRef = useRef<number>(0);
 
   // Get label for current phase (with special pattern support)
   const getPhaseLabel = (phase: BreathingPhase): string => {
@@ -752,15 +756,19 @@ export const ExerciseSessionScreen: React.FC = () => {
       }
     }
 
-    // Wim Hof pattern (rapid cycles + retention)
+    // Wim Hof pattern: rapid_cycles breaths, then a retention hold, then repeat.
+    // Pure read of the breath counter; the counter is advanced at the point a
+    // phase actually changes (in the timer), never here (this also runs for the
+    // "next phase" preview label).
     if (pattern.special === 'wim_hof') {
+      const breathsPerRound = pattern.rapid_cycles || 30;
       switch (phase) {
         case 'inhale':
           return 'exhale';
         case 'exhale':
-          return 'inhale'; // Continue rapid cycles (handled by cycle counter)
+          return wimHofBreathCountRef.current + 1 >= breathsPerRound ? 'retention' : 'inhale';
         case 'retention':
-          return 'inhale'; // After retention, start new round
+          return 'inhale'; // After retention, start a new round
         default:
           return 'inhale';
       }
@@ -871,6 +879,7 @@ export const ExerciseSessionScreen: React.FC = () => {
         sessionStartedAtMsRef.current = Date.now();
         pausedTotalMsRef.current = 0;
         pausedAtMsRef.current = null;
+        wimHofBreathCountRef.current = 0;
       }
       if (pausedAtMsRef.current !== null) {
         pausedTotalMsRef.current += Date.now() - pausedAtMsRef.current;
@@ -881,25 +890,44 @@ export const ExerciseSessionScreen: React.FC = () => {
     ensureSessionStart();
 
     const timer = setInterval(() => {
-      setPhaseTime((prev) => {
-        if (prev <= 1) {
-          const nextPhase = getNextPhase(currentPhase);
-          setCurrentPhase(nextPhase);
-          hapticBreathingPhase();
-          return getPhaseDuration(nextPhase);
-        }
-        return prev - 1;
-      });
-
       const startedAt = sessionStartedAtMsRef.current;
       if (startedAt === null) return;
+
+      // Advance the breathing phase off the wall clock, so fractional-second
+      // phases (rapid / holotropic / wim_hof) keep their true duration instead
+      // of being rounded up to whole-second ticks.
+      const phaseStart = phaseStartedAtMsRef.current;
+      if (phaseStart !== null) {
+        const phaseDurationMs = getPhaseDuration(currentPhase) * 1000;
+        const phaseElapsedMs = Date.now() - phaseStart - phasePausedTotalMsRef.current;
+
+        if (phaseDurationMs > 0 && phaseElapsedMs >= phaseDurationMs) {
+          const nextPhase = getNextPhase(currentPhase);
+          // Count the completed rapid breath before switching; reset when the
+          // round ends (i.e. we move into the retention hold).
+          if (pattern.special === 'wim_hof' && currentPhase === 'exhale') {
+            const breathsPerRound = pattern.rapid_cycles || 30;
+            const completed = wimHofBreathCountRef.current + 1;
+            wimHofBreathCountRef.current = completed >= breathsPerRound ? 0 : completed;
+          }
+          // Carry the phase start forward so a stray tick before the phase-change
+          // effect re-runs cannot advance the phase twice.
+          phaseStartedAtMsRef.current = Date.now();
+          setCurrentPhase(nextPhase);
+          hapticBreathingPhase();
+          setPhaseTime(getPhaseDuration(nextPhase));
+        } else {
+          const remaining = Math.max(0, Math.ceil((phaseDurationMs - phaseElapsedMs) / 1000));
+          setPhaseTime((prev) => (prev === remaining ? prev : remaining));
+        }
+      }
 
       const elapsedSeconds = Math.floor(
         (Date.now() - startedAt - pausedTotalMsRef.current) / 1000
       );
       const clampedElapsed = Math.min(sessionDuration, Math.max(0, elapsedSeconds));
       setElapsedTime((prev) => (prev === clampedElapsed ? prev : clampedElapsed));
-    }, 1000);
+    }, 100);
 
     return () => clearInterval(timer);
   }, [isPlaying, currentPhase]);
@@ -1181,13 +1209,17 @@ export const ExerciseSessionScreen: React.FC = () => {
   const phaseColor = activePhaseColor;
 
   const cycleProgress = useMemo(() => {
+    // Wim Hof retention is a hold on empty lungs and is not part of the rhythm
+    // cycle; park the dot at the end of the cycle (the exhale trough) for the
+    // whole hold instead of crawling it through the inhale segment.
+    if (currentPhase === 'retention') return 1;
     const elapsedBefore = cycleSegments
       .slice(0, activeSegmentIndex)
       .reduce((sum, segment) => sum + segment.duration, 0);
     const currentDuration = cycleSegments[activeSegmentIndex]?.duration ?? 1;
     const progressInSegment = clampNumber(smoothPhaseProgress, 0, 1) * currentDuration;
     return clampNumber((elapsedBefore + progressInSegment) / cycleTotalSeconds, 0, 1);
-  }, [activeSegmentIndex, cycleSegments, cycleTotalSeconds, smoothPhaseProgress]);
+  }, [activeSegmentIndex, cycleSegments, cycleTotalSeconds, smoothPhaseProgress, currentPhase]);
 
   const graphMarkers = useMemo<GraphMarker[]>(() => {
     if (!presetInfo || audioPresetKey === 'silence') return [];
