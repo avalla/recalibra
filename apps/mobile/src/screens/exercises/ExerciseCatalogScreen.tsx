@@ -80,7 +80,9 @@ export const ExerciseCatalogScreen: React.FC = () => {
         {item.origin ? (
           <View style={styles.originRow}>
             <OriginIcon origin={item.origin} size={14} color={Colors.textSecondary} />
-            <Text style={styles.originText}>{formatOrigin(item.origin)}</Text>
+            <Text style={styles.originText} numberOfLines={1} ellipsizeMode="tail">
+              {formatOrigin(item.origin)}
+            </Text>
           </View>
         ) : null}
         <Text style={styles.shelfSubtitle} numberOfLines={1} ellipsizeMode="tail">
@@ -635,7 +637,10 @@ const styles = StyleSheet.create({
   },
   gridCard: {
     marginBottom: 0,
-    height: 184,
+    // Floor for visual consistency, but grow with content. A fixed height
+    // clipped the card background while the (overflow-visible) text rendered
+    // below it, so long names + the origin row spilled outside the card.
+    minHeight: 184,
   },
   gridTopRow: {
     flexDirection: 'row',
@@ -701,6 +706,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: FontSize.xs,
     fontWeight: FontWeight.medium,
+    flexShrink: 1,
   },
   tag: {
     paddingHorizontal: Spacing.sm,
