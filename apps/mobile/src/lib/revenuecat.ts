@@ -46,7 +46,7 @@ export const PRODUCT_IDS = {
  * Initialize RevenueCat SDK
  * Should be called once when the app starts
  */
-export const initializeRevenueCat = async (userId?: string, isAnonymous?: boolean): Promise<void> => {
+export const initializeRevenueCat = async (userId?: string): Promise<void> => {
   try {
     // Enable debug logs in development
     if (__DEV__) {
@@ -63,7 +63,8 @@ export const initializeRevenueCat = async (userId?: string, isAnonymous?: boolea
     // Using the simpler configuration method for better compatibility
     Purchases.configure({
       apiKey,
-      appUserID: isAnonymous ? userId || null : userId || null,
+      // No userId at boot → null lets RevenueCat manage an anonymous app user id.
+      appUserID: userId || null,
     });
   } catch (error) {
     console.error('[RevenueCat] Initialization error:', error);

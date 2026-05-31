@@ -93,16 +93,20 @@ export const useSessions = () => {
       completedSessions.reduce((acc, s) => acc + s.duration_seconds, 0) / 60
     );
     
-    const sessionsWithStressReduction = completedSessions.filter(
-      (s) => s.post_stress_level && s.post_stress_level < s.pre_stress_level
+    // Average the real stress delta over every session that recorded a post
+    // value, not only the ones that improved (filtering to post < pre inflated
+    // the figure and disagreed with the Progress screen). typeof guards a valid
+    // post value of 0.
+    const sessionsWithStress = completedSessions.filter(
+      (s) => typeof s.post_stress_level === 'number'
     );
-    
+
     const avgStressReduction =
-      sessionsWithStressReduction.length > 0
-        ? sessionsWithStressReduction.reduce(
-            (acc, s) => acc + (s.pre_stress_level - (s.post_stress_level || 0)),
+      sessionsWithStress.length > 0
+        ? sessionsWithStress.reduce(
+            (acc, s) => acc + (s.pre_stress_level - (s.post_stress_level ?? 0)),
             0
-          ) / sessionsWithStressReduction.length
+          ) / sessionsWithStress.length
         : 0;
 
     return {

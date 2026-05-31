@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -69,6 +69,12 @@ export const HomeScreen: React.FC = () => {
     });
   };
 
+  // Stable identity so FeelingEntry's recommendation memo doesn't recompute every render.
+  const canAccess = useCallback(
+    (exercise: ExerciseWithFavorite) => canAccessExercise(exercise.slug, exercise.is_premium),
+    [canAccessExercise]
+  );
+
   const openCatalog = () => {
     navigation.navigate('Main', {
       screen: 'ExercisesTab',
@@ -123,7 +129,7 @@ export const HomeScreen: React.FC = () => {
             lastStress={lastStress}
             excludeIds={excludeIds}
             loading={isLoading}
-            canAccess={(exercise) => canAccessExercise(exercise.slug, exercise.is_premium)}
+            canAccess={canAccess}
             onBegin={beginSession}
             onBrowse={openCatalog}
           />
