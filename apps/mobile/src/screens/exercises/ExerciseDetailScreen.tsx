@@ -11,15 +11,16 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useVideoPlayer, VideoView } from 'expo-video';
 
-import { Card, ExerciseIllustration, Screen } from '@/components';
+import { Card, ExerciseAnimation, Screen } from '@/components';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '@/constants';
 import { useExercises, useSubscription } from '@/hooks';
 import type { RootStackParamList } from '@/types';
 import type { RouteProp } from '@react-navigation/native';
 
 type DetailRouteProps = RouteProp<RootStackParamList, 'ExerciseDetail'>;
+
+const HERO_ANIMATION_SIZE = 132;
 
 export const ExerciseDetailScreen: React.FC = () => {
   const navigation = useNavigation<any>();
@@ -34,11 +35,6 @@ export const ExerciseDetailScreen: React.FC = () => {
     return exercises.find((e) => e.id === route.params.exerciseId) ?? null;
   }, [exercises, route.params.exerciseId]);
 
-  const primaryMedia = exercise?.media?.[0];
-  const videoSource = primaryMedia?.type === 'video' ? primaryMedia.uri : null;
-  const player = useVideoPlayer(videoSource, (p) => {
-    p.loop = false;
-  });
 
   const handleBack = () => {
     navigation.goBack();
@@ -101,26 +97,7 @@ export const ExerciseDetailScreen: React.FC = () => {
       >
         <View style={styles.hero}>
           <View style={styles.heroImageWrap}>
-            {primaryMedia?.type === 'video' && videoSource ? (
-              <VideoView
-                style={styles.heroVideo}
-                player={player}
-                nativeControls
-                allowsFullscreen
-                allowsPictureInPicture
-              />
-            ) : primaryMedia?.type === 'image' && primaryMedia.uri ? (
-              <Image source={{ uri: primaryMedia.uri }} style={styles.heroImage} />
-            ) : exercise.image_url ? (
-              <Image source={{ uri: exercise.image_url }} style={styles.heroImage} />
-            ) : (
-              <ExerciseIllustration
-                exercise={exercise}
-                variant="hero"
-                animated
-                style={styles.heroIllustration}
-              />
-            )}
+            <ExerciseAnimation exercise={exercise} size={HERO_ANIMATION_SIZE} style={styles.heroIllustration} />
           </View>
         </View>
 

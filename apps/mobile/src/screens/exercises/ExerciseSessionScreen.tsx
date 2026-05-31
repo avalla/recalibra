@@ -21,7 +21,7 @@ import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from 
 import { useSessions, useAudio, getAudioRecommendation, useHaptics, useSubscription } from '../../hooks';
 import type { AudioPresetKey, ExerciseCategory } from '../../hooks';
 import type { RootStackParamList } from '../../types';
-import { Screen } from '../../components';
+import { ExerciseAnimation, Screen } from '../../components';
 import { BreathingGraph, type GraphCurvePreset, type GraphMarker } from '../../components/BreathingGraph';
 import { TutorialOverlay } from '../../components/TutorialOverlay';
 import { OriginIcon } from '../../components/OriginIcon';
@@ -193,6 +193,10 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   // Use pattern from database or fallback to default
   const pattern: BreathingPattern = routePattern || DEFAULT_PATTERN;
+
+  // Only breathing exercises get the breath circle/graph; other categories show
+  // a demonstration animation instead. Unknown category defaults to breathing.
+  const isBreathingExercise = (exerciseCategory ?? 'breathing') === 'breathing';
 
   // Use data from database, fallback to defaults
   const exerciseInfo = {
@@ -895,9 +899,10 @@ export const ExerciseSessionScreen: React.FC = () => {
 
       // Advance the breathing phase off the wall clock, so fractional-second
       // phases (rapid / holotropic / wim_hof) keep their true duration instead
-      // of being rounded up to whole-second ticks.
+      // of being rounded up to whole-second ticks. Non-breathing exercises have
+      // no breath phases, so skip it (otherwise phantom phase haptics fire).
       const phaseStart = phaseStartedAtMsRef.current;
-      if (phaseStart !== null) {
+      if (isBreathingExercise && phaseStart !== null) {
         const phaseDurationMs = getPhaseDuration(currentPhase) * 1000;
         const phaseElapsedMs = Date.now() - phaseStart - phasePausedTotalMsRef.current;
 
@@ -1592,25 +1597,43 @@ export const ExerciseSessionScreen: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <View style={styles.phaseGuidanceContainer}>
-                        <Text style={styles.guidanceCaption}>Now</Text>
-                        <Animated.Text style={[styles.phaseLabel, { opacity: phaseTextOpacityAnim }]}>
-                          {nowLabel}
-                        </Animated.Text>
-                        <Animated.Text style={[styles.phaseTime, { opacity: phaseTextOpacityAnim }]}>
-                          {phaseTimeText}
-                        </Animated.Text>
-                        <Animated.Text style={[styles.phaseCoachLine, { opacity: phaseTextOpacityAnim }]}>
-                          {nowCoachLine}
-                        </Animated.Text>
-                        <Text style={styles.guidanceCaption}>Next</Text>
-                        <Text style={styles.nextPhaseLabel}>{nextLabel}</Text>
-                        <Text style={styles.nextPhaseCoachLine}>{nextCoachLine}</Text>
-                      </View>
+                      {isBreathingExercise ? (
+                        <View style={styles.phaseGuidanceContainer}>
+                          <Text style={styles.guidanceCaption}>Now</Text>
+                          <Animated.Text style={[styles.phaseLabel, { opacity: phaseTextOpacityAnim }]}>
+                            {nowLabel}
+                          </Animated.Text>
+                          <Animated.Text style={[styles.phaseTime, { opacity: phaseTextOpacityAnim }]}>
+                            {phaseTimeText}
+                          </Animated.Text>
+                          <Animated.Text style={[styles.phaseCoachLine, { opacity: phaseTextOpacityAnim }]}>
+                            {nowCoachLine}
+                          </Animated.Text>
+                          <Text style={styles.guidanceCaption}>Next</Text>
+                          <Text style={styles.nextPhaseLabel}>{nextLabel}</Text>
+                          <Text style={styles.nextPhaseCoachLine}>{nextCoachLine}</Text>
+                        </View>
+                      ) : (
+                        <View style={styles.phaseGuidanceContainer}>
+                          <Text style={styles.guidanceCaption}>Follow along</Text>
+                          <Animated.Text style={[styles.phaseLabel, { opacity: phaseTextOpacityAnim }]}>
+                            {exerciseName}
+                          </Animated.Text>
+                          <Text style={styles.phaseCoachLine}>{exerciseSteps[0] ?? 'Move gently, at your own pace.'}</Text>
+                        </View>
+                      )}
                     </>
                   )}
 
-                  {breathingVisualizationMode === 'graph' ? (
+                  {!isBreathingExercise ? (
+                    <View style={styles.circleWrapper}>
+                      <ExerciseAnimation
+                        exercise={{ category: (exerciseCategory ?? 'movement') } as any}
+                        size={CIRCLE_SIZE}
+                        paused={!isPlaying}
+                      />
+                    </View>
+                  ) : breathingVisualizationMode === 'graph' ? (
                     <Animated.View style={[styles.graphWrapper, { transform: [{ scale: presetSnapAnim }] }]}>
                       <BreathingGraph
                         width={CIRCLE_SIZE}
@@ -1931,21 +1954,23 @@ export const ExerciseSessionScreen: React.FC = () => {
                     <Ionicons name="information-circle-outline" size={22} color={Colors.textPrimary} />
                   </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={[
-                      styles.controlButton,
-                      breathingVisualizationMode === 'graph' && styles.controlButtonActive,
-                    ]}
-                    onPress={toggleVisualizationMode}
-                  >
-                    <Ionicons
-                      name={breathingVisualizationMode === 'graph' ? 'analytics-outline' : 'radio-button-off'}
-                      size={22}
-                      color={
-                        breathingVisualizationMode === 'graph' ? Colors.primary : Colors.textPrimary
-                      }
-                    />
-                  </TouchableOpacity>
+                  {isBreathingExercise && (
+                    <TouchableOpacity
+                      style={[
+                        styles.controlButton,
+                        breathingVisualizationMode === 'graph' && styles.controlButtonActive,
+                      ]}
+                      onPress={toggleVisualizationMode}
+                    >
+                      <Ionicons
+                        name={breathingVisualizationMode === 'graph' ? 'analytics-outline' : 'radio-button-off'}
+                        size={22}
+                        color={
+                          breathingVisualizationMode === 'graph' ? Colors.primary : Colors.textPrimary
+                        }
+                      />
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
             </View>
