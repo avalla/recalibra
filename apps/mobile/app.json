@@ -2,6 +2,7 @@
   "expo": {
     "name": "Recalibra",
     "slug": "recalibra",
+    "owner": "avalla",
     "version": "1.0.0",
     "jsEngine": "hermes",
     "newArchEnabled": true,
