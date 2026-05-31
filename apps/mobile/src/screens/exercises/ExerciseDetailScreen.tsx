@@ -52,7 +52,7 @@ export const ExerciseDetailScreen: React.FC = () => {
   const handleStartSession = () => {
     if (!exercise) return;
 
-    if (!canAccessExercise(exercise.slug)) {
+    if (!canAccessExercise(exercise.slug, exercise.is_premium)) {
       presentPaywall().then((didPurchase) => {
         if (!didPurchase) navigation.navigate('Paywall');
       });

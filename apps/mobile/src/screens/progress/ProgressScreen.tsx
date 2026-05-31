@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Card, Screen } from '../../components';
@@ -43,8 +44,16 @@ const formatDate = (dateString: string): string => {
 };
 
 export const ProgressScreen: React.FC = () => {
-  const { sessions, isLoading, getSessionStats } = useSessions();
+  const { sessions, isLoading, getSessionStats, refetch } = useSessions();
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
+
+  // Sessions completed elsewhere (PostSession) live in a different hook instance,
+  // so refresh on focus to avoid showing stale streak/stats/history.
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   // Filter sessions by time range
   const filteredSessions = useMemo(() => {
@@ -115,37 +124,41 @@ export const ProgressScreen: React.FC = () => {
 
   // Calculate current streak
   const streak = useMemo(() => {
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const dayKey = (ms: number) => new Date(ms).toISOString().split('T')[0];
 
-    // Get unique session dates
+    // Unique days that have a completed session.
     const sessionDates = new Set(
       sessions
         .filter((s) => s.completed_at)
         .map((s) => s.created_at.split('T')[0])
     );
 
-    // Check from today backwards
-    const today = new Date();
-    for (let i = 0; i < 365; i++) {
-      const checkDate = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-      const dateStr = checkDate.toISOString().split('T')[0];
+    const todayMs = new Date().getTime();
 
-      if (sessionDates.has(dateStr)) {
-        if (i === 0 || currentStreak > 0) {
-          currentStreak++;
-        }
-        tempStreak++;
-        longestStreak = Math.max(longestStreak, tempStreak);
+    // Longest streak: the longest run of consecutive days within the last year.
+    let longestStreak = 0;
+    let run = 0;
+    for (let i = 0; i < 365; i++) {
+      if (sessionDates.has(dayKey(todayMs - i * DAY_MS))) {
+        run++;
+        longestStreak = Math.max(longestStreak, run);
       } else {
-        if (currentStreak > 0 && i > 0) {
-          // Streak broken
-          currentStreak = currentStreak; // Keep the streak if today is missed but yesterday had session
-        } else if (i === 0) {
-          // Today has no session, check yesterday
-        }
-        tempStreak = 0;
+        run = 0;
+      }
+    }
+
+    // Current streak: consecutive days ending today. If today has no session
+    // yet, we don't break the streak (grace day) and keep counting from
+    // yesterday; the streak only ends at the first earlier day with no session.
+    let currentStreak = 0;
+    for (let i = 0; i < 365; i++) {
+      if (sessionDates.has(dayKey(todayMs - i * DAY_MS))) {
+        currentStreak++;
+      } else if (i === 0) {
+        continue; // today not done yet — grace, keep checking yesterday
+      } else {
+        break;
       }
     }
 

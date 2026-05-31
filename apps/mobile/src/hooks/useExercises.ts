@@ -4,6 +4,8 @@ import { getCache, setCache } from '../utils/cache';
 import { logger } from '../utils/logger';
 import { getExercisesWithFavorites, toggleFavorite as toggleFavoriteInDb } from '../db';
 
+const EXERCISES_CACHE_KEY = 'exercises_local_v1';
+
 export const useExercises = () => {
   const [exercises, setExercises] = useState<ExerciseWithFavorite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,8 +17,7 @@ export const useExercises = () => {
 
     try {
       // Try to get from cache first
-      const cacheKey = 'exercises_local_v1';
-      const cachedExercises = await getCache<ExerciseWithFavorite[]>(cacheKey);
+      const cachedExercises = await getCache<ExerciseWithFavorite[]>(EXERCISES_CACHE_KEY);
       if (cachedExercises) {
         logger.info('Loaded exercises from cache', 'useExercises');
         setExercises(cachedExercises);
@@ -29,7 +30,7 @@ export const useExercises = () => {
       setExercises(exercisesWithFavorites);
 
       // Cache the results for 5 minutes
-      await setCache(cacheKey, exercisesWithFavorites, 5 * 60 * 1000);
+      await setCache(EXERCISES_CACHE_KEY, exercisesWithFavorites, 5 * 60 * 1000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch exercises');
       logger.error('Error fetching exercises', err as Error, 'useExercises');
@@ -57,6 +58,12 @@ export const useExercises = () => {
 
     try {
       await toggleFavoriteInDb(exerciseId, !isFavorite);
+      // Keep the cached snapshot in sync; otherwise a remount within the cache
+      // TTL would reload the stale list and silently revert the favorite.
+      const updated = exercises.map((e) =>
+        e.id === exerciseId ? { ...e, is_favorite: !isFavorite } : e
+      );
+      await setCache(EXERCISES_CACHE_KEY, updated, 5 * 60 * 1000);
     } catch (err) {
       // Revert optimistic update on error
       setExercises((prev) =>

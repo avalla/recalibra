@@ -41,7 +41,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
   const [selectedLevel, setSelectedLevel] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
 
   const renderShelfItem = ({ item }: { item: ExerciseWithFavorite }) => {
-    const isLocked = !canAccessExercise(item.slug);
+    const isLocked = !canAccessExercise(item.slug, item.is_premium);
 
     return (
       <Card
@@ -91,7 +91,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
   };
 
   const renderGridItem = ({ item }: { item: ExerciseWithFavorite }) => {
-    const isLocked = !canAccessExercise(item.slug);
+    const isLocked = !canAccessExercise(item.slug, item.is_premium);
 
     return (
       <View style={styles.gridItemWrapper}>
@@ -214,7 +214,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
   const handleExercisePress = async (exercise: ExerciseWithFavorite) => {
     // Check if user can access this exercise
-    if (!canAccessExercise(exercise.slug)) {
+    if (!canAccessExercise(exercise.slug, exercise.is_premium)) {
       const didPurchase = await presentPaywall();
       if (!didPurchase) navigation.navigate('Paywall');
       return;

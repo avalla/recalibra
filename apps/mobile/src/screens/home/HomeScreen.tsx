@@ -61,12 +61,11 @@ export const HomeScreen: React.FC = () => {
   };
 
   const beginSession = (exercise: ExerciseWithFavorite, preStress: number) => {
-    navigation.navigate('Main', {
-      screen: 'ExercisesTab',
-      params: {
-        screen: 'ExerciseSession',
-        params: { ...toExerciseSessionParams(exercise), preStressLevel: preStress },
-      },
+    // ExerciseSession lives on the root stack, not inside the Exercises tab.
+    // navigate() bubbles up from the tab to find it (same as ExerciseDetailScreen).
+    navigation.navigate('ExerciseSession', {
+      ...toExerciseSessionParams(exercise),
+      preStressLevel: preStress,
     });
   };
 
@@ -124,7 +123,7 @@ export const HomeScreen: React.FC = () => {
             lastStress={lastStress}
             excludeIds={excludeIds}
             loading={isLoading}
-            canAccess={(exercise) => canAccessExercise(exercise.slug)}
+            canAccess={(exercise) => canAccessExercise(exercise.slug, exercise.is_premium)}
             onBegin={beginSession}
             onBrowse={openCatalog}
           />
