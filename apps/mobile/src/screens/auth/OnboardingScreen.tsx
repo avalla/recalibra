@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   },
   skipButton: {
     position: 'absolute',
-    top: 60,
+    top: Spacing.sm,
     right: Spacing.lg,
     zIndex: 1,
   },

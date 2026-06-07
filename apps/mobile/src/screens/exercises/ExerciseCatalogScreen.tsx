@@ -230,8 +230,15 @@ export const ExerciseCatalogScreen: React.FC = () => {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+        <View style={styles.catalogContent}>
+          <View style={styles.topBar}>
+            <Text style={styles.pageTitle}>Explore Exercises</Text>
+          </View>
+          <View style={styles.skeletonGrid}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <View key={i} style={styles.skeletonTile} />
+            ))}
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -514,6 +521,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: 'rgba(148, 163, 184, 0.14)',
+  },
+  skeletonGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: Spacing.md,
+  },
+  skeletonTile: {
+    width: '48%',
+    height: 184,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.backgroundCard,
+    marginBottom: Spacing.md,
   },
   filterPillActive: {
     backgroundColor: Colors.primary + '1F',

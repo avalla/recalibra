@@ -73,8 +73,12 @@ export const ExerciseDetailScreen: React.FC = () => {
   if (isLoading || !exercise) {
     return (
       <Screen style={styles.container} edges={['top']}>
-        <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+        <View style={styles.detailSkeleton}>
+          <View style={[styles.skeletonBlock, { height: 140, borderRadius: BorderRadius.xl }]} />
+          <View style={[styles.skeletonBlock, { height: 28, width: '70%', marginTop: Spacing.lg }]} />
+          <View style={[styles.skeletonBlock, { height: 16, width: '45%', marginTop: Spacing.sm }]} />
+          <View style={[styles.skeletonBlock, { height: 80, marginTop: Spacing.lg }]} />
+          <View style={[styles.skeletonBlock, { height: 80, marginTop: Spacing.md }]} />
         </View>
       </Screen>
     );
@@ -187,6 +191,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  detailSkeleton: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.lg,
+  },
+  skeletonBlock: {
+    backgroundColor: Colors.backgroundCard,
+    borderRadius: BorderRadius.lg,
   },
   loadingWrap: {
     flex: 1,
