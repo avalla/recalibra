@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
-import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Button, Card } from '../../components';
 import { useSessions, useAppleHealth } from '../../hooks';
 import type { RootStackParamList } from '../../types';
@@ -34,6 +34,7 @@ export const PostSessionScreen: React.FC = () => {
   const [healthSaved, setHealthSaved] = useState<boolean | null>(null);
 
   const stressReduction = preStressLevel - postStressLevel;
+  const durationLabel = `${Math.max(1, Math.round(durationSeconds / 60))} min`;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -89,16 +90,20 @@ export const PostSessionScreen: React.FC = () => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Ionicons name="close" size={28} color={Colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Post-Session</Text>
-          <TouchableOpacity>
-            <Ionicons name="ellipsis-horizontal" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Reflect</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+
+        {/* Closing reassurance */}
+        <View style={styles.celebrate}>
+          <Text style={styles.celebrateEyebrow}>Nicely done</Text>
+          <Text style={styles.celebrateTitle}>{exerciseName}</Text>
+          <Text style={styles.celebrateMeta}>{durationLabel} of practice</Text>
         </View>
 
         {/* Main Question */}
         <View style={styles.questionSection}>
-          <Text style={styles.questionTitle}>How stressed do you feel now?</Text>
-          <Text style={styles.questionSubtitle}>Rate your stress level from 1 to 10.</Text>
+          <Text style={styles.questionTitle}>How do you feel now?</Text>
         </View>
 
         {/* Emoji Scale */}
@@ -175,7 +180,7 @@ export const PostSessionScreen: React.FC = () => {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Button label="Save session" onPress={handleSave} loading={isSaving} />
+        <Button label="Done" onPress={handleSave} loading={isSaving} />
         <TouchableOpacity style={styles.progressLink} onPress={handleSkip}>
           <Text style={styles.progressLinkText}>Skip for now</Text>
         </TouchableOpacity>
@@ -205,6 +210,31 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: FontWeight.semibold,
+  },
+  headerSpacer: {
+    width: 28,
+  },
+  celebrate: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.xl,
+  },
+  celebrateEyebrow: {
+    color: Colors.primary,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: Spacing.xs,
+  },
+  celebrateTitle: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.xxl,
+    fontFamily: FontFamily.heading,
+  },
+  celebrateMeta: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.md,
+    marginTop: Spacing.xs,
   },
   questionSection: {
     alignItems: 'center',

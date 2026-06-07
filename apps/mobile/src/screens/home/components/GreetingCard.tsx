@@ -22,7 +22,6 @@ export const GreetingCard: React.FC<GreetingCardProps> = ({ userName, greetingPh
       <View style={styles.greeting}>
         <Text style={styles.greetingTitle}>Hi {userName},</Text>
         <Text style={styles.greetingSubtitle}>{greetingPhrase}</Text>
-        <View style={styles.greetingAccent} />
       </View>
     </Gradient>
   );
@@ -32,7 +31,6 @@ const styles = StyleSheet.create({
   greeting: {
     marginTop: Spacing.lg,
     marginBottom: Spacing.xl,
-    position: 'relative',
   },
   greetingGradient: {
     borderRadius: BorderRadius.lg,
@@ -48,18 +46,8 @@ const styles = StyleSheet.create({
   },
   greetingSubtitle: {
     color: Colors.textSecondary,
-    fontSize: FontSize.xl,
+    fontSize: FontSize.lg,
     fontWeight: FontWeight.medium,
     marginTop: Spacing.xs,
-  },
-  greetingAccent: {
-    position: 'absolute',
-    left: -10,
-    bottom: -5,
-    width: 60,
-    height: 3,
-    backgroundColor: Colors.primary,
-    borderRadius: 2,
-    opacity: 0.3,
   },
 });

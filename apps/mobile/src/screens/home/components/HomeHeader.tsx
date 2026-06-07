@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../../constants';
@@ -10,24 +9,15 @@ interface HomeHeaderProps {
 }
 
 export const HomeHeader: React.FC<HomeHeaderProps> = ({ onQuickStartPress }) => {
-  const Gradient = LinearGradient as unknown as React.ComponentType<any>;
-
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
         <Ionicons name="leaf" size={24} color={Colors.primary} />
         <Text style={styles.headerTitle}>Recalibra</Text>
       </View>
-      <TouchableOpacity onPress={onQuickStartPress} style={styles.quickStartButton} activeOpacity={0.85}>
-        <Gradient
-          colors={[Colors.primaryLight, Colors.primary, Colors.primaryDark] as any}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.quickStartGradient}
-        >
-          <Ionicons name="flash" size={16} color={Colors.background} style={styles.quickStartIcon} />
-          <Text style={styles.quickStartText}>Quick Start</Text>
-        </Gradient>
+      <TouchableOpacity onPress={onQuickStartPress} style={styles.quickStartButton} activeOpacity={0.7}>
+        <Ionicons name="flash" size={16} color={Colors.primary} style={styles.quickStartIcon} />
+        <Text style={styles.quickStartText}>Quick Start</Text>
       </TouchableOpacity>
     </View>
   );
@@ -52,22 +42,22 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.heading,
   },
   quickStartButton: {
-    borderRadius: BorderRadius.full,
-    overflow: 'hidden',
-  },
-  quickStartGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
+    paddingVertical: 9,
     paddingHorizontal: 14,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.backgroundCard,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   quickStartIcon: {
     marginRight: 6,
   },
   quickStartText: {
-    color: Colors.background,
+    color: Colors.primary,
     fontSize: FontSize.sm,
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.semibold,
   },
 });

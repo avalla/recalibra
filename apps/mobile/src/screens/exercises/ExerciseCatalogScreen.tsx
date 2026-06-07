@@ -255,9 +255,6 @@ export const ExerciseCatalogScreen: React.FC = () => {
           <View>
             <View style={styles.topBar}>
               <Text style={styles.pageTitle}>Explore Exercises</Text>
-              <TouchableOpacity style={styles.searchIconButton}>
-                <Ionicons name="search" size={22} color={Colors.textPrimary} />
-              </TouchableOpacity>
             </View>
 
             <ScrollView
@@ -283,21 +280,43 @@ export const ExerciseCatalogScreen: React.FC = () => {
 
             <View style={styles.filterPillsRow}>
               <TouchableOpacity
-                style={styles.filterPill}
-                onPress={() => setSelectedDuration((prev) => (prev === 'short' ? 'all' : 'short'))}
+                style={[styles.filterPill, selectedDuration !== 'all' && styles.filterPillActive]}
+                onPress={() =>
+                  setSelectedDuration((prev) => {
+                    const order = ['all', 'short', 'medium', 'long'] as const;
+                    return order[(order.indexOf(prev) + 1) % order.length];
+                  })
+                }
                 activeOpacity={0.85}
               >
-                <Text style={styles.filterPillText}>Duration</Text>
-                <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
+                <Text style={[styles.filterPillText, selectedDuration !== 'all' && styles.filterPillTextActive]}>
+                  {selectedDuration === 'all' ? 'Any length' : DURATION_LABELS[selectedDuration]}
+                </Text>
+                <Ionicons
+                  name="swap-vertical"
+                  size={14}
+                  color={selectedDuration !== 'all' ? Colors.primary : Colors.textSecondary}
+                />
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.filterPill}
-                onPress={() => setSelectedLevel((prev) => (prev === 'beginner' ? 'all' : 'beginner'))}
+                style={[styles.filterPill, selectedLevel !== 'all' && styles.filterPillActive]}
+                onPress={() =>
+                  setSelectedLevel((prev) => {
+                    const order = ['all', 'beginner', 'intermediate', 'advanced'] as const;
+                    return order[(order.indexOf(prev) + 1) % order.length];
+                  })
+                }
                 activeOpacity={0.85}
               >
-                <Text style={styles.filterPillText}>Level</Text>
-                <Ionicons name="chevron-down" size={16} color={Colors.textSecondary} />
+                <Text style={[styles.filterPillText, selectedLevel !== 'all' && styles.filterPillTextActive]}>
+                  {selectedLevel === 'all' ? 'Any level' : formatLevel(selectedLevel)}
+                </Text>
+                <Ionicons
+                  name="swap-vertical"
+                  size={14}
+                  color={selectedLevel !== 'all' ? Colors.primary : Colors.textSecondary}
+                />
               </TouchableOpacity>
             </View>
 
@@ -405,6 +424,14 @@ const formatOrigin = (origin: string): string => {
     .join(' ');
 };
 
+const DURATION_LABELS: Record<'short' | 'medium' | 'long', string> = {
+  short: 'Under 3 min',
+  medium: '4 to 7 min',
+  long: '8+ min',
+};
+
+const formatLevel = (level: string): string => (level ? level[0].toUpperCase() + level.slice(1) : level);
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -487,6 +514,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderWidth: 1,
     borderColor: 'rgba(148, 163, 184, 0.14)',
+  },
+  filterPillActive: {
+    backgroundColor: Colors.primary + '1F',
+    borderColor: Colors.primary,
+  },
+  filterPillTextActive: {
+    color: Colors.primary,
+    fontWeight: FontWeight.semibold,
   },
   filterPillText: {
     color: Colors.textPrimary,

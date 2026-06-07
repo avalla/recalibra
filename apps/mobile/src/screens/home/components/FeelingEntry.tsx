@@ -215,9 +215,6 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
           ) : (
             <View style={styles.emptyCard}>
               <Text style={styles.emptyText}>Nothing fits that time right now.</Text>
-              <TouchableOpacity onPress={onBrowse} activeOpacity={0.8}>
-                <Text style={styles.browseText}>Browse all exercises</Text>
-              </TouchableOpacity>
             </View>
           )}
 
