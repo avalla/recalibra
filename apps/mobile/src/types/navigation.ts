@@ -79,7 +79,6 @@ export type RootStackParamList = {
   ExerciseSession: ExerciseFlowParamList['ExerciseSession'];
   PostSession: ExerciseFlowParamList['PostSession'];
   Paywall: undefined;
-  AccountUpgrade: undefined;
   QuickStartPreferences: { from?: 'home' | 'settings' } | undefined;
 };
 

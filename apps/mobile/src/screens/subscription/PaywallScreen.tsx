@@ -205,7 +205,7 @@ export const PaywallScreen: React.FC = () => {
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Unlock Recalibra Pro</Text>
           <Text style={styles.subtitle}>
-            Personalized sessions, full exercise library, and advanced tracking.
+            The full exercise library, binaural beats, and premium soundscapes.
           </Text>
 
           <View style={styles.plans}>
@@ -246,7 +246,7 @@ export const PaywallScreen: React.FC = () => {
           </View>
 
           <View style={styles.benefits}>
-            {PREMIUM_FEATURES.slice(0, 4).map((feature) => (
+            {PREMIUM_FEATURES.map((feature) => (
               <View key={feature.title} style={styles.benefitRow}>
                 <Ionicons name="checkmark-circle" size={18} color={Colors.primary} />
                 <Text style={styles.benefitText}>{feature.title}</Text>

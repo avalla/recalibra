@@ -4,7 +4,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabNavigator } from './MainTabNavigator';
 import { ScreeningNavigator } from './ScreeningNavigator';
 import { PaywallScreen } from '../screens/subscription';
-import { AccountUpgradeScreen } from '../screens/auth';
 import { OnboardingScreen } from '../screens/auth/OnboardingScreen';
 import { QuickStartPreferencesScreen } from '../screens/settings';
 import { ExerciseDetailScreen, ExerciseSessionScreen, PostSessionScreen } from '../screens';
@@ -47,14 +46,6 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen 
         name="Paywall" 
         component={PaywallScreen}
-        options={{
-          presentation: 'modal',
-          animation: 'slide_from_bottom',
-        }}
-      />
-      <Stack.Screen 
-        name="AccountUpgrade" 
-        component={AccountUpgradeScreen}
         options={{
           presentation: 'modal',
           animation: 'slide_from_bottom',

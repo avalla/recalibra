@@ -34,13 +34,13 @@ const slides: OnboardingSlide[] = [
     id: '2',
     icon: 'pulse-outline',
     title: 'Track Your Progress',
-    description: 'Monitor your stress levels and HRV to see real improvements.',
+    description: 'Check in before and after, and watch your stress trend ease over time.',
   },
   {
     id: '3',
     icon: 'sparkles-outline',
-    title: 'Personalized Sessions',
-    description: 'AI-powered exercises tailored to your needs and goals.',
+    title: 'Picked For How You Feel',
+    description: 'Breathing, cold, vocal, and movement exercises matched to your state.',
   },
 ];
 
