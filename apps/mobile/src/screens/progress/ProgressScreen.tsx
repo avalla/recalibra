@@ -192,6 +192,25 @@ export const ProgressScreen: React.FC = () => {
     );
   };
 
+  if (isLoading) {
+    return (
+      <Screen style={styles.container} edges={['top']}>
+        <View style={styles.scrollContent}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>History & Progress</Text>
+          </View>
+          <View style={[styles.skeletonBlock, { height: 80, marginBottom: Spacing.sm }]} />
+          <View style={styles.statsRow}>
+            <View style={[styles.skeletonBlock, { flex: 1, height: 80 }]} />
+            <View style={[styles.skeletonBlock, { flex: 1, height: 80 }]} />
+          </View>
+          <View style={[styles.skeletonBlock, { height: 150, marginTop: Spacing.md, marginBottom: Spacing.md }]} />
+          <View style={[styles.skeletonBlock, { height: 170 }]} />
+        </View>
+      </Screen>
+    );
+  }
+
   return (
     <Screen style={styles.container} edges={['top']}>
       <ScrollView
@@ -227,20 +246,31 @@ export const ProgressScreen: React.FC = () => {
           ))}
         </View>
 
-        {/* Streak & Stats Row */}
+        {/* Streak hero */}
+        <Card style={styles.streakCard}>
+          <View style={styles.streakIconWrap}>
+            <Ionicons name="flame" size={26} color={Colors.primary} />
+          </View>
+          <View style={styles.streakTextWrap}>
+            <Text style={styles.streakValue}>
+              {streak.current} <Text style={styles.streakUnit}>day{streak.current === 1 ? '' : 's'}</Text>
+            </Text>
+            <Text style={styles.streakLabel}>
+              {streak.current > 0 ? 'Current streak' : 'Start a streak today'}
+              {streak.longest > streak.current ? `  ·  best ${streak.longest}` : ''}
+            </Text>
+          </View>
+        </Card>
+
+        {/* Secondary stats */}
         <View style={styles.statsRow}>
           <Card style={styles.statCard}>
-            <Text style={styles.statEmoji}>🔥</Text>
-            <Text style={styles.statValue}>{streak.current}</Text>
-            <Text style={styles.statLabel}>Day Streak</Text>
-          </Card>
-          <Card style={styles.statCard}>
-            <Text style={styles.statEmoji}>🎯</Text>
+            <Ionicons name="checkmark-done-outline" size={20} color={Colors.textSecondary} />
             <Text style={styles.statValue}>{stats.totalSessions}</Text>
             <Text style={styles.statLabel}>Sessions</Text>
           </Card>
           <Card style={styles.statCard}>
-            <Text style={styles.statEmoji}>⏱️</Text>
+            <Ionicons name="time-outline" size={20} color={Colors.textSecondary} />
             <Text style={styles.statValue}>{stats.totalMinutes}</Text>
             <Text style={styles.statLabel}>Minutes</Text>
           </Card>
@@ -253,6 +283,8 @@ export const ProgressScreen: React.FC = () => {
             {calendarData.map((day, index) => (
               <View
                 key={index}
+                accessible
+                accessibilityLabel={`${day.date}, ${day.count} session${day.count === 1 ? '' : 's'}${day.isToday ? ', today' : ''}`}
                 style={[
                   styles.calendarDay,
                   day.count > 0 && styles.calendarDayActive,
@@ -311,15 +343,14 @@ export const ProgressScreen: React.FC = () => {
               ))}
             </View>
           </View>
+          <Text style={styles.chartCaption}>Taller bars mean calmer days.</Text>
         </Card>
 
-        {/* HRV Trend Card */}
-        <Card style={styles.hrvCard}>
-          <Text style={styles.hrvTitle}>HRV Trend</Text>
-          <Text style={styles.hrvSubtitle}>
-            Heart Rate Variability data is coming soon.
-          </Text>
-        </Card>
+        {/* HRV Trend (not yet available) */}
+        <View style={styles.hrvNote}>
+          <Ionicons name="pulse-outline" size={14} color={Colors.textMuted} />
+          <Text style={styles.hrvNoteText}>HRV trends coming soon</Text>
+        </View>
 
         {/* Recent Sessions */}
         <Text style={styles.sectionTitle}>Recent Sessions</Text>
@@ -342,7 +373,7 @@ export const ProgressScreen: React.FC = () => {
               <View style={styles.sessionInfo}>
                 <Text style={styles.sessionName}>{session.exercise?.name || 'Exercise'}</Text>
                 <Text style={styles.sessionMeta}>
-                  {formatDate(session.created_at)} - {Math.round(session.duration_seconds / 60)} min
+                  {formatDate(session.created_at)} · {Math.round(session.duration_seconds / 60)} min
                 </Text>
               </View>
               {session.pre_stress_level && session.post_stress_level &&
@@ -406,7 +437,59 @@ const styles = StyleSheet.create({
   },
   trendCard: {
     marginBottom: Spacing.md,
-    backgroundColor: '#1E3A5F', // Slightly different blue as in design
+  },
+  streakCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingVertical: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  streakIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary + '1F',
+  },
+  streakTextWrap: {
+    flex: 1,
+  },
+  streakValue: {
+    color: Colors.textPrimary,
+    fontSize: FontSize.xxl,
+    fontFamily: FontFamily.heading,
+  },
+  streakUnit: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.md,
+    fontFamily: FontFamily.regular,
+  },
+  streakLabel: {
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
+    marginTop: 2,
+  },
+  chartCaption: {
+    color: Colors.textMuted,
+    fontSize: FontSize.xs,
+    marginTop: Spacing.sm,
+  },
+  skeletonBlock: {
+    backgroundColor: Colors.backgroundCard,
+    borderRadius: BorderRadius.lg,
+  },
+  hrvNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+  },
+  hrvNoteText: {
+    color: Colors.textMuted,
+    fontSize: FontSize.sm,
   },
   trendLabel: {
     color: Colors.textSecondary,
@@ -602,7 +685,7 @@ const styles = StyleSheet.create({
   },
   calendarDayToday: {
     borderWidth: 2,
-    borderColor: Colors.textPrimary,
+    borderColor: Colors.primary,
   },
   calendarLegend: {
     flexDirection: 'row',
