@@ -141,28 +141,6 @@ function buildWavePoints(
   return points;
 }
 
-function buildSparklePoints(points: WavePoint[]): WavePoint[] {
-  if (points.length === 0) return [];
-  const step = Math.max(18, Math.round(points.length / 42));
-  const sparkles: WavePoint[] = [];
-  for (let i = 0; i < points.length; i += step) {
-    sparkles.push(points[i]);
-  }
-  return sparkles;
-}
-
-function buildFlowPoints(points: WavePoint[], progress: number): WavePoint[] {
-  if (points.length === 0) return [];
-  const stride = Math.max(8, Math.round(points.length / 28));
-  const offset = Math.floor(progress * points.length);
-  const flowPoints: WavePoint[] = [];
-  for (let i = 0; i < points.length; i += stride) {
-    const idx = (i + offset) % points.length;
-    flowPoints.push(points[idx]);
-  }
-  return flowPoints;
-}
-
 function buildPath(points: WavePoint[]): string {
   if (points.length === 0) return '';
   const start = points[0];
@@ -242,15 +220,10 @@ export function BreathingGraph({
   curvePreset = 'default',
 }: BreathingGraphProps): React.ReactElement {
   const normalizedProgress = clampNumber(cycleProgress, 0, 1);
-  const flowPulse = useMemo(() => {
-    const phase = Math.sin(normalizedProgress * Math.PI * 2 - Math.PI / 2);
-    return 0.6 + 0.4 * (phase + 1) / 2;
-  }, [normalizedProgress]);
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const prevPhaseColorRef = useRef(activePhaseColor);
   const currentPhaseColorRef = useRef(activePhaseColor);
-  const markerFloat = useRef(new Animated.Value(0)).current;
 
   const points = useMemo(
     () => buildWavePoints(segments, width, height, cycleTotalSeconds, curvePreset),
@@ -259,11 +232,6 @@ export function BreathingGraph({
 
   const areaPath = useMemo(() => buildAreaPath(points, height), [points, height]);
   const linePath = useMemo(() => buildPath(points), [points]);
-  const sparklePoints = useMemo(() => buildSparklePoints(points), [points]);
-  const flowPoints = useMemo(
-    () => buildFlowPoints(points, normalizedProgress),
-    [points, normalizedProgress]
-  );
 
   // Center the current cycle-progress under the fixed center playhead.
   // The wave renders CYCLES_RENDERED cycles side by side; we scroll so that
@@ -310,25 +278,6 @@ export function BreathingGraph({
       useNativeDriver: false,
     }).start();
   }, [activePhaseColor, fadeAnim]);
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(markerFloat, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(markerFloat, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [markerFloat]);
 
   return (
     <View style={[styles.container, { width, height }]}>
@@ -388,26 +337,6 @@ export function BreathingGraph({
                 opacity={0.2}
               />
             ))}
-            {sparklePoints.map((point, index) => (
-              <Circle
-                key={`sparkle-${index}`}
-                cx={point.x}
-                cy={point.y}
-                r={2.4}
-                fill={activePhaseColor}
-                opacity={0.16}
-              />
-            ))}
-            {flowPoints.map((point, index) => (
-              <Circle
-                key={`flow-${index}`}
-                cx={point.x}
-                cy={point.y}
-                r={2.4 + flowPulse * 1.8}
-                fill={activePhaseColor}
-                opacity={0.16 + flowPulse * 0.18}
-              />
-            ))}
           </Svg>
         </View>
         <View pointerEvents="none" style={[styles.playhead, { left: width / 2 - 1 }]}>
@@ -436,7 +365,6 @@ export function BreathingGraph({
           <View pointerEvents="none" style={styles.markerLayer}>
             {markerPositions.map(({ marker, x }, index) => {
               const markerColor = getMarkerColor(marker.tone, activePhaseColor);
-              const direction = index % 2 === 0 ? 1 : -1;
               return (
                 <Animated.View
                   key={marker.id}
@@ -444,17 +372,6 @@ export function BreathingGraph({
                     styles.markerBubble,
                     {
                       left: x - 24,
-                      transform: [
-                        {
-                          translateY: Animated.multiply(
-                            markerFloat.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, -4],
-                            }),
-                            direction
-                          ),
-                        },
-                      ],
                     },
                   ]}
                 >

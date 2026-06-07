@@ -548,9 +548,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: BorderRadius.full,
-    backgroundColor: 'rgba(102, 126, 234, 0.12)',
+    backgroundColor: 'rgba(45, 212, 191, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(102, 126, 234, 0.35)',
+    borderColor: 'rgba(45, 212, 191, 0.35)',
   },
   sheetSecondaryButtonText: {
     color: Colors.primary,
@@ -733,9 +733,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: BorderRadius.full,
-    backgroundColor: 'rgba(102, 126, 234, 0.12)',
+    backgroundColor: 'rgba(45, 212, 191, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(102, 126, 234, 0.35)',
+    borderColor: 'rgba(45, 212, 191, 0.35)',
   },
   recommendedBadgeActive: {
     backgroundColor: Colors.primary,

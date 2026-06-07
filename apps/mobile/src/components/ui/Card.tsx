@@ -52,12 +52,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundCard,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(45, 212, 191, 0.12)',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.14,
-    shadowRadius: 18,
-    elevation: 6,
+    // Neutral chrome by default. Teal is the action/state color; spending it on
+    // every passive card's border + shadow diluted its signal. Interactive or
+    // selected cards opt into a teal border via their own style.
+    borderColor: 'rgba(148, 163, 184, 0.12)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 3,
   },
   soft: {
     borderColor: 'rgba(148, 163, 184, 0.14)',

@@ -135,10 +135,12 @@ function buildCycleSegments(pattern: BreathingPattern): CycleSegment[] {
 }
 
 function getPhaseTypePalette(): PhasePalette {
+  // Calm teal progression. Phases are not states, so they don't borrow the
+  // semantic warning/success colors (amber on a hold read like a problem).
   return {
     inhale: Colors.primary,
-    hold: Colors.warning,
-    exhale: Colors.success,
+    hold: Colors.primaryLight,
+    exhale: Colors.primaryDark,
     rest: Colors.textSecondary,
   };
 }
@@ -519,7 +521,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                       pressed && styles.stressRowPressed,
                       pressed && isSelected && styles.stressRowPressedActive,
                     ]}
-                    android_ripple={{ color: 'rgba(102, 126, 234, 0.18)' }}
+                    android_ripple={{ color: 'rgba(45, 212, 191, 0.18)' }}
                     onPressIn={() => {
                       hapticSelection();
                     }}
@@ -1541,7 +1543,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                                 pressed && styles.stressRowPressed,
                                 pressed && isSelected && styles.stressRowPressedActive,
                               ]}
-                              android_ripple={{ color: 'rgba(102, 126, 234, 0.18)' }}
+                              android_ripple={{ color: 'rgba(45, 212, 191, 0.18)' }}
                               onPressIn={() => {
                                 hapticSelection();
                               }}
@@ -2421,13 +2423,13 @@ const styles = StyleSheet.create({
   },
   tipCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFF8DC',
+    backgroundColor: Colors.backgroundElevated,
     padding: Spacing.md,
     borderRadius: BorderRadius.lg,
     marginBottom: Spacing.sm,
     alignItems: 'flex-start',
     borderWidth: 1,
-    borderColor: '#FFA50030',
+    borderColor: Colors.warning + '33',
   },
   tipIcon: {
     marginRight: Spacing.md,
