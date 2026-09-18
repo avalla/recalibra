@@ -16,6 +16,8 @@ import { Button, Card } from '../../components';
 import { useSessions, useAppleHealth } from '../../hooks';
 import type { RootStackParamList } from '../../types';
 import { logger } from '../../utils/logger';
+import { completeJourneyChapter } from '../../db';
+import { returnToCenterJourney } from '../../data/journeys';
 
 const STRESS_EMOJIS = ['😇', '🙂', '😌', '😟', '😰'];
 
@@ -24,7 +26,14 @@ type PostSessionRouteProps = RouteProp<RootStackParamList, 'PostSession'>;
 export const PostSessionScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<PostSessionRouteProps>();
-  const { sessionId, exerciseName, durationSeconds, preStressLevel } = route.params;
+  const {
+    sessionId,
+    exerciseName,
+    durationSeconds,
+    preStressLevel,
+    journeyId,
+    journeyChapterIndex,
+  } = route.params;
   const { completeSession } = useSessions();
   const { isAvailable: healthAvailable, isAuthorized: healthAuthorized, saveMindfulSession } = useAppleHealth();
 
@@ -60,13 +69,31 @@ export const PostSessionScreen: React.FC = () => {
       }
     }
 
+    if (journeyId && typeof journeyChapterIndex === 'number') {
+      await completeJourneyChapter(journeyId, journeyChapterIndex);
+      const isLastChapter = journeyChapterIndex >= returnToCenterJourney.chapters.length - 1;
+      if (isLastChapter) {
+        navigation.replace('JourneyDetail', { journeyId });
+      } else {
+        navigation.replace('JourneyRunner', {
+          journeyId,
+          chapterIndex: journeyChapterIndex + 1,
+          justCompleted: true,
+        });
+      }
+      setIsSaving(false);
+      return;
+    }
+
     setIsSaving(false);
-    
-    // Navigate to home/progress
     navigation.navigate('ExerciseCatalog');
   };
 
   const handleSkip = () => {
+    if (journeyId && typeof journeyChapterIndex === 'number') {
+      navigation.replace('JourneyRunner', { journeyId, chapterIndex: journeyChapterIndex });
+      return;
+    }
     navigation.navigate('ExerciseCatalog');
   };
 

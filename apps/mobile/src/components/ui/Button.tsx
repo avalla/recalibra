@@ -77,6 +77,9 @@ export const Button: React.FC<ButtonProps> = ({
         style={buttonStyles}
         onPress={onPress}
         disabled={isDisabled}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled: isDisabled, busy: loading }}
         activeOpacity={0.85}
       >
         {/* @ts-ignore - LinearGradient type issue with React 19 */}
@@ -95,6 +98,9 @@ export const Button: React.FC<ButtonProps> = ({
       style={buttonStyles}
       onPress={onPress}
       disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       activeOpacity={0.85}
     >
       <View style={[styles.innerBase, styles[`innerSize_${size}`]]}>{content}</View>

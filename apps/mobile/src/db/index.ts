@@ -4,3 +4,4 @@ export { listSessions, startSession, updateSessionStatus, completeSession } from
 export { getGoals, setGoals } from './goals';
 export { getReminders, setReminders } from './reminders';
 export { getScreening, setScreening } from './screening';
+export { completeJourneyChapter, getJourneyProgress, startJourney } from './journeys';
