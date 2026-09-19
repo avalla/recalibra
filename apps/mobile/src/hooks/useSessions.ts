@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Session, SessionWithExercise } from '../types';
-import { listSessions, startSession as startDbSession, updateSessionStatus as updateDbSessionStatus, completeSession as completeDbSession } from '../db';
+import type { JourneyProgress, Session, SessionWithExercise } from '../types';
+import {
+  completeSession as completeDbSession,
+  completeSessionAndJourney as completeDbSessionAndJourney,
+  listSessions,
+  startSession as startDbSession,
+  updateSessionStatus as updateDbSessionStatus,
+} from '../db';
 import { logger } from '../utils/logger';
 
 export const useSessions = () => {
@@ -86,6 +92,33 @@ export const useSessions = () => {
     }
   };
 
+  const completeSessionAndJourney = async (
+    sessionId: string,
+    durationSeconds: number,
+    postStressLevel: number,
+    notes: string | undefined,
+    journeyId: string,
+    chapterIndex: number
+  ): Promise<{ progress: JourneyProgress | null; error: Error | null }> => {
+    try {
+      const result = await completeDbSessionAndJourney({
+        sessionId,
+        durationSeconds,
+        postStressLevel,
+        notes,
+        journeyId,
+        chapterIndex,
+      });
+      if (result.error) return result;
+      await fetchSessions();
+      return result;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to complete journey session');
+      logger.error('completeSessionAndJourney:error', error, 'useSessions');
+      return { progress: null, error };
+    }
+  };
+
   const getSessionStats = () => {
     const completedSessions = sessions.filter((s) => s.completed_at);
     const totalSessions = completedSessions.length;
@@ -124,6 +157,7 @@ export const useSessions = () => {
     startSession,
     updateSessionStatus,
     completeSession,
+    completeSessionAndJourney,
     getSessionStats,
   };
 };

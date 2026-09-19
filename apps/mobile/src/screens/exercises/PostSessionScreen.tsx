@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,10 +14,10 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Button, Card } from '../../components';
 import { useSessions, useAppleHealth } from '../../hooks';
-import type { RootStackParamList } from '../../types';
+import type { JourneyProgress, RootStackParamList } from '../../types';
 import { logger } from '../../utils/logger';
-import { completeJourneyChapter } from '../../db';
-import { returnToCenterJourney } from '../../data/journeys';
+import { journeyDefinitions } from '../../data/journeys';
+import { getNextJourneyChapter } from '../../features/journeys/state';
 
 const STRESS_EMOJIS = ['😇', '🙂', '😌', '😟', '😰'];
 
@@ -34,59 +34,82 @@ export const PostSessionScreen: React.FC = () => {
     journeyId,
     journeyChapterIndex,
   } = route.params;
-  const { completeSession } = useSessions();
+  const { completeSession, completeSessionAndJourney } = useSessions();
   const { isAvailable: healthAvailable, isAuthorized: healthAuthorized, saveMindfulSession } = useAppleHealth();
 
   const [postStressLevel, setPostStressLevel] = useState(5);
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [healthSaved, setHealthSaved] = useState<boolean | null>(null);
+  const saveInFlightRef = useRef(false);
 
   const stressReduction = preStressLevel - postStressLevel;
   const durationLabel = `${Math.max(1, Math.round(durationSeconds / 60))} min`;
 
   const handleSave = async () => {
+    if (saveInFlightRef.current) return;
+    saveInFlightRef.current = true;
     setIsSaving(true);
-    
-    // Save session
-    const { error } = await completeSession(sessionId, durationSeconds, postStressLevel, notes || undefined);
 
-    if (error) {
-      setIsSaving(false);
-      Alert.alert('Error', 'Failed to save session. Please try again.');
-      return;
-    }
+    try {
+      let journeyProgress: JourneyProgress | null = null;
+      let error: Error | null = null;
 
-    // Save to Apple Health if available and authorized
-    if (healthAvailable && healthAuthorized) {
-      const endDate = new Date();
-      const startDate = new Date(endDate.getTime() - durationSeconds * 1000);
-      const saved = await saveMindfulSession(startDate, endDate);
-      setHealthSaved(saved);
-      
-      if (saved) {
-        logger.info('Mindful session saved to Apple Health', 'PostSession');
-      }
-    }
-
-    if (journeyId && typeof journeyChapterIndex === 'number') {
-      await completeJourneyChapter(journeyId, journeyChapterIndex);
-      const isLastChapter = journeyChapterIndex >= returnToCenterJourney.chapters.length - 1;
-      if (isLastChapter) {
-        navigation.replace('JourneyDetail', { journeyId });
-      } else {
-        navigation.replace('JourneyRunner', {
+      if (journeyId && typeof journeyChapterIndex === 'number') {
+        const result = await completeSessionAndJourney(
+          sessionId,
+          durationSeconds,
+          postStressLevel,
+          notes || undefined,
           journeyId,
-          chapterIndex: journeyChapterIndex + 1,
-          justCompleted: true,
-        });
+          journeyChapterIndex
+        );
+        journeyProgress = result.progress;
+        error = result.error;
+      } else {
+        ({ error } = await completeSession(sessionId, durationSeconds, postStressLevel, notes || undefined));
       }
-      setIsSaving(false);
-      return;
-    }
 
-    setIsSaving(false);
-    navigation.navigate('ExerciseCatalog');
+      if (error) throw error;
+
+      if (healthAvailable && healthAuthorized) {
+        try {
+          const endDate = new Date();
+          const startDate = new Date(endDate.getTime() - durationSeconds * 1000);
+          const saved = await saveMindfulSession(startDate, endDate);
+          setHealthSaved(saved);
+          if (saved) logger.info('Mindful session saved to Apple Health', 'PostSession');
+        } catch (healthError) {
+          logger.error('Mindful session could not be saved to Apple Health', healthError as Error, 'PostSession');
+          setHealthSaved(false);
+        }
+      }
+
+      if (journeyId && typeof journeyChapterIndex === 'number') {
+        const journey = journeyDefinitions.find((item) => item.id === journeyId);
+        if (!journey || !journeyProgress) throw new Error('Journey progress is unavailable');
+
+        const nextChapter = getNextJourneyChapter(journeyProgress, journey.chapters.length);
+        if (nextChapter === null) {
+          navigation.replace('JourneyDetail', { journeyId });
+        } else {
+          navigation.replace('JourneyRunner', {
+            journeyId,
+            chapterIndex: nextChapter,
+            justCompleted: true,
+          });
+        }
+        return;
+      }
+
+      navigation.navigate('ExerciseCatalog');
+    } catch (error) {
+      logger.error('Session completion failed', error as Error, 'PostSession');
+      Alert.alert('Error', 'Failed to save session. Please try again.');
+    } finally {
+      saveInFlightRef.current = false;
+      setIsSaving(false);
+    }
   };
 
   const handleSkip = () => {

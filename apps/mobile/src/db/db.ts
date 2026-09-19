@@ -7,6 +7,7 @@ import { inferObjective } from '../utils/infer-objective';
 import { logger } from '../utils/logger';
 import { SCHEMA_SQL } from './schema';
 import { journeyDefinitions } from '../data/journeys';
+import { findInvalidJourneyExerciseSlugs } from '../features/journeys/state';
 
 const DB_NAME = 'recalibra_v3.db';
 
@@ -25,6 +26,14 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
 
 export async function initDb(): Promise<void> {
   const db = await getDb();
+
+  const invalidJourneySlugs = findInvalidJourneyExerciseSlugs(
+    journeyDefinitions,
+    seedExercises.map((exercise) => exercise.slug)
+  );
+  if (invalidJourneySlugs.length > 0) {
+    throw new Error(`Invalid journey exercise slugs: ${invalidJourneySlugs.join(', ')}`);
+  }
 
   await db.execAsync(SCHEMA_SQL);
 

@@ -7,10 +7,10 @@ Flow: Home card → `JourneyDetailScreen` → `JourneyRunnerScreen` → `Exercis
 Persistence: `apps/mobile/src/db/schema.ts` tables `journeys` + `journey_progress`
 - Seeded by `apps/mobile/src/db/db.ts:ensureSeededJourneys()`
 - Progress is next chapter index plus completed chapter IDs; stored as JSON for additive local migration
-- Post-session save calls `apps/mobile/src/db/journeys.ts:completeJourneyChapter()` before navigating to the next runner
+- Post-session save uses the atomic `completeSessionAndJourney()` transaction; navigation follows the returned persisted progress
 
 Definition: `apps/mobile/src/data/journeys.ts:returnToCenterJourney`
 - Seven chapters reuse existing exercise slugs
-- Missing slug falls back to the first loaded exercise in the runner
+- Missing slug fails closed in the runner; bundled slugs are validated against exercise seeds during DB init
 
-Updated: 2026-09-18
+Updated: 2026-09-19

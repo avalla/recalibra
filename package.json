@@ -18,6 +18,7 @@
   },
   "version": "1.0.0",
   "scripts": {
+    "test": "bun test",
     "mobile:config": "cd apps/mobile && bunx expo config --json",
     "mobile:eas:login": "cd apps/mobile && bunx eas login",
     "mobile:eas:whoami": "cd apps/mobile && bunx eas whoami",

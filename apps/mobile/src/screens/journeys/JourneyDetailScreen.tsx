@@ -7,6 +7,7 @@ import { Button, Card, Screen } from '../../components';
 import { BorderRadius, Colors, FontFamily, FontSize, FontWeight, Spacing } from '../../constants';
 import { returnToCenterJourney } from '../../data/journeys';
 import { useJourney } from '../../hooks';
+import { getJourneyEntryChapter } from '../../features/journeys/state';
 import type { RootStackParamList } from '../../types';
 
 type Route = RouteProp<RootStackParamList, 'JourneyDetail'>;
@@ -19,7 +20,7 @@ export const JourneyDetailScreen: React.FC = () => {
     () => (route.params.journeyId === returnToCenterJourney.id ? returnToCenterJourney : null),
     [route.params.journeyId]
   );
-  const { progress, isLoading, error, refresh, begin } = useJourney(route.params.journeyId);
+  const { progress, isLoading, error, refresh } = useJourney(route.params.journeyId);
 
   useFocusEffect(
     useCallback(() => {
@@ -39,17 +40,15 @@ export const JourneyDetailScreen: React.FC = () => {
   const isComplete = completedCount >= journey.chapters.length;
   const activeIndex = Math.min(progress?.currentChapter ?? 0, journey.chapters.length - 1);
 
-  const openChapter = async (chapterIndex: number) => {
+  const openChapter = (chapterIndex: number) => {
     if (chapterIndex > (progress?.currentChapter ?? 0)) return;
-    await begin();
     navigation.navigate('JourneyRunner', { journeyId: journey.id, chapterIndex });
   };
 
-  const startJourney = async () => {
-    const next = await begin();
+  const startJourney = () => {
     navigation.navigate('JourneyRunner', {
       journeyId: journey.id,
-      chapterIndex: Math.min(next.currentChapter, journey.chapters.length - 1),
+      chapterIndex: getJourneyEntryChapter(progress, journey.chapters.length),
     });
   };
 

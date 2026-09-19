@@ -6,7 +6,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, Card, Screen } from '../../components';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing } from '../../constants';
 import { returnToCenterJourney } from '../../data/journeys';
-import { useExercises, useJourney } from '../../hooks';
+import { getJourneyEntryChapter } from '../../features/journeys/state';
+import { useExercises, useJourney, useSubscription } from '../../hooks';
 import { toExerciseSessionParams } from '../../utils/quick-start';
 import type { RootStackParamList } from '../../types';
 
@@ -19,23 +20,32 @@ export const JourneyRunnerScreen: React.FC = () => {
   const journey = route.params.journeyId === returnToCenterJourney.id ? returnToCenterJourney : null;
   const { progress, begin } = useJourney(route.params.journeyId);
   const { exercises, isLoading } = useExercises();
+  const { canAccessExercise, presentPaywall, isLoading: isSubscriptionLoading } = useSubscription();
 
-  const chapterIndex = Math.min(
-    route.params.chapterIndex ?? progress?.currentChapter ?? 0,
+  const chapterCount = journey?.chapters.length ?? 0;
+  const defaultChapter = getJourneyEntryChapter(progress, chapterCount);
+  const chapterIndex = Math.max(0, Math.min(
+    route.params.chapterIndex ?? defaultChapter,
     progress?.currentChapter ?? 0,
-    (journey?.chapters.length ?? 1) - 1
-  );
+    Math.max(0, chapterCount - 1)
+  ));
   const chapter = journey?.chapters[chapterIndex];
   const exercise = useMemo(
-    () => exercises.find((item) => item.slug === chapter?.exerciseSlug) ?? exercises[0],
+    () => exercises.find((item) => item.slug === chapter?.exerciseSlug),
     [chapter?.exerciseSlug, exercises]
   );
 
   useEffect(() => {
-    if (progress && !progress.lastStartedAt) {
+    if (
+      progress &&
+      exercise &&
+      !isSubscriptionLoading &&
+      canAccessExercise(exercise.slug, exercise.is_premium) &&
+      !progress.lastStartedAt
+    ) {
       begin();
     }
-  }, [begin, progress]);
+  }, [begin, canAccessExercise, exercise, isSubscriptionLoading, progress]);
 
   if (!journey || !chapter) {
     return (
@@ -45,14 +55,21 @@ export const JourneyRunnerScreen: React.FC = () => {
     );
   }
 
-  const startChapter = () => {
+  const startChapter = async () => {
     if (!exercise) return;
+    if (!canAccessExercise(exercise.slug, exercise.is_premium)) {
+      const didPurchase = await presentPaywall();
+      if (!didPurchase) navigation.navigate('Paywall');
+      return;
+    }
     navigation.navigate('ExerciseSession', {
       ...toExerciseSessionParams(exercise),
       journeyId: journey.id,
       journeyChapterIndex: chapterIndex,
     });
   };
+
+  const exerciseUnavailable = !isLoading && !exercise;
 
   return (
     <Screen style={styles.container} edges={['top']}>
@@ -78,13 +95,19 @@ export const JourneyRunnerScreen: React.FC = () => {
 
         <View style={styles.metaRow}>
           <Text style={styles.meta}>{chapter.durationMinutes} minuti</Text>
-          <Text style={styles.meta}>{exercise?.name ?? 'Pratica guidata'}</Text>
+          <Text style={styles.meta}>{exercise?.name ?? 'Pratica non disponibile'}</Text>
         </View>
 
+        {exerciseUnavailable ? (
+          <Text style={styles.errorText} accessibilityLiveRegion="assertive">
+            La pratica di questo capitolo non è disponibile. Riprova più tardi.
+          </Text>
+        ) : null}
+
         <Button
-          label={isLoading || !exercise ? 'Caricamento…' : 'Inizia il capitolo'}
+          label={isLoading || isSubscriptionLoading ? 'Caricamento…' : exerciseUnavailable ? 'Pratica non disponibile' : 'Inizia il capitolo'}
           onPress={startChapter}
-          disabled={isLoading || !exercise}
+          disabled={isLoading || isSubscriptionLoading || !exercise}
         />
       </ScrollView>
     </Screen>
