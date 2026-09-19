@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, StyleSheet, type ViewStyle, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  type AccessibilityState,
+  type ViewStyle,
+  TouchableOpacity,
+} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, BorderRadius, Spacing, Shadow } from '../../constants';
 import { getGradient, type GradientKey } from '../../constants/gradients';
@@ -8,6 +14,9 @@ interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
   onPress?: () => void;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  accessibilityState?: AccessibilityState;
   variant?: 'default' | 'elevated' | 'soft';
   gradientKey?: GradientKey;
 }
@@ -16,6 +25,9 @@ export const Card: React.FC<CardProps> = ({
   children,
   style,
   onPress,
+  accessibilityLabel,
+  accessibilityHint,
+  accessibilityState,
   variant = 'default',
   gradientKey,
 }) => {
@@ -38,7 +50,15 @@ export const Card: React.FC<CardProps> = ({
 
   if (onPress) {
     return (
-      <TouchableOpacity style={cardStyles} onPress={onPress} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={cardStyles}
+        onPress={onPress}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
+        accessibilityHint={accessibilityHint}
+        accessibilityState={accessibilityState}
+      >
         {content}
       </TouchableOpacity>
     );

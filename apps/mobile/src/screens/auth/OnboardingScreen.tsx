@@ -13,7 +13,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, FontSize, FontWeight, Spacing } from '../../constants';
 import { GradientButton, Screen } from '../../components';
-import { useAuth } from '../../contexts';
 import type { RootStackScreenProps } from '../../types';
 
 const { width } = Dimensions.get('window');
@@ -49,47 +48,21 @@ const slides: OnboardingSlide[] = [
 export const OnboardingScreen: React.FC = () => {
   useLanguage();
   const rootNavigation = useNavigation<RootStackScreenProps<'Onboarding'>['navigation']>();
-  const { completeOnboarding } = useAuth();
-  const { isAnonymous, isLoading } = useAuth();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  const handleSkip = async () => {
+  const goToScreening = () => {
     if (isCompleting) return;
-    
     setIsCompleting(true);
-    try {
-      await completeOnboarding();
-      rootNavigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
-    } catch (err) {
-      console.error('Unexpected error:', err);
-    } finally {
-      setIsCompleting(false);
-    }
+    rootNavigation.navigate('Screening', { screen: 'ScreeningExperience' });
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (currentIndex < slides.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
-      if (isCompleting) return;
-      
-      setIsCompleting(true);
-      try {
-        await completeOnboarding();
-        rootNavigation.reset({
-          index: 0,
-          routes: [{ name: 'Main' }],
-        });
-      } catch (err) {
-        console.error('Unexpected error:', err);
-      } finally {
-        setIsCompleting(false);
-      }
+      goToScreening();
     }
   };
 
@@ -119,7 +92,12 @@ export const OnboardingScreen: React.FC = () => {
 
   return (
     <Screen style={styles.container} edges={['top']}>
-      <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+      <TouchableOpacity
+        style={styles.skipButton}
+        onPress={goToScreening}
+        accessibilityRole="button"
+        accessibilityLabel={tr("Skip introduction")}
+      >
         <Text style={styles.skipText}>{tr("Skip")}</Text>
       </TouchableOpacity>
 

@@ -39,6 +39,9 @@ export function GradientButton({
       disabled={isDisabled}
       activeOpacity={0.85}
       style={[styles.button, isDisabled && styles.disabled, style]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
     >
       {/* @ts-ignore - LinearGradient type issue with React 19 */}
       <LinearGradient colors={gradientColors as any} style={styles.gradient}>

@@ -16,7 +16,13 @@ export const StartSessionButton: React.FC<StartSessionButtonProps> = ({ onPress,
   useLanguage();
   return (
     <Animated.View style={[animatedStyle as any, styles.startButtonContainer]}>
-      <TouchableOpacity style={styles.startButton} onPress={onPress} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={styles.startButton}
+        onPress={onPress}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Start a session"
+      >
         <View style={styles.startButtonContent}>
           <Ionicons name="play" size={24} color={Colors.background} style={styles.startIcon} />
           <Text style={styles.startButtonText}>{tr("Start a Session")}</Text>
@@ -37,11 +43,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.xl,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    elevation: 2,
     position: 'relative',
     overflow: 'hidden',
   },

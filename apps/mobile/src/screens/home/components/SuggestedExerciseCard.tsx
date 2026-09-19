@@ -18,7 +18,13 @@ interface SuggestedExerciseCardProps {
 export const SuggestedExerciseCard: React.FC<SuggestedExerciseCardProps> = ({ exercise, onPress }) => {
   useLanguage();
   return (
-    <TouchableOpacity style={styles.suggestedCardWrapper} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.suggestedCardWrapper}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Open ${exercise.name}`}
+      accessibilityHint={`Start ${exercise.duration_minutes} minute exercise`}
+    >
       <Card style={styles.suggestedCard}>
         <View style={styles.suggestedContent}>
           <View style={[styles.suggestedIcon, styles.suggestedIconEnhanced]}>
@@ -41,9 +47,9 @@ export const SuggestedExerciseCard: React.FC<SuggestedExerciseCardProps> = ({ ex
 const styles = StyleSheet.create({
   suggestedCardWrapper: {
     backgroundColor: Colors.backgroundElevated,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
     borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   suggestedCard: {
     backgroundColor: 'transparent',
@@ -62,11 +68,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   suggestedIconEnhanced: {
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   suggestedInfo: {
     flex: 1,

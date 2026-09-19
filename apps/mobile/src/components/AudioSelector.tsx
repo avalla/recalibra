@@ -652,8 +652,8 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     backgroundColor: Colors.backgroundCard,
     borderRadius: BorderRadius.lg,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   benefitsHeader: {
     flexDirection: 'row',
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   benefitsBoxRecommended: {
-    borderLeftColor: Colors.success,
+    borderColor: Colors.success,
   },
   recommendedBadge: {
     flexDirection: 'row',

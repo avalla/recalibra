@@ -9,12 +9,14 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Button } from '../../components';
 import { useScreening } from '../../hooks';
 
 export const ScreeningStressScreen: React.FC = () => {
   useLanguage();
+  const navigation = useNavigation<any>();
   const { saveScreeningProfile, isLoading } = useScreening();
   const [stressLevel, setStressLevel] = useState(5);
 
@@ -31,9 +33,18 @@ export const ScreeningStressScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+        accessibilityRole="button"
+        accessibilityLabel={tr("Go back")}
+      >
+        <Text style={styles.backButtonText}>‹</Text>
+      </TouchableOpacity>
+
       {/* Progress Indicator */}
       <View style={styles.progressContainer}>
-        {[0, 1, 2, 3].map((index) => (
+        {[0, 1, 2].map((index) => (
           <View
             key={index}
             style={[
@@ -66,6 +77,9 @@ export const ScreeningStressScreen: React.FC = () => {
                 stressLevel === item.level && styles.stressOptionActive,
               ]}
               onPress={() => setStressLevel(item.level)}
+              accessibilityRole="radio"
+              accessibilityLabel={`${item.label}, ${tr("stress level")} ${item.level}`}
+              accessibilityState={{ selected: stressLevel === item.level }}
             >
               <Text style={styles.stressEmoji}>{item.emoji}</Text>
               <Text style={[
@@ -90,6 +104,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.lg,
+  },
+  backButton: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  backButtonText: {
+    color: Colors.textPrimary,
+    fontSize: 32,
+    lineHeight: 36,
   },
   progressContainer: {
     flexDirection: 'row',

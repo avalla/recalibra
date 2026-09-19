@@ -91,25 +91,45 @@ export const ProgressScreen: React.FC = () => {
     };
   }, [filteredSessions]);
 
-  // Get weekly chart data
-  const weeklyData = useMemo(() => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  // Build chart data from the selected period so the range tabs change the visualization too.
+  const chartData = useMemo(() => {
     const now = new Date();
-    const dayOfWeek = now.getDay();
+    const getPoint = (label: string, start: Date, end: Date) => {
+      const periodSessions = filteredSessions.filter((session) => {
+        const createdAt = new Date(session.created_at);
+        return session.completed_at && createdAt >= start && createdAt < end;
+      });
+      const avgStress = summarizeSessionStress(periodSessions).averagePostStress;
+      return { label, hasSession: periodSessions.length > 0, avgStress };
+    };
 
-    return days.map((day, index) => {
-      const adjustedIndex = (index + 1) % 7; // Convert Mon=0 to Sun=6
-      const daysSinceStart = (dayOfWeek - adjustedIndex + 7) % 7;
-      const targetDate = new Date(now.getTime() - daysSinceStart * 24 * 60 * 60 * 1000);
-      const dateStr = targetDate.toISOString().split('T')[0] ?? '';
+    if (timeRange === 'week') {
+      const weekStart = new Date(now);
+      const dayOffset = (now.getDay() + 6) % 7;
+      weekStart.setDate(now.getDate() - dayOffset);
+      weekStart.setHours(0, 0, 0, 0);
 
-      const daySessions = sessions.filter((s) => s.created_at.startsWith(dateStr) && s.completed_at);
-      const hasSession = daySessions.length > 0;
-      const avgStress = summarizeSessionStress(daySessions).averagePostStress;
+      return Array.from({ length: 7 }, (_, index) => {
+        const start = new Date(weekStart);
+        start.setDate(weekStart.getDate() + index);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 1);
+        return getPoint(localizedDate(start, { weekday: 'short' }), start, end);
+      });
+    }
 
-      return { day: localizedDate(targetDate, { weekday: 'short' }), hasSession, avgStress };
+    const bucketSizeDays = timeRange === 'month' ? 7 : 30;
+    const bucketCount = timeRange === 'month' ? 4 : 3;
+
+    return Array.from({ length: bucketCount }, (_, index) => {
+      const end = new Date(now);
+      end.setHours(24, 0, 0, 0);
+      end.setDate(end.getDate() - (bucketCount - index - 1) * bucketSizeDays);
+      const start = new Date(end);
+      start.setDate(end.getDate() - bucketSizeDays);
+      return getPoint(timeRange === 'month' ? `W${index + 1}` : `M${index + 1}`, start, end);
     });
-  }, [sessions, language]);
+  }, [filteredSessions, timeRange, language]);
 
   // Calculate current streak
   const streak = useMemo(() => {
@@ -222,6 +242,9 @@ export const ProgressScreen: React.FC = () => {
                 timeRange === range && styles.timeRangeTabActive,
               ]}
               onPress={() => setTimeRange(range)}
+              accessibilityRole="radio"
+              accessibilityLabel={range === 'week' ? tr("Week") : range === 'month' ? tr("Month") : tr("90 days")}
+              accessibilityState={{ selected: timeRange === range }}
             >
               <Text
                 style={[
@@ -312,27 +335,29 @@ export const ProgressScreen: React.FC = () => {
           {/* Weekly Chart */}
           <View style={styles.chartContainer}>
             <View style={styles.chartBars}>
-              {weeklyData.map((data, index) => (
+              {chartData.map((data, index) => (
                 <View key={index} style={styles.chartBarContainer}>
                   <View
                     style={[
                       styles.chartBar,
                       data.avgStress !== null && styles.chartBarActive,
-                      data.avgStress !== null && { height: data.avgStress * 10 }
+                      data.avgStress !== null && { height: Math.max(20, (10 - data.avgStress) * 10) }
                     ]}
                   />
                 </View>
               ))}
             </View>
             <View style={styles.chartDays}>
-              {weeklyData.map((data, index) => (
+              {chartData.map((data, index) => (
                 <Text key={index} style={[styles.chartDay, data.hasSession && styles.chartDayActive]}>
-                  {data.day}
+                  {data.label}
                 </Text>
               ))}
             </View>
           </View>
-          <Text style={styles.chartCaption}>{tr("Taller bars mean calmer days.")}</Text>
+          <Text style={styles.chartCaption}>
+            {tr("Taller bars mean calmer {{period}}.", { period: timeRange === 'week' ? tr("days") : tr("periods") })}
+          </Text>
         </Card>
 
         {/* HRV Trend (not yet available) */}

@@ -27,6 +27,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
+import { getGradient } from '../../constants/gradients';
 import { useSessions, useAudio, getAudioRecommendation, useHaptics } from '../../hooks';
 import type { AudioPresetKey, ExerciseCategory } from '../../hooks';
 import type { RootStackParamList, BreathingPattern } from '../../types';
@@ -231,35 +232,22 @@ export const ExerciseSessionScreen: React.FC = () => {
         customContent: 'breathingPattern',
         icon: 'time-outline',
       },
-      {
-        title: exerciseInfo.origin,
-        subtitle: tr("A short story behind this practice"),
-        customContent: 'originStory',
-        icon: 'compass-outline',
-      },
     ];
 
-    exerciseSteps.forEach((step: string, index: number) => {
-      pages.push({
-        title: tr("Step {{step}}", { step: index + 1 }),
-        subtitle: tr("Follow along"),
-        customContent: 'singleStep',
-        payload: { text: step },
-        icon: 'list-outline',
-      });
+    pages.push({
+      title: tr("Your plan"),
+      subtitle: tr("Follow along during the session"),
+      description: [
+        ...exerciseSteps.map((step: string, index: number) => `${index + 1}. ${step}`),
+        exerciseTips.length > 0
+          ? `${tr("Tips")}\n${exerciseTips.map((tip: string) => `• ${tip}`).join('\n')}`
+          : '',
+      ].filter(Boolean).join('\n\n'),
+      icon: 'list-outline',
     });
 
-    if (exerciseTips.length > 0) {
-      pages.push({
-        title: tr("Tips"),
-        subtitle: tr("Small details that help"),
-        customContent: 'tipsList',
-        icon: 'bulb-outline',
-      });
-    }
-
-    return pages.filter((page) => (isBreathingExercise || page.customContent !== 'breathingPattern') && (exerciseInfo.history || page.customContent !== 'originStory') && (exerciseInfo.benefits.length || page.title !== 'Benefits'));
-  }, [exerciseName, exerciseInfo.benefits, exerciseInfo.history, exerciseInfo.origin, exerciseSteps, exerciseTips, isBreathingExercise]);
+    return pages.filter((page) => (isBreathingExercise || page.customContent !== 'breathingPattern') && (exerciseInfo.benefits.length || page.title !== tr("Benefits")));
+  }, [exerciseName, exerciseInfo.benefits, exerciseSteps, exerciseTips, isBreathingExercise]);
 
   const handleNextPage = async () => {
     if (currentPage < onboardingPages.length - 1) {
@@ -1005,7 +993,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                 onPress={handleNextPage}
               >
                 <LinearGradient
-                  colors={['#2DD4BF', '#14B8A6'] as any}
+                  colors={getGradient('primary') as any}
                   style={styles.nextButtonGradient}
                 >
                   <View style={styles.nextButtonContent}>
@@ -1288,7 +1276,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                   }}
                 >
                   {/* @ts-ignore - LinearGradient type issue with React 19 */}
-                  <LinearGradient colors={['#2DD4BF', '#14B8A6'] as any} style={styles.primaryCtaGradient}>
+                  <LinearGradient colors={getGradient('primary') as any} style={styles.primaryCtaGradient}>
                     <Ionicons
                       name={preSessionStep < 3 ? 'chevron-forward' : 'play'}
                       size={20}

@@ -131,12 +131,8 @@ const styles = StyleSheet.create({
   primary: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: 'rgba(45, 212, 191, 0.18)',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    elevation: 6,
+    borderColor: Colors.border,
+    elevation: 2,
   },
   secondary: {
     backgroundColor: Colors.backgroundCard,

@@ -67,6 +67,15 @@ export const ScreeningHealthScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
+        <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
+      </TouchableOpacity>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -74,7 +83,7 @@ export const ScreeningHealthScreen: React.FC = () => {
       >
         {/* Progress Indicator */}
         <View style={styles.progressContainer}>
-          {[0, 1, 2, 3].map((index) => (
+          {[0, 1, 2].map((index) => (
             <View
               key={index}
               style={[
@@ -100,6 +109,9 @@ export const ScreeningHealthScreen: React.FC = () => {
                 selectedConditions.has(condition.id) && styles.optionButtonSelected,
               ]}
               onPress={() => toggleCondition(condition.id)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: selectedConditions.has(condition.id) }}
+              accessibilityLabel={condition.label}
             >
               <View
                 style={[
@@ -145,6 +157,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  backButton: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
   },
   scrollView: {
     flex: 1,

@@ -26,6 +26,12 @@ export const Colors = {
   error: '#EF4444',
   info: '#3B82F6',
 
+  // Exercise category colors
+  categoryBreathing: '#4ECDC4',
+  categoryWater: '#45B7D1',
+  categoryMovement: '#96CEB4',
+  categorySensory: '#DDA0DD',
+
   // Stress level colors
   stressLow: '#22C55E',
   stressMedium: '#F59E0B',

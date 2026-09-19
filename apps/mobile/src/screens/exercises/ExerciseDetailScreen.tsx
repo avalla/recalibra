@@ -92,7 +92,12 @@ export const ExerciseDetailScreen: React.FC = () => {
         </View>
 
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={handleBack}
+            style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel={tr("Go back")}
+          >
             <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
@@ -146,10 +151,23 @@ export const ExerciseDetailScreen: React.FC = () => {
 
       <View style={styles.footerContainer}>
         <SafeAreaView style={styles.footerContent} edges={['bottom']}>
-          <TouchableOpacity style={styles.primaryCta} onPress={handleStartSession} activeOpacity={0.9}>
+          <TouchableOpacity
+            style={styles.primaryCta}
+            onPress={handleStartSession}
+            activeOpacity={0.9}
+            accessibilityRole="button"
+            accessibilityLabel={tr("Start session")}
+          >
             <Text style={styles.primaryCtaText}>{tr("Start Session")}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.favoriteCta} activeOpacity={0.85} onPress={handleToggleFavorite}>
+          <TouchableOpacity
+            style={styles.favoriteCta}
+            activeOpacity={0.85}
+            onPress={handleToggleFavorite}
+            accessibilityRole="button"
+            accessibilityLabel={exercise.is_favorite ? tr("Remove from favorites") : tr("Add to favorites")}
+            accessibilityState={{ selected: exercise.is_favorite }}
+          >
             <Ionicons name={exercise.is_favorite ? 'heart' : 'heart-outline'} size={22} color={Colors.primary} />
           </TouchableOpacity>
         </SafeAreaView>
@@ -222,14 +240,14 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: BorderRadius.full,
-    backgroundColor: 'rgba(30, 58, 52, 0.9)',
+    backgroundColor: Colors.backgroundCard,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(148, 163, 184, 0.16)',
+    borderColor: Colors.border,
   },
   titleSection: {
     paddingHorizontal: Spacing.lg,
@@ -249,12 +267,12 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
   },
   tagPill: {
-    backgroundColor: 'rgba(45, 212, 191, 0.14)',
+    backgroundColor: Colors.backgroundElevated,
     borderRadius: BorderRadius.full,
     paddingHorizontal: Spacing.md,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: 'rgba(45, 212, 191, 0.18)',
+    borderColor: Colors.border,
   },
   tagText: {
     color: Colors.primary,

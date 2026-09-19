@@ -23,10 +23,10 @@ import { EMPTY_CATALOG_FILTERS, filterCatalog, type CatalogFilters } from '../..
 import type { ExerciseWithFavorite, ExerciseCategory } from '../../types';
 
 const CATEGORIES: { id: ExerciseCategory; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
-  { id: 'breathing', label: 'Breathing', icon: 'leaf-outline', color: '#4ECDC4' },
-  { id: 'water', label: 'Water', icon: 'water-outline', color: '#45B7D1' },
-  { id: 'movement', label: 'Movement', icon: 'body-outline', color: '#96CEB4' },
-  { id: 'sensory', label: 'Sensory', icon: 'ear-outline', color: '#DDA0DD' },
+  { id: 'breathing', label: 'Breathing', icon: 'leaf-outline', color: Colors.categoryBreathing },
+  { id: 'water', label: 'Water', icon: 'water-outline', color: Colors.categoryWater },
+  { id: 'movement', label: 'Movement', icon: 'body-outline', color: Colors.categoryMovement },
+  { id: 'sensory', label: 'Sensory', icon: 'ear-outline', color: Colors.categorySensory },
 ];
 
 const CATEGORY_TABS: { id: ExerciseCategory | 'all'; label: string }[] = [
@@ -54,6 +54,8 @@ export const ExerciseCatalogScreen: React.FC = () => {
       <Card
         style={{ ...styles.shelfCard, width: Math.min(width - Spacing.lg * 2, 320) }}
         onPress={() => handleExercisePress(item)}
+        accessibilityLabel={tr("Open {{name}}", { name: item.name })}
+        accessibilityHint={tr("Opens exercise details")}
       >
         <View style={styles.cardThumbnailWrap}>
           <ExerciseIllustration exercise={item} variant="card" style={styles.cardThumbnail} />
@@ -62,7 +64,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
           <View style={styles.tag}>
             <Text style={styles.tagText}>{item.duration_minutes} {tr("min")}</Text>
           </View>
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel={item.is_favorite ? tr("Remove {{name}} from favorites", { name: item.name }) : tr("Add {{name}} to favorites", { name: item.name })} style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={item.is_favorite ? tr("Remove {{name}} from favorites", { name: item.name }) : tr("Add {{name}} to favorites", { name: item.name })} accessibilityState={{ selected: item.is_favorite }} style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
             <Ionicons
               name={item.is_favorite ? 'heart' : 'heart-outline'}
               size={18}
@@ -98,6 +100,8 @@ export const ExerciseCatalogScreen: React.FC = () => {
         <Card
           style={styles.gridCard}
           onPress={() => handleExercisePress(item)}
+          accessibilityLabel={tr("Open {{name}}", { name: item.name })}
+          accessibilityHint={tr("Opens exercise details")}
         >
           <View style={styles.cardThumbnailWrapGrid}>
             <ExerciseIllustration exercise={item} variant="card" style={styles.cardThumbnail} />
@@ -106,7 +110,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
             <View style={styles.tag}>
               <Text style={styles.tagText}>{item.duration_minutes} {tr("min")}</Text>
             </View>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={item.is_favorite ? tr("Remove {{name}} from favorites", { name: item.name }) : tr("Add {{name}} to favorites", { name: item.name })} style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={item.is_favorite ? tr("Remove {{name}} from favorites", { name: item.name }) : tr("Add {{name}} to favorites", { name: item.name })} accessibilityState={{ selected: item.is_favorite }} style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
               <Ionicons
                 name={item.is_favorite ? 'heart' : 'heart-outline'}
                 size={18}

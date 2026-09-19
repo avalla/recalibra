@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, ScrollView, RefreshControl, View } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Colors, FontFamily, FontSize, FontWeight, Spacing } from '../../constants';
 import { Screen } from '../../components';
@@ -121,26 +120,26 @@ export const HomeScreen: React.FC = () => {
           />
         }
       >
-        <Animated.View entering={FadeInDown.delay(80).duration(450)}>
+        <View>
           <HomeHeader onQuickStartPress={handleQuickStart} />
-        </Animated.View>
+        </View>
 
-        <Animated.View entering={FadeInDown.delay(160).duration(450)}>
+        <View>
           <GreetingCard userName={userName} greetingPhrase={greetingPhrase} />
-        </Animated.View>
+        </View>
 
         {featuredJourney ? (
-          <Animated.View entering={FadeInDown.delay(200).duration(450)}>
+          <View>
             <JourneyCard
               journey={featuredJourney}
               progress={journeyProgress}
               durationMinutes={getJourneyDurationMinutes(featuredJourney, exercises)}
               onPress={openJourney}
             />
-          </Animated.View>
+          </View>
         ) : null}
 
-        <Animated.View entering={FadeInDown.delay(240).duration(450)}>
+        <View>
           <FeelingEntry
             exercises={exercises}
             lastStress={lastStress}
@@ -149,7 +148,7 @@ export const HomeScreen: React.FC = () => {
             onBegin={beginSession}
             onBrowse={openCatalog}
           />
-        </Animated.View>
+        </View>
       </ScrollView>
     </Screen>
   );

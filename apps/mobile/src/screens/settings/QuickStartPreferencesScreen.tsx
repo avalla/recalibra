@@ -106,6 +106,9 @@ export const QuickStartPreferencesScreen: React.FC = () => {
         onPress={() => setSelectedMode(mode)}
         activeOpacity={0.85}
         style={styles.optionWrapper}
+        accessibilityRole="radio"
+        accessibilityLabel={title}
+        accessibilityState={{ selected: isSelected }}
       >
         <Card
           style={cardStyle ? { ...styles.optionCard, ...cardStyle } : styles.optionCard}
@@ -163,6 +166,9 @@ export const QuickStartPreferencesScreen: React.FC = () => {
                   onPress={() => setFavoriteExerciseId(exercise.id)}
                   activeOpacity={0.85}
                   style={styles.favoriteItemWrapper}
+                  accessibilityRole="radio"
+                  accessibilityLabel={exercise.name}
+                  accessibilityState={{ selected: isSelected }}
                 >
                   <Card
                     variant="soft"
@@ -198,7 +204,13 @@ export const QuickStartPreferencesScreen: React.FC = () => {
   return (
     <Screen style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={0.8}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Close Quick Start"
+          style={styles.closeButton}
+        >
           <Ionicons name="close" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{tr("Quick Start")}</Text>
@@ -238,6 +250,9 @@ export const QuickStartPreferencesScreen: React.FC = () => {
           disabled={!canSave}
           activeOpacity={0.9}
           style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+          accessibilityRole="button"
+          accessibilityLabel={route.params?.from === 'home' ? 'Save and start' : 'Save'}
+          accessibilityState={{ disabled: !canSave }}
         >
           <Text style={styles.saveButtonText}>
             {route.params?.from === 'home' ? tr("Save & Start") : tr("Save")}
@@ -254,6 +269,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  closeButton: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   header: {
     flexDirection: 'row',

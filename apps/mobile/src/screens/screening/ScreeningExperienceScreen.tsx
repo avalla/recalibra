@@ -43,13 +43,18 @@ export const ScreeningExperienceScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
         <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
       </TouchableOpacity>
 
       {/* Progress Indicator */}
       <View style={styles.progressContainer}>
-        {[0, 1, 2, 3].map((index) => (
+        {[0, 1, 2].map((index) => (
           <View
             key={index}
             style={[
@@ -76,6 +81,9 @@ export const ScreeningExperienceScreen: React.FC = () => {
               selectedLevel === option.id && styles.optionButtonSelected,
             ]}
             onPress={() => setSelectedLevel(option.id)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: selectedLevel === option.id }}
+            accessibilityLabel={option.label}
           >
             <View style={styles.radioOuter}>
               {selectedLevel === option.id && <View style={styles.radioInner} />}
