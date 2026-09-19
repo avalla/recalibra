@@ -49,8 +49,17 @@ export type ExerciseFlowParamList = {
     tips?: string[];
     instructions?: { step: number; instruction: string }[];
     preStressLevel?: number;
+    journeyId?: string;
+    journeyChapterIndex?: number;
   };
-  PostSession: { sessionId: string; exerciseName: string; durationSeconds: number; preStressLevel: number };
+  PostSession: {
+    sessionId: string;
+    exerciseName: string;
+    durationSeconds: number;
+    preStressLevel: number;
+    journeyId?: string;
+    journeyChapterIndex?: number;
+  };
 };
 
 export type ExerciseStackParamList = {
@@ -80,6 +89,8 @@ export type RootStackParamList = {
   PostSession: ExerciseFlowParamList['PostSession'];
   Paywall: undefined;
   QuickStartPreferences: { from?: 'home' | 'settings' } | undefined;
+  JourneyDetail: { journeyId: string };
+  JourneyRunner: { journeyId: string; chapterIndex?: number; justCompleted?: boolean };
 };
 
 // Screen Props Types

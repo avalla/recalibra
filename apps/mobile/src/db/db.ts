@@ -6,6 +6,8 @@ import { buildUniqueSlugs } from '../data/slug';
 import { inferObjective } from '../utils/infer-objective';
 import { logger } from '../utils/logger';
 import { SCHEMA_SQL } from './schema';
+import { journeyDefinitions } from '../data/journeys';
+import { findInvalidJourneyExerciseSlugs } from '../features/journeys/state';
 
 const DB_NAME = 'recalibra_v3.db';
 
@@ -25,6 +27,14 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
 export async function initDb(): Promise<void> {
   const db = await getDb();
 
+  const invalidJourneySlugs = findInvalidJourneyExerciseSlugs(
+    journeyDefinitions,
+    seedExercises.map((exercise) => exercise.slug)
+  );
+  if (invalidJourneySlugs.length > 0) {
+    throw new Error(`Invalid journey exercise slugs: ${invalidJourneySlugs.join(', ')}`);
+  }
+
   await db.execAsync(SCHEMA_SQL);
 
   await ensureExercisesSlugColumn(db);
@@ -33,6 +43,7 @@ export async function initDb(): Promise<void> {
   await ensureExercisesMediaColumn(db);
 
   await ensureSeededExercises(db);
+  await ensureSeededJourneys(db);
   await ensureDefaults(db);
 
   if (__DEV__) {
@@ -46,6 +57,32 @@ export async function initDb(): Promise<void> {
       logger.debug(`initDb ok db=${DB_NAME}`, 'db');
     }
   }
+}
+
+async function ensureSeededJourneys(db: SQLite.SQLiteDatabase): Promise<void> {
+  const now = nowIso();
+
+  await db.withTransactionAsync(async () => {
+    for (const journey of journeyDefinitions) {
+      await db.runAsync(
+        `INSERT INTO journeys (id, slug, title, description, total_chapters, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(id) DO UPDATE SET
+           slug = excluded.slug,
+           title = excluded.title,
+           description = excluded.description,
+           total_chapters = excluded.total_chapters,
+           updated_at = excluded.updated_at`,
+        [journey.id, journey.slug, journey.title, journey.description, journey.chapters.length, now, now]
+      );
+      await db.runAsync(
+        `INSERT OR IGNORE INTO journey_progress
+          (journey_id, current_chapter, completed_chapters_json, updated_at)
+         VALUES (?, 0, '[]', ?)`,
+        [journey.id, now]
+      );
+    }
+  });
 }
 
 async function ensureSeededExercises(db: SQLite.SQLiteDatabase): Promise<void> {

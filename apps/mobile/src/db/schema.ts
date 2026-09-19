@@ -71,4 +71,24 @@ CREATE TABLE IF NOT EXISTS screening (
   initial_stress_level INTEGER NOT NULL,
   updated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS journeys (
+  id TEXT PRIMARY KEY NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  total_chapters INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS journey_progress (
+  journey_id TEXT PRIMARY KEY NOT NULL,
+  current_chapter INTEGER NOT NULL DEFAULT 0,
+  completed_chapters_json TEXT NOT NULL DEFAULT '[]',
+  last_started_at TEXT,
+  completed_at TEXT,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (journey_id) REFERENCES journeys(id) ON DELETE CASCADE
+);
 `;

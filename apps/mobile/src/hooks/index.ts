@@ -3,6 +3,7 @@ export { useSessions } from './useSessions';
 export { useAudio, AUDIO_PRESETS, getAudioRecommendation } from './useAudio';
 export { useScreening } from './useScreening';
 export { useNotifications } from './useNotifications';
+export { useJourney } from './useJourney';
 export { useGoals } from './useGoals';
 export { useSubscription, PREMIUM_FEATURES } from './useSubscription';
 export { useAppleHealth } from './useAppleHealth';

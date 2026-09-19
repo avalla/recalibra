@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, ScrollView, RefreshControl, Text } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Colors, FontFamily, FontSize, FontWeight, Spacing } from '../../constants';
-import { Screen } from '../../components';
+import { Button, Card, Screen } from '../../components';
 import { useAuth } from '../../contexts';
 import { useSessions, useExercises, useSubscription } from '../../hooks';
 import {
@@ -14,6 +14,7 @@ import {
   type QuickStartPreference,
 } from '../../utils/quick-start';
 import type { ExerciseWithFavorite } from '../../types';
+import { returnToCenterJourney } from '../../data/journeys';
 import { GREETING_PHRASES } from './home-constants';
 import { getUserFirstName } from './home-helpers';
 import { FeelingEntry, GreetingCard, HomeHeader } from './components';
@@ -123,7 +124,21 @@ export const HomeScreen: React.FC = () => {
           <GreetingCard userName={userName} greetingPhrase={greetingPhrase} />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(240).duration(450)}>
+        <Animated.View entering={FadeInDown.delay(220).duration(450)}>
+          <Card style={styles.journeyCard}>
+            <Text style={styles.journeyEyebrow}>PERCORSO GUIDATO</Text>
+            <Text style={styles.journeyTitle}>{returnToCenterJourney.title}</Text>
+            <Text style={styles.journeyDescription}>{returnToCenterJourney.description}</Text>
+            <Button
+              label="Apri il percorso"
+              size="sm"
+              variant="secondary"
+              onPress={() => navigation.navigate('JourneyDetail', { journeyId: returnToCenterJourney.id })}
+            />
+          </Card>
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(280).duration(450)}>
           <FeelingEntry
             exercises={exercises}
             lastStress={lastStress}
@@ -150,6 +165,29 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
+  },
+  journeyCard: {
+    marginTop: Spacing.xl,
+    backgroundColor: Colors.backgroundElevated,
+  },
+  journeyEyebrow: {
+    color: Colors.primary,
+    fontSize: FontSize.xs,
+    fontWeight: FontWeight.semibold,
+    letterSpacing: 0.8,
+  },
+  journeyTitle: {
+    color: Colors.textPrimary,
+    fontFamily: FontFamily.heading,
+    fontSize: FontSize.xl,
+    marginTop: Spacing.xs,
+  },
+  journeyDescription: {
+    color: Colors.textSecondary,
+    fontSize: FontSize.sm,
+    lineHeight: 20,
+    marginBottom: Spacing.md,
+    marginTop: Spacing.xs,
   },
   sectionTitle: {
     color: Colors.textSecondary,

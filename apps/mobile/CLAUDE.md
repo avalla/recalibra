@@ -26,7 +26,7 @@ data/          # seed data (exercises) + slug helpers
 hooks/         # useExercises, useSessions, useGoals, useScreening, useSubscription,
                #   useAppleHealth, useAudio, useHaptics, useNotifications
 navigation/    # Root / MainTab / Screening / Exercise navigators (type your route params)
-screens/       # auth, screening, home, exercises, progress, profile, settings, subscription
+screens/       # auth, screening, home, exercises, journeys, progress, profile, settings, subscription
 types/         # shared TS types
 utils/         # logger, errorHandler, cache, network, device, permissions, sessionManager, …
 ```
@@ -34,7 +34,7 @@ utils/         # logger, errorHandler, cache, network, device, permissions, sess
 ## Data layer (SQLite)
 
 - DB file: `recalibra_v3.db`. Schema in `db/schema.ts`; tables: `exercises`, `favorites`,
-  `sessions`, `goals`, `reminders`, `screening`.
+  `sessions`, `goals`, `reminders`, `screening`, `journeys`, `journey_progress`.
 - `db/db.ts` runs `SCHEMA_SQL`, then idempotent column/back-fill migrations
   (`ensure*Column`/`ensure*Backfill`) and seeds exercises + defaults on init. **Add new
   schema changes the same way** — additive, idempotent migrations that won't drop user data.

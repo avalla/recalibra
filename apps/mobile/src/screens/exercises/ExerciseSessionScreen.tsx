@@ -181,6 +181,8 @@ export const ExerciseSessionScreen: React.FC = () => {
     tips: dbTips,
     instructions: dbInstructions,
     preStressLevel: entryPreStress,
+    journeyId,
+    journeyChapterIndex,
   } = route.params;
   // When the feeling-first Home captured stress at entry, skip the in-session
   // stress step entirely (the post-session still measures the delta).
@@ -976,9 +978,11 @@ export const ExerciseSessionScreen: React.FC = () => {
         exerciseName,
         durationSeconds: elapsedTime,
         preStressLevel,
+        journeyId,
+        journeyChapterIndex,
       });
     }
-  }, [elapsedTime, sessionDuration, sessionId, sessionState]);
+  }, [elapsedTime, sessionDuration, sessionId, sessionState, journeyId, journeyChapterIndex]);
 
   // Countdown timer
   useEffect(() => {

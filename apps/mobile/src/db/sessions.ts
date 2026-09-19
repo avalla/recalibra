@@ -1,5 +1,6 @@
-import type { Session, SessionWithExercise } from '../types';
+import type { JourneyProgress, Session, SessionWithExercise } from '../types';
 import { getDb } from './db';
+import { completeJourneyChapterInTransaction } from './journeys';
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -115,12 +116,51 @@ export async function completeSession(input: {
 }): Promise<{ error: Error | null }> {
   try {
     const db = await getDb();
-    await db.runAsync(
-      'UPDATE sessions SET completed_at = ?, duration_seconds = ?, post_stress_level = ?, notes = ? WHERE id = ?',
+    const result = await db.runAsync(
+      'UPDATE sessions SET completed_at = COALESCE(completed_at, ?), duration_seconds = ?, post_stress_level = ?, notes = ? WHERE id = ?',
       [nowIso(), Math.max(0, Math.floor(input.durationSeconds)), input.postStressLevel, input.notes ?? null, input.sessionId]
     );
+    if (result.changes !== 1) {
+      throw new Error('Session completion did not update exactly one session');
+    }
     return { error: null };
   } catch (err) {
     return { error: err as Error };
+  }
+}
+
+
+export async function completeSessionAndJourney(input: {
+  sessionId: string;
+  durationSeconds: number;
+  postStressLevel: number;
+  notes?: string;
+  journeyId: string;
+  chapterIndex: number;
+}): Promise<{ progress: JourneyProgress | null; error: Error | null }> {
+  try {
+    const db = await getDb();
+    const completionTimestamp = nowIso();
+    let progress: JourneyProgress | null = null;
+
+    await db.withTransactionAsync(async () => {
+      const result = await db.runAsync(
+        'UPDATE sessions SET completed_at = COALESCE(completed_at, ?), duration_seconds = ?, post_stress_level = ?, notes = ? WHERE id = ?',
+        [completionTimestamp, Math.max(0, Math.floor(input.durationSeconds)), input.postStressLevel, input.notes ?? null, input.sessionId]
+      );
+      if (result.changes !== 1) {
+        throw new Error('Session completion did not update exactly one session');
+      }
+      progress = await completeJourneyChapterInTransaction(
+        db,
+        input.journeyId,
+        input.chapterIndex,
+        completionTimestamp
+      );
+    });
+
+    return { progress, error: null };
+  } catch (err) {
+    return { progress: null, error: err as Error };
   }
 }

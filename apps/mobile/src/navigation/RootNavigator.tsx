@@ -6,7 +6,13 @@ import { ScreeningNavigator } from './ScreeningNavigator';
 import { PaywallScreen } from '../screens/subscription';
 import { OnboardingScreen } from '../screens/auth/OnboardingScreen';
 import { QuickStartPreferencesScreen } from '../screens/settings';
-import { ExerciseDetailScreen, ExerciseSessionScreen, PostSessionScreen } from '../screens';
+import {
+  ExerciseDetailScreen,
+  ExerciseSessionScreen,
+  JourneyDetailScreen,
+  JourneyRunnerScreen,
+  PostSessionScreen,
+} from '../screens';
 import { useAuth } from '../contexts';
 import { Colors } from '../constants';
 import type { RootStackParamList } from '../types';
@@ -41,6 +47,8 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
       <Stack.Screen name="ExerciseSession" component={ExerciseSessionScreen} />
       <Stack.Screen name="PostSession" component={PostSessionScreen} />
+      <Stack.Screen name="JourneyDetail" component={JourneyDetailScreen} />
+      <Stack.Screen name="JourneyRunner" component={JourneyRunnerScreen} />
 
       <Stack.Screen name="Screening" component={ScreeningNavigator} />
       <Stack.Screen 
