@@ -116,10 +116,13 @@ export async function completeSession(input: {
 }): Promise<{ error: Error | null }> {
   try {
     const db = await getDb();
-    await db.runAsync(
+    const result = await db.runAsync(
       'UPDATE sessions SET completed_at = COALESCE(completed_at, ?), duration_seconds = ?, post_stress_level = ?, notes = ? WHERE id = ?',
       [nowIso(), Math.max(0, Math.floor(input.durationSeconds)), input.postStressLevel, input.notes ?? null, input.sessionId]
     );
+    if (result.changes !== 1) {
+      throw new Error('Session completion did not update exactly one session');
+    }
     return { error: null };
   } catch (err) {
     return { error: err as Error };
@@ -141,10 +144,13 @@ export async function completeSessionAndJourney(input: {
     let progress: JourneyProgress | null = null;
 
     await db.withTransactionAsync(async () => {
-      await db.runAsync(
+      const result = await db.runAsync(
         'UPDATE sessions SET completed_at = COALESCE(completed_at, ?), duration_seconds = ?, post_stress_level = ?, notes = ? WHERE id = ?',
         [completionTimestamp, Math.max(0, Math.floor(input.durationSeconds)), input.postStressLevel, input.notes ?? null, input.sessionId]
       );
+      if (result.changes !== 1) {
+        throw new Error('Session completion did not update exactly one session');
+      }
       progress = await completeJourneyChapterInTransaction(
         db,
         input.journeyId,

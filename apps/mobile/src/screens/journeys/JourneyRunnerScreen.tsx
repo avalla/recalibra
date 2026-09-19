@@ -18,18 +18,19 @@ export const JourneyRunnerScreen: React.FC = () => {
   const navigation = useNavigation<Navigation>();
   const route = useRoute<Route>();
   const journey = route.params.journeyId === returnToCenterJourney.id ? returnToCenterJourney : null;
-  const { progress, begin } = useJourney(route.params.journeyId);
-  const { exercises, isLoading } = useExercises();
+  const { progress, begin, isLoading: isJourneyLoading } = useJourney(route.params.journeyId);
+  const { exercises, isLoading: isExercisesLoading } = useExercises();
   const { canAccessExercise, presentPaywall, isLoading: isSubscriptionLoading } = useSubscription();
 
   const chapterCount = journey?.chapters.length ?? 0;
-  const defaultChapter = getJourneyEntryChapter(progress, chapterCount);
-  const chapterIndex = Math.max(0, Math.min(
-    route.params.chapterIndex ?? defaultChapter,
-    progress?.currentChapter ?? 0,
-    Math.max(0, chapterCount - 1)
-  ));
-  const chapter = journey?.chapters[chapterIndex];
+  const chapterIndex = progress
+    ? Math.max(0, Math.min(
+        route.params.chapterIndex ?? getJourneyEntryChapter(progress, chapterCount),
+        progress.currentChapter,
+        Math.max(0, chapterCount - 1)
+      ))
+    : null;
+  const chapter = chapterIndex === null ? undefined : journey?.chapters[chapterIndex];
   const exercise = useMemo(
     () => exercises.find((item) => item.slug === chapter?.exerciseSlug),
     [chapter?.exerciseSlug, exercises]
@@ -38,6 +39,7 @@ export const JourneyRunnerScreen: React.FC = () => {
   useEffect(() => {
     if (
       progress &&
+      !isJourneyLoading &&
       exercise &&
       !isSubscriptionLoading &&
       canAccessExercise(exercise.slug, exercise.is_premium) &&
@@ -45,9 +47,19 @@ export const JourneyRunnerScreen: React.FC = () => {
     ) {
       begin();
     }
-  }, [begin, canAccessExercise, exercise, isSubscriptionLoading, progress]);
+  }, [begin, canAccessExercise, exercise, isJourneyLoading, isSubscriptionLoading, progress]);
 
-  if (!journey || !chapter) {
+  if (isJourneyLoading) {
+    return (
+      <Screen style={styles.container}>
+        <Text style={styles.loadingText} accessibilityLiveRegion="polite">
+          Caricamento del percorso…
+        </Text>
+      </Screen>
+    );
+  }
+
+  if (!journey || !chapter || chapterIndex === null) {
     return (
       <Screen style={styles.container}>
         <Text style={styles.errorText}>Capitolo non disponibile.</Text>
@@ -69,7 +81,7 @@ export const JourneyRunnerScreen: React.FC = () => {
     });
   };
 
-  const exerciseUnavailable = !isLoading && !exercise;
+  const exerciseUnavailable = !isExercisesLoading && !exercise;
 
   return (
     <Screen style={styles.container} edges={['top']}>
@@ -105,9 +117,9 @@ export const JourneyRunnerScreen: React.FC = () => {
         ) : null}
 
         <Button
-          label={isLoading || isSubscriptionLoading ? 'Caricamento…' : exerciseUnavailable ? 'Pratica non disponibile' : 'Inizia il capitolo'}
+          label={isExercisesLoading || isSubscriptionLoading ? 'Caricamento…' : exerciseUnavailable ? 'Pratica non disponibile' : 'Inizia il capitolo'}
           onPress={startChapter}
-          disabled={isLoading || isSubscriptionLoading || !exercise}
+          disabled={isExercisesLoading || isSubscriptionLoading || !exercise}
         />
       </ScrollView>
     </Screen>
@@ -127,4 +139,5 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.md, marginVertical: Spacing.xl },
   meta: { color: Colors.textMuted, fontSize: FontSize.sm, flex: 1 },
   errorText: { color: Colors.warning, fontSize: FontSize.md },
+  loadingText: { color: Colors.textSecondary, fontSize: FontSize.md },
 });
