@@ -1,3 +1,5 @@
+import { useLanguage } from '../../../i18n/LanguageProvider';
+import { tr } from '../../../i18n/core';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,17 +13,18 @@ interface TodayStatusCardsProps {
 }
 
 export const TodayStatusCards: React.FC<TodayStatusCardsProps> = ({ totalSessions, totalMinutes }) => {
+  useLanguage();
   return (
     <View style={styles.statusCards}>
       <Card style={styles.statusCardEnhanced}>
         <Ionicons name="fitness-outline" size={20} color={Colors.primary} style={styles.statusIcon} />
-        <Text style={styles.statusLabel}>Sessions</Text>
+        <Text style={styles.statusLabel}>{tr("Sessions")}</Text>
         <Text style={styles.statusValue}>{totalSessions}</Text>
         <View style={styles.statusAccent} />
       </Card>
       <Card style={styles.statusCardEnhanced}>
         <Ionicons name="time-outline" size={20} color={Colors.primary} style={styles.statusIcon} />
-        <Text style={styles.statusLabel}>Minutes</Text>
+        <Text style={styles.statusLabel}>{tr("Minutes")}</Text>
         <Text style={styles.statusValue}>{totalMinutes}</Text>
         <View style={styles.statusAccent} />
       </Card>

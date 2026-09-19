@@ -1,3 +1,5 @@
+import { useLanguage } from '../i18n/LanguageProvider';
+import { tr } from '../i18n/core';
 import React from 'react';
 import {
   View,
@@ -77,10 +79,11 @@ interface MoodSelectorProps {
 }
 
 export const MoodSelector: React.FC<MoodSelectorProps> = ({ onMoodSelect }) => {
+  useLanguage();
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>How are you feeling?</Text>
-      <Text style={styles.subtitle}>Choose an exercise that matches your mood</Text>
+      <Text style={styles.title}>{tr("How are you feeling?")}</Text>
+      <Text style={styles.subtitle}>{tr("Choose an exercise that matches your mood")}</Text>
       
       <ScrollView
         horizontal
@@ -100,8 +103,8 @@ export const MoodSelector: React.FC<MoodSelectorProps> = ({ onMoodSelect }) => {
             />
             <View style={styles.moodContent}>
               <Text style={styles.moodEmoji}>{mood.emoji}</Text>
-              <Text style={styles.moodLabel}>{mood.label}</Text>
-              <Text style={styles.moodDescription}>{mood.quickDescription}</Text>
+              <Text style={styles.moodLabel}>{tr(mood.label)}</Text>
+              <Text style={styles.moodDescription}>{tr(mood.quickDescription)}</Text>
             </View>
           </TouchableOpacity>
         ))}

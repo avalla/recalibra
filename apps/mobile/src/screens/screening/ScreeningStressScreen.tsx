@@ -1,3 +1,5 @@
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
 import React, { useState } from 'react';
 import {
   View,
@@ -12,6 +14,7 @@ import { Button } from '../../components';
 import { useScreening } from '../../hooks';
 
 export const ScreeningStressScreen: React.FC = () => {
+  useLanguage();
   const { saveScreeningProfile, isLoading } = useScreening();
   const [stressLevel, setStressLevel] = useState(5);
 
@@ -19,7 +22,7 @@ export const ScreeningStressScreen: React.FC = () => {
     const { error } = await saveScreeningProfile({ initial_stress_level: stressLevel });
 
     if (error) {
-      Alert.alert('Error', 'Failed to save your profile. Please try again.');
+      Alert.alert(tr("Error"), tr("Failed to save your profile. Please try again."));
       return;
     }
 
@@ -43,19 +46,18 @@ export const ScreeningStressScreen: React.FC = () => {
 
       {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>How are you feeling right now?</Text>
+        <Text style={styles.title}>{tr("How are you feeling right now?")}</Text>
         <Text style={styles.subtitle}>
-          Select your current stress level
-        </Text>
+          {tr("Select your current stress level")}</Text>
 
         {/* Stress Options */}
         <View style={styles.stressOptions}>
           {[
-            { level: 1, emoji: '😌', label: 'Calm' },
-            { level: 3, emoji: '🙂', label: 'Good' },
-            { level: 5, emoji: '😐', label: 'Okay' },
-            { level: 7, emoji: '😟', label: 'Stressed' },
-            { level: 9, emoji: '😰', label: 'Very stressed' },
+            { level: 1, emoji: '😌', label: tr("Calm") },
+            { level: 3, emoji: '🙂', label: tr("Good") },
+            { level: 5, emoji: '😐', label: tr("Okay") },
+            { level: 7, emoji: '😟', label: tr("Stressed") },
+            { level: 9, emoji: '😰', label: tr("Very stressed") },
           ].map((item) => (
             <TouchableOpacity
               key={item.level}
@@ -77,7 +79,7 @@ export const ScreeningStressScreen: React.FC = () => {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Button label="Get Started" onPress={handleComplete} loading={isLoading} />
+        <Button label={tr("Get Started")} onPress={handleComplete} loading={isLoading} />
       </View>
     </SafeAreaView>
   );

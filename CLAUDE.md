@@ -80,3 +80,7 @@ There is **no test runner or linter wired up** yet. `bun test` works for plain T
 - Keep modules small and composable (DRY/KISS/YAGNI). Include loading & error states by default.
 
 See `apps/mobile/CLAUDE.md` for app-internal architecture details.
+
+<!-- >>> ai-office managed: canonical-project-instructions -->
+@AI-OFFICE.md
+<!-- <<< ai-office managed: canonical-project-instructions -->

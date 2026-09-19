@@ -1,3 +1,5 @@
+import { useLanguage } from '../i18n/LanguageProvider';
+import { tr } from '../i18n/core';
 import React, { Component, type ReactNode } from 'react';
 import {
   View,
@@ -21,8 +23,8 @@ interface ErrorBoundaryState {
   errorInfo: React.ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
+class LocalizedErrorBoundary extends Component<ErrorBoundaryProps & { language: string }, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps & { language: string }) {
     super(props);
     this.state = {
       hasError: false,
@@ -68,18 +70,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <View style={styles.container}>
           <View style={styles.content}>
             <Text style={styles.emoji}>😔</Text>
-            <Text style={styles.title}>Qualcosa è andato storto</Text>
+            <Text style={styles.title}>{tr("Qualcosa è andato storto")}</Text>
             <Text style={styles.message}>
-              Si è verificato un errore imprevisto. Prova a ricaricare l'app.
-            </Text>
+              {tr("Si è verificato un errore imprevisto. Prova a ricaricare l'app.")}</Text>
             
             <TouchableOpacity style={styles.button} onPress={this.handleRetry}>
-              <Text style={styles.buttonText}>Riprova</Text>
+              <Text style={styles.buttonText}>{tr("Riprova")}</Text>
             </TouchableOpacity>
 
             {__DEV__ && this.state.error && (
               <ScrollView style={styles.debugContainer}>
-                <Text style={styles.debugTitle}>Debug Info:</Text>
+                <Text style={styles.debugTitle}>{tr("Debug Info:")}</Text>
                 <Text style={styles.debugText}>
                   {this.state.error.name}: {this.state.error.message}
                 </Text>
@@ -97,6 +98,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     return this.props.children;
   }
+}
+
+export function ErrorBoundary(props: ErrorBoundaryProps) {
+  const { language } = useLanguage();
+  return <LocalizedErrorBoundary {...props} language={language} />;
 }
 
 const styles = StyleSheet.create({

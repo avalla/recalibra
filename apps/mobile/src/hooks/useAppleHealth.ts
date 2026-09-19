@@ -1,3 +1,4 @@
+import { tr } from '../i18n/core';
 import { useCallback, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { handleError, createError } from '../utils/errorHandler';
@@ -71,7 +72,7 @@ export const useAppleHealth = () => {
       AppleHealthKit.isAvailable((err: any, available: any) => {
         if (err) {
           logger.error('Error checking availability', err, 'AppleHealth');
-          setError('HealthKit not available');
+          setError(tr("HealthKit not available"));
           setIsAvailable(false);
         } else {
           logger.info(`HealthKit is ${available ? 'available' : 'not available'}`, 'AppleHealth');
@@ -82,7 +83,7 @@ export const useAppleHealth = () => {
       });
     } catch (e) {
       logger.error('HealthKit check failed', e as Error, 'AppleHealth');
-      setError('HealthKit initialization failed');
+      setError(tr("HealthKit initialization failed"));
       setIsAvailable(false);
       setIsLoading(false);
     }
@@ -91,7 +92,7 @@ export const useAppleHealth = () => {
   // Request authorization
   const requestAuthorization = useCallback(async (): Promise<boolean> => {
     if (!isAvailable || !AppleHealthKit) {
-      const error = createError('HealthKit not available', 'HEALTHKIT_NOT_AVAILABLE', 'warning');
+      const error = createError(tr("HealthKit not available"), 'HEALTHKIT_NOT_AVAILABLE', 'warning');
       handleError(error, 'requestAuthorization');
       logger.warn('HealthKit not available', 'AppleHealth');
       return false;
@@ -114,7 +115,7 @@ export const useAppleHealth = () => {
             'error'
           );
           handleError(error, 'requestAuthorization');
-          setError('Authorization failed');
+          setError(tr("Authorization failed"));
           setIsAuthorized(false);
           logger.error('Error requesting authorization', err, 'AppleHealth');
           resolve(false);

@@ -1,3 +1,7 @@
+import { formatNumber } from '../../i18n/core';
+import { LanguageSettings } from '../../components/LanguageSettings';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -14,8 +18,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Screen } from '../../components';
-import { useAuth } from '../../contexts';
-import { useSubscription } from '@/hooks';
 import { useAppleHealth } from '@/hooks';
 import { useHaptics } from '@/hooks';
 
@@ -58,7 +60,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
     }}
     accessibilityRole="button"
     accessibilityLabel={label}
-    accessibilityHint={hasSwitch ? 'Double tap to toggle' : undefined}
+    accessibilityHint={hasSwitch ? tr("Double tap to toggle") : undefined}
   >
     <View style={[styles.settingsIcon, { backgroundColor: Colors.backgroundLight }]}>
       <Ionicons name={icon} size={20} color={iconColor} />
@@ -82,9 +84,8 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
 );
 
 export const ProfileScreen: React.FC = () => {
-  useAuth();
+  useLanguage();
   const navigation = useNavigation<any>();
-  const { isPremium, subscription, presentPaywall, presentCustomerCenter } = useSubscription();
   const {
     isAvailable: healthAvailable,
     isAuthorized: healthAuthorized,
@@ -112,11 +113,11 @@ export const ProfileScreen: React.FC = () => {
   const handleHealthToggle = async (value: boolean) => {
     if (!value) {
       Alert.alert(
-        'Apple Health Connection',
-        'To manage Apple Health permissions, please use iOS Settings.',
+        tr("Apple Health Connection"),
+        tr("To manage Apple Health permissions, please use iOS Settings."),
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          { text: tr("Cancel"), style: 'cancel' },
+          { text: tr("Open Settings"), onPress: () => Linking.openSettings() },
         ]
       );
       return;
@@ -125,11 +126,11 @@ export const ProfileScreen: React.FC = () => {
       const success = await requestAuthorization();
       if (!success) {
         Alert.alert(
-          'Authorization Required',
-          'Please allow Recalibra to access Health data in Settings.',
+          tr("Authorization Required"),
+          tr("Please allow Recalibra to access Health data in Settings."),
           [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+            { text: tr("Cancel"), style: 'cancel' },
+            { text: tr("Open Settings"), onPress: () => Linking.openSettings() },
           ]
         );
       }
@@ -146,9 +147,9 @@ export const ProfileScreen: React.FC = () => {
 
   const handleMedicalDisclaimer = () => {
     Alert.alert(
-      'Medical Disclaimer',
-      'Recalibra is designed for general wellness and relaxation purposes only. It is not intended to diagnose, treat, cure, or prevent any disease or medical condition.\n\nThe breathing exercises provided should not replace professional medical advice. If you have any respiratory conditions, cardiovascular issues, or other health concerns, please consult your healthcare provider before using this app.\n\nIf you experience any discomfort, dizziness, or adverse effects during exercises, stop immediately and seek medical attention if necessary.',
-      [{ text: 'I Understand', style: 'default' }]
+      tr("Medical Disclaimer"),
+      tr("Recalibra is designed for general wellness and relaxation purposes only. It is not intended to diagnose, treat, cure, or prevent any disease or medical condition.\n\nThe breathing exercises provided should not replace professional medical advice. If you have any respiratory conditions, cardiovascular issues, or other health concerns, please consult your healthcare provider before using this app.\n\nIf you experience any discomfort, dizziness, or adverse effects during exercises, stop immediately and seek medical attention if necessary."),
+      [{ text: tr("I Understand"), style: 'default' }]
     );
   };
 
@@ -169,77 +170,34 @@ export const ProfileScreen: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.headerTitle}>{tr("Settings")}</Text>
         </View>
 
-        {/* Premium Section */}
-        {isPremium ? (
-          <View style={styles.premiumCard}>
-            <View style={styles.premiumBadge}>
-              <Ionicons name="star" size={16} color={Colors.warning} />
-              <Text style={styles.premiumBadgeText}>PREMIUM</Text>
-            </View>
-            <Text style={styles.premiumTitle}>You're Premium!</Text>
-            <Text style={styles.premiumSubtitle}>
-              {subscription?.plan === 'yearly' ? 'Yearly subscription' : 'Monthly subscription'}
-            </Text>
-            <TouchableOpacity
-              style={styles.manageButton}
-              onPress={presentCustomerCenter}
-            >
-              <Text style={styles.manageButtonText}>Manage Subscription</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.upgradeCard}
-            onPress={() => {
-              const parent = navigation.getParent?.();
-              if (parent?.navigate) {
-                parent.navigate('Paywall');
-                return;
-              }
-              navigation.navigate('Paywall');
-            }}
-          >
-            <View style={styles.upgradeContent}>
-              <Text style={styles.upgradeEmoji}>✨</Text>
-              <View style={styles.upgradeInfo}>
-                <Text style={styles.upgradeTitle}>Upgrade to Premium</Text>
-                <Text style={styles.upgradeSubtitle}>Unlock all exercises & features</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
-          </TouchableOpacity>
-        )}
-
         {/* Connections */}
-        <Text style={styles.sectionTitle}>Connections</Text>
+        <Text style={styles.sectionTitle}>{tr("Connections")}</Text>
         {Platform.OS === 'ios' && healthAvailable && (
           <View style={styles.settingsSection}>
             <SettingsItem
               icon="heart"
               iconColor={Colors.error}
-              label="Connect to Apple Health"
+              label={tr("Connect to Apple Health")}
               hasSwitch
               hasArrow={false}
               switchValue={healthAuthorized}
               onSwitchChange={handleHealthToggle}
             />
             <Text style={styles.healthDisclosure}>
-              Recalibra can read your Heart Rate Variability (HRV) from Apple Health to personalize stress
-              insights and will write mindful minutes to Health when you complete sessions.
-            </Text>
+              {tr("Recalibra can read your Heart Rate Variability (HRV) from Apple Health to personalize stress insights and will write mindful minutes to Health when you complete sessions.")}</Text>
             {healthAuthorized && (latestHRV || avgHRV) && (
               <View style={styles.hrvContainer}>
                 <View style={styles.hrvItem}>
-                  <Text style={styles.hrvLabel}>Latest HRV</Text>
-                  <Text style={styles.hrvValue}>{latestHRV ? `${latestHRV} ms` : '--'}</Text>
+                  <Text style={styles.hrvLabel}>{tr("Latest HRV")}</Text>
+                  <Text style={styles.hrvValue}>{latestHRV ? `${formatNumber(latestHRV)} ms` : '--'}</Text>
                 </View>
                 <View style={styles.hrvDivider} />
                 <View style={styles.hrvItem}>
-                  <Text style={styles.hrvLabel}>7-Day Avg</Text>
-                  <Text style={styles.hrvValue}>{avgHRV ? `${avgHRV} ms` : '--'}</Text>
+                  <Text style={styles.hrvLabel}>{tr("7-Day Avg")}</Text>
+                  <Text style={styles.hrvValue}>{avgHRV ? `${formatNumber(avgHRV)} ms` : '--'}</Text>
                 </View>
               </View>
             )}
@@ -247,18 +205,18 @@ export const ProfileScreen: React.FC = () => {
         )}
 
         {/* Preferences */}
-        <Text style={styles.sectionTitle}>Preferences</Text>
+        <Text style={styles.sectionTitle}>{tr("Preferences")}</Text>
         <View style={styles.settingsSection}>
           <SettingsItem
             icon="flash-outline"
             iconColor={Colors.primary}
-            label="Quick Start"
-            value="Configure"
+            label={tr("Quick Start")}
+            value={tr("Configure")}
             onPress={() => navigation.navigate('QuickStartPreferences', { from: 'settings' })}
           />
           <SettingsItem
             icon="phone-portrait-outline"
-            label="Haptic Feedback"
+            label={tr("Haptic Feedback")}
             hasSwitch
             hasArrow={false}
             switchValue={hapticEnabled}
@@ -266,22 +224,24 @@ export const ProfileScreen: React.FC = () => {
           />
         </View>
 
+        <View style={styles.settingsSection}><LanguageSettings /></View>
+
         {/* Data & Privacy */}
-        <Text style={styles.sectionTitle}>Data & Privacy</Text>
+        <Text style={styles.sectionTitle}>{tr("Data & Privacy")}</Text>
         <View style={styles.settingsSection}>
           <SettingsItem
             icon="medical-outline"
-            label="Medical Disclaimer"
+            label={tr("Medical Disclaimer")}
             onPress={handleMedicalDisclaimer}
           />
           <SettingsItem
             icon="shield-outline"
-            label="Privacy Policy"
+            label={tr("Privacy Policy")}
             onPress={handlePrivacyPolicy}
           />
           <SettingsItem
             icon="document-text-outline"
-            label="Terms of Use (EULA)"
+            label={tr("Terms of Use (EULA)")}
             onPress={handleTermsOfUse}
           />
         </View>
@@ -362,81 +322,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     paddingHorizontal: Spacing.md,
     paddingBottom: Spacing.sm,
-  },
-  // Premium styles
-  premiumCard: {
-    backgroundColor: Colors.warning + '15',
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.warning + '30',
-  },
-  premiumBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: Spacing.xs,
-  },
-  premiumBadgeText: {
-    color: Colors.warning,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.bold,
-  },
-  premiumTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-    fontFamily: FontFamily.heading,
-  },
-  premiumSubtitle: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-  },
-  upgradeCard: {
-    backgroundColor: Colors.primary + '15',
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.primary + '30',
-  },
-  upgradeContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  upgradeEmoji: {
-    fontSize: 32,
-    marginRight: Spacing.md,
-  },
-  upgradeInfo: {
-    flex: 1,
-  },
-  upgradeTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.bold,
-    fontFamily: FontFamily.heading,
-  },
-  upgradeSubtitle: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-  },
-  manageButton: {
-    marginTop: Spacing.sm,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    backgroundColor: Colors.backgroundLight,
-    borderRadius: BorderRadius.md,
-    alignSelf: 'flex-start',
-  },
-  manageButtonText: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.medium,
   },
   // HRV Display
   hrvContainer: {

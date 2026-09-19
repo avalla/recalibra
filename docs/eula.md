@@ -1,7 +1,7 @@
 # End User License Agreement (EULA) - Recalibra
 
 **Effective Date**: January 2026
-**Last Updated**: January 6, 2026
+**Last Updated**: September 16, 2026
 
 This End User License Agreement ("EULA") is a binding legal agreement between you ("User" or "you") and Andrea Valla ("Company," "we," "us," or "our"). By downloading, installing, or using the Recalibra mobile application ("App"), you agree to be bound by the terms of this EULA.
 
@@ -14,7 +14,7 @@ This End User License Agreement ("EULA") is a binding legal agreement between yo
 ## 2. License Grant
 
 2.1. Subject to your compliance with this EULA, we grant you a limited, non-exclusive, non-transferable, revocable license to use Recalibra for personal, non-commercial purposes.
-2.2. The license is granted for the duration of your subscription or as long as you comply with these terms.
+2.2. The license is granted as long as you comply with these terms.
 2.3. You may not:
    - Reverse engineer, decompile, or disassemble the App
    - Modify, adapt, or create derivative works
@@ -32,14 +32,11 @@ This End User License Agreement ("EULA") is a binding legal agreement between yo
 3.4. Always seek the advice of qualified healthcare professionals for medical concerns.
 3.5. Do not disregard professional medical advice or delay seeking it because of information provided by Recalibra.
 
-## 4. Subscription and Payment Terms
+## 4. Free Access
 
-4.1. Recalibra offers premium features through subscription plans.
-4.2. Subscription fees are processed through the Apple App Store or Google Play Store.
-4.3. Subscription automatically renews unless canceled at least 24 hours before the end of the current period.
-4.4. **EU Right of Withdrawal**: For consumers in the European Union, you have a 14-day right of withdrawal for subscription services.
-4.5. Refunds are handled according to the respective app store's policies.
-4.6. Prices and subscription terms are clearly displayed before purchase.
+4.1. Recalibra is provided without subscription fees or in-app purchases.
+4.2. All features included in the App are available without payment.
+4.3. We may change or discontinue features in future versions, subject to applicable law and these terms.
 
 ## 5. Health Data and Privacy
 
@@ -86,7 +83,7 @@ This End User License Agreement ("EULA") is a binding legal agreement between yo
    - Any indirect, incidental, special, or consequential damages
    - Loss of data, profits, or business opportunities
    - Personal injury resulting from improper use of exercises
-9.4. Our total liability shall not exceed the amount paid by you for the App in the 12 months preceding the claim.
+9.4. Any limitation of liability applies only to the extent permitted by applicable law.
 
 ## 10. Indemnification
 

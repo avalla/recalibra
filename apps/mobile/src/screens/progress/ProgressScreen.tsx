@@ -1,4 +1,8 @@
+import { localeTag, formatDate as localizedDate, formatNumber, formatMinutes } from '../../i18n/core';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
 import React, { useState, useMemo, useCallback } from 'react';
+import { hasRecordedStressPair, summarizeSessionStress } from '../../utils/stress-rating';
 import {
   View,
   Text,
@@ -37,14 +41,15 @@ const formatDate = (dateString: string): string => {
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
+  if (diffDays === 0) return tr("Today");
+  if (diffDays === 1) return tr("Yesterday");
 
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  return date.toLocaleDateString(localeTag(), { weekday: 'short', month: 'short', day: 'numeric' });
 };
 
 export const ProgressScreen: React.FC = () => {
-  const { sessions, isLoading, getSessionStats, refetch } = useSessions();
+  const { language } = useLanguage();
+  const { localizedSessions: sessions, isLoading, refetch } = useSessions();
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
 
   // Sessions completed elsewhere (PostSession) live in a different hook instance,
@@ -71,30 +76,16 @@ export const ProgressScreen: React.FC = () => {
     const completedSessions = filteredSessions.filter((s) => s.completed_at);
 
     if (completedSessions.length === 0) {
-      return { avgStress: 0, stressReduction: 0, totalSessions: 0, totalMinutes: 0 };
+      return { avgStress: null, stressReduction: null, totalSessions: 0, totalMinutes: 0 };
     }
 
     const totalMinutes = completedSessions.reduce((sum, s) => sum + Math.round(s.duration_seconds / 60), 0);
 
-    // Calculate average post-stress
-    const sessionsWithStress = completedSessions.filter((s) => s.post_stress_level !== null);
-    const avgPostStress = sessionsWithStress.length > 0
-      ? sessionsWithStress.reduce((sum, s) => sum + (s.post_stress_level || 0), 0) / sessionsWithStress.length
-      : 0;
-
-    // Calculate average stress reduction
-    const sessionsWithBothStress = completedSessions.filter((s) =>
-      s.pre_stress_level !== null && s.post_stress_level !== null
-    );
-    const avgReduction = sessionsWithBothStress.length > 0
-      ? sessionsWithBothStress.reduce((sum, s) =>
-          sum + ((s.pre_stress_level || 0) - (s.post_stress_level || 0)), 0
-        ) / sessionsWithBothStress.length
-      : 0;
+    const { averagePostStress, averageReduction } = summarizeSessionStress(completedSessions);
 
     return {
-      avgStress: Math.round(avgPostStress * 10) / 10,
-      stressReduction: Math.round(avgReduction * 10) / 10,
+      avgStress: averagePostStress,
+      stressReduction: averageReduction,
       totalSessions: completedSessions.length,
       totalMinutes,
     };
@@ -114,13 +105,11 @@ export const ProgressScreen: React.FC = () => {
 
       const daySessions = sessions.filter((s) => s.created_at.startsWith(dateStr) && s.completed_at);
       const hasSession = daySessions.length > 0;
-      const avgStress = hasSession && daySessions.some((s) => s.post_stress_level)
-        ? daySessions.reduce((sum, s) => sum + (s.post_stress_level || 5), 0) / daySessions.length
-        : null;
+      const avgStress = summarizeSessionStress(daySessions).averagePostStress;
 
-      return { day, hasSession, avgStress };
+      return { day: localizedDate(targetDate, { weekday: 'short' }), hasSession, avgStress };
     });
-  }, [sessions]);
+  }, [sessions, language]);
 
   // Calculate current streak
   const streak = useMemo(() => {
@@ -163,7 +152,7 @@ export const ProgressScreen: React.FC = () => {
     }
 
     return { current: currentStreak, longest: longestStreak };
-  }, [sessions]);
+  }, [sessions, language]);
 
   // Get last 28 days for calendar heatmap
   const calendarData = useMemo(() => {
@@ -178,7 +167,7 @@ export const ProgressScreen: React.FC = () => {
     }
 
     return days;
-  }, [sessions]);
+  }, [sessions, language]);
 
   const renderStressChange = (pre: number, post: number) => {
     const change = post - pre;
@@ -197,7 +186,7 @@ export const ProgressScreen: React.FC = () => {
       <Screen style={styles.container} edges={['top']}>
         <View style={styles.scrollContent}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>History & Progress</Text>
+            <Text style={styles.headerTitle}>{tr("History & Progress")}</Text>
           </View>
           <View style={[styles.skeletonBlock, { height: 80, marginBottom: Spacing.sm }]} />
           <View style={styles.statsRow}>
@@ -220,7 +209,7 @@ export const ProgressScreen: React.FC = () => {
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>History & Progress</Text>
+          <Text style={styles.headerTitle}>{tr("History & Progress")}</Text>
         </View>
 
         {/* Time Range Tabs */}
@@ -240,7 +229,7 @@ export const ProgressScreen: React.FC = () => {
                   timeRange === range && styles.timeRangeTextActive,
                 ]}
               >
-                {range === 'week' ? 'Week' : range === 'month' ? 'Month' : '90 days'}
+                {range === 'week' ? tr("Week") : range === 'month' ? tr("Month") : tr("90 days")}
               </Text>
             </TouchableOpacity>
           ))}
@@ -253,11 +242,11 @@ export const ProgressScreen: React.FC = () => {
           </View>
           <View style={styles.streakTextWrap}>
             <Text style={styles.streakValue}>
-              {streak.current} <Text style={styles.streakUnit}>day{streak.current === 1 ? '' : 's'}</Text>
+              {tr("days", { count: streak.current })}
             </Text>
             <Text style={styles.streakLabel}>
-              {streak.current > 0 ? 'Current streak' : 'Start a streak today'}
-              {streak.longest > streak.current ? `  ·  best ${streak.longest}` : ''}
+              {streak.current > 0 ? tr("Current streak") : tr("Start a streak today")}
+              {streak.longest > streak.current ? tr(" · best {{count}}", { count: streak.longest }) : ''}
             </Text>
           </View>
         </Card>
@@ -267,24 +256,24 @@ export const ProgressScreen: React.FC = () => {
           <Card style={styles.statCard}>
             <Ionicons name="checkmark-done-outline" size={20} color={Colors.textSecondary} />
             <Text style={styles.statValue}>{stats.totalSessions}</Text>
-            <Text style={styles.statLabel}>Sessions</Text>
+            <Text style={styles.statLabel}>{tr("Sessions")}</Text>
           </Card>
           <Card style={styles.statCard}>
             <Ionicons name="time-outline" size={20} color={Colors.textSecondary} />
             <Text style={styles.statValue}>{stats.totalMinutes}</Text>
-            <Text style={styles.statLabel}>Minutes</Text>
+            <Text style={styles.statLabel}>{tr("Minutes")}</Text>
           </Card>
         </View>
 
         {/* Calendar Heatmap */}
         <Card style={styles.calendarCard}>
-          <Text style={styles.calendarTitle}>Last 4 Weeks</Text>
+          <Text style={styles.calendarTitle}>{tr("Last 4 Weeks")}</Text>
           <View style={styles.calendarGrid}>
             {calendarData.map((day, index) => (
               <View
                 key={index}
                 accessible
-                accessibilityLabel={`${day.date}, ${day.count} session${day.count === 1 ? '' : 's'}${day.isToday ? ', today' : ''}`}
+                accessibilityLabel={tr("{{date}}, {{sessions}}{{today}}", { date: localizedDate(day.date, { dateStyle: 'long' }), sessions: tr('sessionCount', { count: day.count }), today: day.isToday ? tr(', today') : '' })}
                 style={[
                   styles.calendarDay,
                   day.count > 0 && styles.calendarDayActive,
@@ -295,26 +284,26 @@ export const ProgressScreen: React.FC = () => {
             ))}
           </View>
           <View style={styles.calendarLegend}>
-            <Text style={styles.legendText}>Less</Text>
+            <Text style={styles.legendText}>{tr("Less")}</Text>
             <View style={[styles.legendBox, { backgroundColor: Colors.backgroundLight }]} />
             <View style={[styles.legendBox, { backgroundColor: Colors.primaryLight }]} />
             <View style={[styles.legendBox, { backgroundColor: Colors.primary }]} />
-            <Text style={styles.legendText}>More</Text>
+            <Text style={styles.legendText}>{tr("More")}</Text>
           </View>
         </Card>
 
         {/* Stress Trend Card */}
         <Card style={styles.trendCard}>
-          <Text style={styles.trendLabel}>Stress Trend</Text>
+          <Text style={styles.trendLabel}>{tr("Stress Trend")}</Text>
           <View style={styles.trendHeader}>
             <Text style={styles.trendValue}>
-              {stats.avgStress > 0 ? `Avg. ${stats.avgStress}` : 'No data'}
+              {stats.avgStress !== null ? tr("Avg. {{value}}", { value: formatNumber(stats.avgStress) }) : tr("No data")}
             </Text>
-            {stats.stressReduction !== 0 && (
+            {stats.stressReduction !== null && (
               <Text style={styles.trendChange}>
-                Avg. reduction{' '}
-                <Text style={{ color: stats.stressReduction > 0 ? Colors.success : Colors.error }}>
-                  {stats.stressReduction > 0 ? '-' : '+'}{Math.abs(stats.stressReduction)}
+                {tr("Avg. change")}{' '}
+                <Text style={{ color: Colors.textSecondary }}>
+                  {stats.stressReduction > 0 ? '−' : stats.stressReduction < 0 ? '+' : ''}{formatNumber(Math.abs(stats.stressReduction))}
                 </Text>
               </Text>
             )}
@@ -328,8 +317,8 @@ export const ProgressScreen: React.FC = () => {
                   <View
                     style={[
                       styles.chartBar,
-                      data.hasSession && styles.chartBarActive,
-                      data.avgStress !== null && { height: Math.max(20, (10 - data.avgStress) * 10) }
+                      data.avgStress !== null && styles.chartBarActive,
+                      data.avgStress !== null && { height: data.avgStress * 10 }
                     ]}
                   />
                 </View>
@@ -343,22 +332,22 @@ export const ProgressScreen: React.FC = () => {
               ))}
             </View>
           </View>
-          <Text style={styles.chartCaption}>Taller bars mean calmer days.</Text>
+          <Text style={styles.chartCaption}>{tr("Taller bars mean calmer days.")}</Text>
         </Card>
 
         {/* HRV Trend (not yet available) */}
         <View style={styles.hrvNote}>
           <Ionicons name="pulse-outline" size={14} color={Colors.textMuted} />
-          <Text style={styles.hrvNoteText}>HRV trends coming soon</Text>
+          <Text style={styles.hrvNoteText}>{tr("HRV trends coming soon")}</Text>
         </View>
 
         {/* Recent Sessions */}
-        <Text style={styles.sectionTitle}>Recent Sessions</Text>
+        <Text style={styles.sectionTitle}>{tr("Recent Sessions")}</Text>
         {filteredSessions.length === 0 ? (
           <Card style={styles.emptyCard}>
             <Ionicons name="calendar-outline" size={32} color={Colors.textMuted} />
-            <Text style={styles.emptyText}>No sessions yet</Text>
-            <Text style={styles.emptySubtext}>Complete your first exercise to see progress</Text>
+            <Text style={styles.emptyText}>{tr("No sessions yet")}</Text>
+            <Text style={styles.emptySubtext}>{tr("Complete your first exercise to see progress")}</Text>
           </Card>
         ) : (
           filteredSessions.slice(0, 10).map((session) => (
@@ -371,13 +360,12 @@ export const ProgressScreen: React.FC = () => {
                 />
               </View>
               <View style={styles.sessionInfo}>
-                <Text style={styles.sessionName}>{session.exercise?.name || 'Exercise'}</Text>
+                <Text style={styles.sessionName}>{session.exercise?.name || tr("Exercise")}</Text>
                 <Text style={styles.sessionMeta}>
-                  {formatDate(session.created_at)} · {Math.round(session.duration_seconds / 60)} min
-                </Text>
+                  {formatDate(session.created_at)} · {formatMinutes(Math.round(session.duration_seconds / 60))}</Text>
               </View>
-              {session.pre_stress_level && session.post_stress_level &&
-                renderStressChange(session.pre_stress_level, session.post_stress_level)
+              {hasRecordedStressPair(session) &&
+                renderStressChange(session.pre_stress_level, session.post_stress_level!)
               }
             </Card>
           ))

@@ -1,23 +1,27 @@
+import { useLanguage } from '../../../i18n/LanguageProvider';
+import { tr } from '../../../i18n/core';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../../constants';
+import { BrandMark } from '../../../components';
 
 interface HomeHeaderProps {
   onQuickStartPress: () => void;
 }
 
 export const HomeHeader: React.FC<HomeHeaderProps> = ({ onQuickStartPress }) => {
+  useLanguage();
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
-        <Ionicons name="leaf" size={24} color={Colors.primary} />
-        <Text style={styles.headerTitle}>Recalibra</Text>
+        <BrandMark size={26} />
+        <Text style={styles.headerTitle}>{tr("Recalibra")}</Text>
       </View>
       <TouchableOpacity onPress={onQuickStartPress} style={styles.quickStartButton} activeOpacity={0.7}>
         <Ionicons name="flash" size={16} color={Colors.primary} style={styles.quickStartIcon} />
-        <Text style={styles.quickStartText}>Quick Start</Text>
+        <Text style={styles.quickStartText}>{tr("Quick Start")}</Text>
       </TouchableOpacity>
     </View>
   );

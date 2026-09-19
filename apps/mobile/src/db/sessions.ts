@@ -1,6 +1,6 @@
 import type { JourneyProgress, Session, SessionWithExercise } from '../types';
 import { getDb } from './db';
-import { completeJourneyChapterInTransaction } from './journeys';
+import { isStressRating } from '../utils/stress-rating';
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -22,7 +22,11 @@ export async function listSessions(limit = 20): Promise<SessionWithExercise[]> {
     duration_seconds: number;
     pre_stress_level: number;
     post_stress_level: number | null;
+    pre_stress_recorded: number;
+    post_stress_recorded: number;
     notes: string | null;
+    journey_id: string | null;
+    journey_step_id: string | null;
     created_at: string;
     exercise_name: string;
     exercise_category: string;
@@ -45,7 +49,11 @@ export async function listSessions(limit = 20): Promise<SessionWithExercise[]> {
     duration_seconds: r.duration_seconds,
     pre_stress_level: r.pre_stress_level,
     post_stress_level: r.post_stress_level ?? undefined,
+    pre_stress_recorded: r.pre_stress_recorded === 1,
+    post_stress_recorded: r.post_stress_recorded === 1,
     notes: r.notes ?? undefined,
+    journey_id: r.journey_id ?? undefined,
+    journey_step_id: r.journey_step_id ?? undefined,
     created_at: r.created_at,
     exercise: {
       name: r.exercise_name,
@@ -58,8 +66,12 @@ export async function listSessions(limit = 20): Promise<SessionWithExercise[]> {
 export async function startSession(input: {
   exerciseId: string;
   preStressLevel: number;
+  preStressRecorded?: boolean;
 }): Promise<{ data: Session | null; error: Error | null }> {
   try {
+    if (input.preStressRecorded && !isStressRating(input.preStressLevel)) {
+      throw new Error('Choose a stress rating from 1 to 10.');
+    }
     const db = await getDb();
 
     const now = nowIso();
@@ -68,9 +80,9 @@ export async function startSession(input: {
     await db.runAsync(
       `INSERT INTO sessions (
         id, exercise_id, started_at, completed_at, duration_seconds,
-        pre_stress_level, post_stress_level, notes, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [id, input.exerciseId, now, null, 0, input.preStressLevel, null, null, now]
+        pre_stress_level, post_stress_level, notes, created_at, pre_stress_recorded
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, input.exerciseId, now, null, 0, input.preStressLevel, null, null, now, input.preStressRecorded ? 1 : 0]
     );
 
     const session: Session = {
@@ -80,6 +92,8 @@ export async function startSession(input: {
       started_at: now,
       duration_seconds: 0,
       pre_stress_level: input.preStressLevel,
+      pre_stress_recorded: input.preStressRecorded === true,
+      post_stress_recorded: false,
       created_at: now,
     };
 
@@ -111,14 +125,17 @@ export async function updateSessionStatus(_input: {
 export async function completeSession(input: {
   sessionId: string;
   durationSeconds: number;
-  postStressLevel: number;
+  postStressLevel: number | null;
   notes?: string;
 }): Promise<{ error: Error | null }> {
   try {
+    if (input.postStressLevel !== null && !isStressRating(input.postStressLevel)) {
+      throw new Error('Choose a stress rating from 1 to 10, or skip the rating.');
+    }
     const db = await getDb();
     const result = await db.runAsync(
-      'UPDATE sessions SET completed_at = COALESCE(completed_at, ?), duration_seconds = ?, post_stress_level = ?, notes = ? WHERE id = ?',
-      [nowIso(), Math.max(0, Math.floor(input.durationSeconds)), input.postStressLevel, input.notes ?? null, input.sessionId]
+      'UPDATE sessions SET completed_at = ?, duration_seconds = ?, post_stress_level = ?, post_stress_recorded = ?, notes = ? WHERE id = ?',
+      [nowIso(), Math.max(0, Math.floor(input.durationSeconds)), input.postStressLevel, input.postStressLevel === null ? 0 : 1, input.notes ?? null, input.sessionId]
     );
     if (result.changes !== 1) {
       throw new Error('Session completion did not update exactly one session');
@@ -126,41 +143,5 @@ export async function completeSession(input: {
     return { error: null };
   } catch (err) {
     return { error: err as Error };
-  }
-}
-
-
-export async function completeSessionAndJourney(input: {
-  sessionId: string;
-  durationSeconds: number;
-  postStressLevel: number;
-  notes?: string;
-  journeyId: string;
-  chapterIndex: number;
-}): Promise<{ progress: JourneyProgress | null; error: Error | null }> {
-  try {
-    const db = await getDb();
-    const completionTimestamp = nowIso();
-    let progress: JourneyProgress | null = null;
-
-    await db.withTransactionAsync(async () => {
-      const result = await db.runAsync(
-        'UPDATE sessions SET completed_at = COALESCE(completed_at, ?), duration_seconds = ?, post_stress_level = ?, notes = ? WHERE id = ?',
-        [completionTimestamp, Math.max(0, Math.floor(input.durationSeconds)), input.postStressLevel, input.notes ?? null, input.sessionId]
-      );
-      if (result.changes !== 1) {
-        throw new Error('Session completion did not update exactly one session');
-      }
-      progress = await completeJourneyChapterInTransaction(
-        db,
-        input.journeyId,
-        input.chapterIndex,
-        completionTimestamp
-      );
-    });
-
-    return { progress, error: null };
-  } catch (err) {
-    return { progress: null, error: err as Error };
   }
 }

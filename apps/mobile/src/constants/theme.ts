@@ -17,8 +17,8 @@ export const Colors = {
 
   // Text colors
   textPrimary: '#FFFFFF',
-  textSecondary: '#94A3B8',
-  textMuted: '#64748B',
+  textSecondary: '#B5C9C2',
+  textMuted: '#A0B6AE',
 
   // Semantic colors
   success: '#22C55E',

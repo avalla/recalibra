@@ -3,26 +3,24 @@
 ## Screenshot Requirements
 
 ### iPhone Screenshots
-**Required Sizes:**
-- 6.7" display: 1290 x 2796 pixels
-- 6.5" display: 1242 x 2688 pixels
-- 5.5" display: 1242 x 2208 pixels
+**Primary set:**
+- 6.9" display: 1320 x 2868 pixels (iPhone 16 Pro Max)
+- Apple also accepts 1260 x 2736 and 1290 x 2796 for the 6.9" slot
 
-**Format:** PNG or JPEG
-**Quantity:** Minimum 3, maximum 10 per device
+**Format:** PNG or JPEG, flattened without an alpha channel
+**Quantity:** 1 to 10 screenshots per localization
+
+**Current Italian set:** `RecalibraScreenshots/it-IT/6.9-inch/`
+
+Reference: [Apple screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications)
 
 ### iPad Screenshots
-**Required Sizes:**
-- 12.9" display: 2048 x 2732 pixels
-- 11" display: 1668 x 2388 pixels
-
-**Format:** PNG or JPEG
-**Quantity:** Minimum 3, maximum 10 per device
+The current app configuration has `supportsTablet: false`, so an iPad set is not part of this release.
 
 ## Screenshot Content Guidelines
 
-### Required Screenshots (in order):
-1. **Onboarding/Home Screen**
+### Current Screenshots (in order):
+1. **Home Screen**
    - Clean, welcoming interface
    - Clear value proposition
    - "Recalibra" logo visible
@@ -37,15 +35,12 @@
    - Timer/progress indicator
    - Clear instructions visible
 
-4. **HRV Integration**
-   - HealthKit/Google Fit connection screen
-   - HRV data visualization
-   - Progress tracking
+4. **Exercise Player**
+   - Guided breathing phase in progress
+   - Timer and progress indicator
 
-5. **Subscription Screen**
-   - Premium features list
-   - Clear pricing (€9.99/mese, €59.99/anno)
-   - 7-day free trial highlighted
+5. **Paused Exercise**
+   - Shows that the practice can be paused and resumed
 
 6. **Progress Dashboard**
    - Stress tracking graphs
@@ -53,7 +48,7 @@
    - Achievement badges
 
 ### Design Requirements:
-- **Device Frame:** Must include device frame (use Apple's official frames)
+- **Device Frame:** Optional. The current set uses clean, unframed simulator captures.
 - **Status Bar:** Show realistic status (time, battery, signal)
 - **No Placeholder Text:** All text must be readable and final
 - **Consistent Branding:** Use Recalibra color scheme and typography
@@ -69,17 +64,17 @@
 
 **Design Guidelines:**
 - Clean, modern design
-- Incorporate vagus nerve or relaxation theme
+- Use the Recalibra leaf mark and dark teal field
 - Recognizable at small sizes
 - Avoid complex details
 
 ## Promotional Text
 
 **Italian (170 characters max):**
-"Scopri esercizi di stimolazione vagale per ridurre lo stress. Prova 7 giorni gratis!"
+"Ritrova il tuo equilibrio con esercizi guidati di respirazione, movimento e rilassamento, disponibili gratuitamente."
 
 **English (170 characters max):**
-"Discover vagus nerve exercises to reduce stress. Try 7 days free!"
+"Find your balance with guided breathing, movement, and relaxation exercises, available for free."
 
 ## App Preview Video (Optional but Recommended)
 
@@ -95,7 +90,7 @@
 3. Exercise categories showcase (5s)
 4. Exercise player demo (5s)
 5. HRV tracking visualization (4s)
-6. Subscription screen with call-to-action (3s)
+6. Progress screen with session trends (3s)
 7. App store download button (3s)
 
 ## Additional Assets
@@ -119,9 +114,7 @@
 - **Vocal Exercises**: Esercizi vocali
 - **Movement**: Movimento
 - **HRV Tracking**: Monitoraggio HRV
-- **Premium**: Premium
-- **7-Day Free Trial**: 7 giorni gratis
-- **Subscribe**: Abbonati
+- **Free access**: Accesso gratuito
 
 ### Avoid:
 - Medical claims ("cura", "tratta", "medico")
@@ -132,7 +125,7 @@
 ## Review Checklist Before Upload
 
 - [ ] All screenshots have correct dimensions
-- [ ] Device frames are applied correctly
+- [ ] Images are flattened and contain no alpha channel
 - [ ] No placeholder text or "Lorem ipsum"
 - [ ] Consistent branding across all assets
 - [ ] Italian language is primary
@@ -141,6 +134,7 @@
 - [ ] Promotional text is under 170 characters
 - [ ] All text is legible on mobile devices
 - [ ] Screenshots reflect actual app functionality
+- [ ] No PRO, premium, subscription, trial, price, or purchase badges are visible
 
 ## Common Pitfalls to Avoid
 
@@ -155,26 +149,20 @@
 ## File Naming Convention
 
 ```
-iPhone_6.7_01_Home.png
-iPhone_6.7_02_Exercises.png
-iPhone_6.7_03_Player.png
-iPhone_6.7_04_HRV.png
-iPhone_6.7_05_Subscription.png
-iPhone_6.7_06_Progress.png
-
-iPad_12.9_01_Home.png
-iPad_12.9_02_Exercises.png
-...
+01_Home.png
+02_Esercizi.png
+03_Dettaglio.png
+04_Sessione.png
+05_Pausa.png
+06_Progressi.png
 ```
 
 ## Next Steps
 
-1. Take screenshots on actual devices using Xcode simulator
-2. Apply device frames using Apple's provided frames
-3. Optimize file sizes (under 10MB per screenshot)
-4. Upload to App Store Connect in order
-5. Preview on different devices before submission
-6. Test promotional text length in store preview
+1. Review the six captures in `RecalibraScreenshots/it-IT/6.9-inch/`
+2. Upload them to the Italian 6.9" screenshot slot in App Store Connect
+3. Preview the listing before submission
+4. Create a separate localized set before enabling another storefront language
 
 ---
 

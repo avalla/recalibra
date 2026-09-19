@@ -1,3 +1,5 @@
+import { useLanguage } from '../i18n/LanguageProvider';
+import { tr } from '../i18n/core';
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -14,7 +16,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors, FontSize, FontWeight, Spacing, BorderRadius } from '../constants';
 import { AUDIO_PRESETS, useAudio } from '../hooks/useAudio';
 import type { AudioPresetKey } from '../hooks/useAudio';
-import { useSubscription } from '../hooks/useSubscription';
 
 export type AudioType = 'silence' | 'frequency' | 'nature' | 'tibetan';
 
@@ -86,13 +87,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
   recommendedId,
   showPreviewButton = true,
 }) => {
-  const { canAccessAudio, presentPaywall, isPremium } = useSubscription();
-
-  useEffect(() => {
-    if (isPremium) return;
-    if (canAccessAudio(selectedAudioId)) return;
-    onSelect('silence');
-  }, [canAccessAudio, isPremium, onSelect, selectedAudioId]);
+  useLanguage();
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
@@ -187,10 +182,10 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
   }, [selectedAudioId]);
 
   const tabs: { id: AudioType; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
-    { id: 'silence', label: 'Off', icon: 'volume-mute-outline' },
-    { id: 'frequency', label: 'Tones', icon: 'pulse-outline' },
-    { id: 'tibetan', label: 'Tibetan', icon: 'ellipse-outline' },
-    { id: 'nature', label: 'Nature', icon: 'leaf-outline' },
+    { id: 'silence', label: tr("Off"), icon: 'volume-mute-outline' },
+    { id: 'frequency', label: tr("Tones"), icon: 'pulse-outline' },
+    { id: 'tibetan', label: tr("Tibetan"), icon: 'ellipse-outline' },
+    { id: 'nature', label: tr("Nature"), icon: 'leaf-outline' },
   ];
 
   const filteredOptions = useMemo(
@@ -239,8 +234,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
         >
           <Ionicons name="headset-outline" size={14} color={Colors.textSecondary} />
           <Text style={styles.binauralNoticeText}>
-            For binaural effect, use stereo headphones. On speaker, the effect may be reduced.
-          </Text>
+            {tr("For binaural effect, use stereo headphones. On speaker, the effect may be reduced.")}</Text>
           <Ionicons name="chevron-forward" size={16} color={Colors.textMuted} />
         </TouchableOpacity>
       )}
@@ -259,7 +253,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
           <View style={styles.sheetHeader}>
             <View style={styles.sheetHeaderLeft}>
               <Ionicons name="headset-outline" size={18} color={Colors.textPrimary} />
-              <Text style={styles.sheetTitle}>Binaural beats</Text>
+              <Text style={styles.sheetTitle}>{tr("Binaural beats")}</Text>
             </View>
             <TouchableOpacity
               onPress={closeBinauralInfo}
@@ -272,13 +266,9 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
 
           <View style={styles.sheetBody}>
             <Text style={styles.sheetText}>
-              Binaural beats use a slightly different tone in each ear. The brain can perceive the difference as a slow
-              “beat”.
-            </Text>
+              {tr("Binaural beats use a slightly different tone in each ear. The brain can perceive the difference as a slow “beat”.")}</Text>
             <Text style={styles.sheetText}>
-              To work properly, the audio must stay separated between left and right. With phone speakers or mono output,
-              channels can mix and the effect may be reduced.
-            </Text>
+              {tr("To work properly, the audio must stay separated between left and right. With phone speakers or mono output, channels can mix and the effect may be reduced.")}</Text>
 
             <TouchableOpacity
               style={styles.sheetSecondaryButton}
@@ -286,7 +276,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
               activeOpacity={0.9}
             >
               <Text style={styles.sheetSecondaryButtonText}>
-                {isBinauralDetailsOpen ? 'Show less' : 'I want more details'}
+                {isBinauralDetailsOpen ? tr("Show less") : tr("I want more details")}
               </Text>
               <Ionicons
                 name={isBinauralDetailsOpen ? 'chevron-up' : 'chevron-down'}
@@ -298,13 +288,9 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
             {isBinauralDetailsOpen && (
               <View style={styles.sheetDetails}>
                 <Text style={styles.sheetText}>
-                  Example: 200 Hz in the left ear and 210 Hz in the right ear can feel like a 10 Hz beat. This “beat” is
-                  not a separate audio tone, but a perception created by the brain.
-                </Text>
+                  {tr("Example: 200 Hz in the left ear and 210 Hz in the right ear can feel like a 10 Hz beat. This “beat” is not a separate audio tone, but a perception created by the brain.")}</Text>
                 <Text style={styles.sheetText}>
-                  Headphones are recommended because they keep left and right channels isolated. With speakers, both ears
-                  hear both channels and the effect becomes less reliable.
-                </Text>
+                  {tr("Headphones are recommended because they keep left and right channels isolated. With speakers, both ears hear both channels and the effect becomes less reliable.")}</Text>
               </View>
             )}
           </View>
@@ -314,7 +300,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
             onPress={closeBinauralInfo}
             activeOpacity={0.9}
           >
-            <Text style={styles.sheetPrimaryButtonText}>Got it</Text>
+            <Text style={styles.sheetPrimaryButtonText}>{tr("Got it")}</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -326,7 +312,6 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
           const isRecommended = option.id === recommendedId;
           const isPreviewingThis = isPreviewPlaying && previewAudioId === option.id;
           const isBinauralOption = option.id.startsWith('binaural_');
-          const isLocked = !isPremium && !canAccessAudio(option.id);
 
           return (
             <Pressable
@@ -334,18 +319,11 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
               style={({ pressed }) => [
                 styles.optionCard,
                 isSelected && styles.optionCardActive,
-                isLocked && styles.optionCardLocked,
                 pressed && styles.optionCardPressed,
               ]}
-              onPress={async () => {
+              onPress={() => {
                 animateNextLayout();
-                if (!isLocked) {
-                  onSelect(option.id);
-                  return;
-                }
-
-                const didPurchase = await presentPaywall();
-                if (didPurchase) onSelect(option.id);
+                onSelect(option.id);
               }}
               hitSlop={10}
             >
@@ -361,14 +339,8 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                   <View style={styles.optionTextCol}>
                     <View style={styles.optionTitleRow}>
                       <Text style={[styles.optionTitle, isSelected && styles.optionTitleActive]}>
-                        {option.name}
+                        {tr(option.name)}
                       </Text>
-                      {isLocked && (
-                        <View style={styles.proBadge}>
-                          <Ionicons name="lock-closed" size={12} color={Colors.warning} />
-                          <Text style={styles.proBadgeText}>PRO</Text>
-                        </View>
-                      )}
                       {isBinauralOption && (
                         <View style={[styles.headphonesBadge, isSelected && styles.headphonesBadgeActive]}>
                           <Ionicons
@@ -392,7 +364,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                       style={[styles.optionSubtitle, isSelected && styles.optionSubtitleActive]}
                       numberOfLines={1}
                     >
-                      {option.description}
+                      {tr(option.description)}
                     </Text>
                   </View>
                 </View>
@@ -402,7 +374,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                 <View style={styles.optionExpanded}>
                   {!!option.details && (
                     <Text style={[styles.optionDetails, isSelected && styles.optionDetailsActive]}>
-                      {option.details}
+                      {tr(option.details)}
                     </Text>
                   )}
 
@@ -412,10 +384,6 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                         style={[styles.previewButton, isPreviewingThis && styles.previewButtonActive]}
                         onPress={async () => {
                           animateNextLayout();
-                          if (isLocked) {
-                            const didPurchase = await presentPaywall();
-                            if (!didPurchase) return;
-                          }
                           if (previewTimeoutRef.current) {
                             clearTimeout(previewTimeoutRef.current);
                             previewTimeoutRef.current = null;
@@ -444,7 +412,7 @@ export const AudioSelector: React.FC<AudioSelectorProps> = ({
                         <Text
                           style={[styles.previewButtonText, isPreviewingThis && styles.previewButtonTextActive]}
                         >
-                          {isPreviewingThis ? 'Stop' : 'Preview'}
+                          {isPreviewingThis ? tr("Stop") : tr("Preview")}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -634,10 +602,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.backgroundCard,
   },
-  optionCardLocked: {
-    opacity: 0.75,
-    borderColor: 'rgba(245, 158, 11, 0.35)',
-  },
   optionCardRecommended: {
     borderColor: Colors.primary,
   },
@@ -666,22 +630,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-  },
-  proBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.full,
-    backgroundColor: 'rgba(245, 158, 11, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.35)',
-  },
-  proBadgeText: {
-    color: Colors.warning,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.semibold,
   },
   optionTitle: {
     color: Colors.textPrimary,

@@ -1,13 +1,22 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { formatMinutes, formatNumber } from '../../i18n/core';
+import { enumLabel } from '../../i18n/labels';
+import { tr } from '../../i18n/core';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { exerciseText } from '../../i18n/exercises';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StressRating } from '../../components/StressRating';
+import { isStressRating } from '../../utils/stress-rating';
 import { 
   View, 
   Text, 
   StyleSheet, 
   TouchableOpacity,
-  Pressable,
   Animated, 
   ScrollView,
-  Dimensions,
+  useWindowDimensions,
+  AccessibilityInfo,
+  Modal,
+  findNodeHandle,
   Alert,
   AppState
  } from 'react-native';
@@ -15,19 +24,18 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Circle, Path } from 'react-native-svg';
+import Svg, { Path } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { useSessions, useAudio, getAudioRecommendation, useHaptics, useSubscription } from '../../hooks';
+import { useSessions, useAudio, getAudioRecommendation, useHaptics } from '../../hooks';
 import type { AudioPresetKey, ExerciseCategory } from '../../hooks';
-import type { RootStackParamList } from '../../types';
-import { ExerciseAnimation, Screen } from '../../components';
-import { BreathingGraph, type GraphCurvePreset, type GraphMarker } from '../../components/BreathingGraph';
+import type { RootStackParamList, BreathingPattern } from '../../types';
+import { buildCycleSegments, createPracticeClock, formatPhaseRemaining, getBreathFrame, interruptPractice, usesTimedBreathing, type BreathingPhase, type PracticeState } from '../../utils/practice-timing';
+import { Screen } from '../../components';
+import { BreathingGraph, type GraphCurvePreset } from '../../components/BreathingGraph';
 import { TutorialOverlay } from '../../components/TutorialOverlay';
 import { OriginIcon } from '../../components/OriginIcon';
-import { getExerciseBackground } from '../../constants/backgrounds';
 import { AUDIO_OPTIONS, type AudioOption, AudioSelector } from '../../components/AudioSelector';
-import { logger } from '../../utils/logger';
 import {
   loadBreathingVisualizationMode,
   loadBreathingCurvePresetOverride,
@@ -37,31 +45,8 @@ import {
   type BreathingVisualizationMode,
 } from '../../utils/breath-visualization';
 
-const { width } = Dimensions.get('window');
-const CIRCLE_SIZE = width * 0.7;
-const GRAPH_HEIGHT = Math.min(260, Math.max(180, CIRCLE_SIZE * 0.58));
-const BOTTOM_BAR_HEIGHT = 76;
 
-// Default fallback values when database data is not available
-const DEFAULT_EXERCISE_INFO = {
-  origin: 'Universal',
-  history: 'A time-tested breathing technique for wellness.',
-  benefits: ['Reduces stress', 'Improves focus', 'Enhances wellbeing'],
-};
-
-// Extended phases for special patterns
-type BreathingPhase = 'inhale' | 'inhale2' | 'hold' | 'exhale' | 'rest' | 'retention';
-
-interface BreathingPattern {
-  inhale: number;
-  hold: number;
-  exhale: number;
-  rest: number;
-  special?: string;
-  cycles?: number;
-  rapid_cycles?: number;
-  retention_seconds?: number;
-}
+const BOTTOM_BAR_HEIGHT = 88;
 
 // Default pattern: 4-7-8 breathing
 const DEFAULT_PATTERN: BreathingPattern = {
@@ -80,15 +65,6 @@ type PhasePalette = {
   rest: string;
 };
 
-type CycleSegment = {
-  phase: BreathingPhase;
-  duration: number;
-};
-
-function clampNumber(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
   const angleRad = ((angleDeg - 90) * Math.PI) / 180;
   return {
@@ -103,35 +79,6 @@ function describeArcPath(cx: number, cy: number, r: number, startAngle: number, 
   const sweep = endAngle - startAngle;
   const largeArcFlag = sweep <= 180 ? '0' : '1';
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
-}
-
-function buildCycleSegments(pattern: BreathingPattern): CycleSegment[] {
-  if (pattern.special === 'double_inhale') {
-    const segments: CycleSegment[] = [
-      { phase: 'inhale', duration: 2 },
-      { phase: 'inhale2', duration: 1 },
-      { phase: 'exhale', duration: 8 },
-    ];
-    if (pattern.rest > 0) segments.push({ phase: 'rest', duration: pattern.rest });
-    return segments;
-  }
-
-  if (pattern.special === 'wim_hof') {
-    // The repeating cycle is the rapid breath (inhale + exhale). Retention is a
-    // long hold reached once per round, shown as its own phase rather than as a
-    // segment of the rhythm curve (otherwise the dot would sit in a 90s block it
-    // only enters every 30 breaths).
-    return [
-      { phase: 'inhale', duration: pattern.inhale },
-      { phase: 'exhale', duration: pattern.exhale },
-    ];
-  }
-
-  const segments: CycleSegment[] = [{ phase: 'inhale', duration: pattern.inhale }];
-  if (pattern.hold > 0) segments.push({ phase: 'hold', duration: pattern.hold });
-  segments.push({ phase: 'exhale', duration: pattern.exhale });
-  if (pattern.rest > 0) segments.push({ phase: 'rest', duration: pattern.rest });
-  return segments;
 }
 
 function getPhaseTypePalette(): PhasePalette {
@@ -163,30 +110,38 @@ function getPhaseColor(phase: BreathingPhase, palette: PhasePalette): string {
 }
 
 export const ExerciseSessionScreen: React.FC = () => {
+  const { language } = useLanguage();
   const navigation = useNavigation<any>();
   const route = useRoute<SessionRouteProps>();
   const insets = useSafeAreaInsets();
-  const { canAccessAudio } = useSubscription();
+  const { width, height } = useWindowDimensions();
+  const CIRCLE_SIZE = Math.max(140, Math.min(width * 0.68, height * 0.30, 300));
+  const GRAPH_HEIGHT = Math.min(220, CIRCLE_SIZE * 0.65);
+  const [reduceMotion, setReduceMotion] = useState(true);
+  const infoButtonRef = useRef<React.ElementRef<typeof TouchableOpacity>>(null);
+  const infoHeadingRef = useRef<React.ElementRef<typeof Text>>(null);
   
   const {
     exerciseId,
-    exerciseName,
+    exerciseName: canonicalName,
     durationMinutes,
     audioPreset,
     exerciseCategory,
     breathingPattern: routePattern,
     origin: dbOrigin,
-    history: dbHistory,
-    benefits: dbBenefits,
-    tips: dbTips,
-    instructions: dbInstructions,
-    preStressLevel: entryPreStress,
-    journeyId,
-    journeyChapterIndex,
+    history: canonicalHistory,
+    benefits: canonicalBenefits,
+    tips: canonicalTips,
+    instructions: canonicalInstructions,
+    safetyWarning: canonicalWarning,
+    journeyContext,
   } = route.params;
-  // When the feeling-first Home captured stress at entry, skip the in-session
-  // stress step entirely (the post-session still measures the delta).
-  const stressStepEnabled = typeof entryPreStress !== 'number';
+  const localizedText = useMemo(() => exerciseText(exerciseId, {
+    name: canonicalName, history: canonicalHistory, benefits: canonicalBenefits,
+    tips: canonicalTips, instructions: canonicalInstructions, safety_warning: canonicalWarning,
+  }, language), [exerciseId, canonicalName, canonicalHistory, canonicalBenefits, canonicalTips, canonicalInstructions, canonicalWarning, language]);
+  const { name: exerciseName = canonicalName, history: dbHistory, benefits: dbBenefits,
+    tips: dbTips, instructions: dbInstructions, safety_warning: safetyWarning } = localizedText;
   const { startSession, updateSessionStatus } = useSessions();
   const {
     breathingPhase: hapticBreathingPhase,
@@ -198,24 +153,24 @@ export const ExerciseSessionScreen: React.FC = () => {
   // Use pattern from database or fallback to default
   const pattern: BreathingPattern = routePattern || DEFAULT_PATTERN;
 
-  // Only breathing exercises get the breath circle/graph; other categories show
-  // a demonstration animation instead. Unknown category defaults to breathing.
-  const isBreathingExercise = (exerciseCategory ?? 'breathing') === 'breathing';
+  // Only protocols fully represented by the pattern receive a timed visual guide.
+  const isBreathingExercise = usesTimedBreathing(exerciseCategory, routePattern);
+  const [instructionIndex, setInstructionIndex] = useState(0);
 
   // Use data from database, fallback to defaults
   const exerciseInfo = {
-    origin: dbOrigin || DEFAULT_EXERCISE_INFO.origin,
+    origin: dbOrigin ? enumLabel(dbOrigin) : tr('Exercise'),
     originKey: dbOrigin?.toLowerCase() || 'universal',
-    history: dbHistory || DEFAULT_EXERCISE_INFO.history,
-    benefits: dbBenefits || DEFAULT_EXERCISE_INFO.benefits,
+    history: dbHistory || '',
+    benefits: dbBenefits || [],
   };
 
   // Default steps and tips if not in database
-  const defaultSteps = ['Follow the circle animation on screen', 'Inhale when the circle expands', 'Exhale when the circle contracts', 'Hold when indicated'];
-  const defaultTips = ['Find a quiet, comfortable place', 'Practice regularly for best results', 'Stop if you feel dizzy'];
+  const defaultSteps = [tr("Read the exercise instructions before starting.")];
+  const defaultTips: string[] = [];
 
   const exerciseSteps =
-    dbInstructions?.map((i: { instruction: string }) => i.instruction) || defaultSteps;
+    dbInstructions?.length ? dbInstructions.map((i: { instruction: string }) => i.instruction) : defaultSteps;
   const exerciseTips = dbTips || defaultTips;
 
   // Audio selection state - user can override the default from exercise
@@ -223,7 +178,6 @@ export const ExerciseSessionScreen: React.FC = () => {
     if (!audioPreset) return 'silence';
     const isValidPreset = AUDIO_OPTIONS.some((option: AudioOption) => option.id === audioPreset);
     if (!isValidPreset) return 'silence';
-    if (!canAccessAudio(audioPreset)) return 'silence';
     return audioPreset as AudioPresetKey;
   });
   const [audioRecommendation, setAudioRecommendation] = useState<{
@@ -233,7 +187,6 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   // Audio hook - use the user-selected audio
   const audioPresetKey = selectedAudioId;
-  logger.debug(`Selected audio: ${selectedAudioId} -> key: ${audioPresetKey}`, 'ExerciseSession');
 
   const [audioVolume, setAudioVolume] = useState(0.7);
   const [showVolumeControl, setShowVolumeControl] = useState(false);
@@ -251,36 +204,36 @@ export const ExerciseSessionScreen: React.FC = () => {
   const onboardingPages = useMemo(() => {
     const pages: Array<Record<string, any>> = [
       {
-        title: 'Welcome to ' + exerciseName,
-        subtitle: 'Let\'s prepare your mind and body for this breathing exercise',
+        title: tr("Welcome to {{name}}", { name: exerciseName }),
+        subtitle: tr("Prepare for your practice"),
         description:
-          'This practice will help you reduce stress and find inner calm through controlled breathing techniques.',
+          isBreathingExercise ? tr("Follow the timed breathing guide during your practice.") : tr("Follow the instructions at your own pace. Advance each step when you are ready."),
         icon: 'leaf-outline',
       },
       {
-        title: 'Benefits',
-        subtitle: 'What you\'ll experience',
+        title: tr("Benefits"),
+        subtitle: tr("What you'll experience"),
         description: exerciseInfo.benefits
           .map((benefit: string, index: number) => `${index + 1}. ${benefit}`)
           .join('\n'),
         icon: 'heart-outline',
       },
       {
-        title: 'Getting Ready',
-        subtitle: 'Find a comfortable position',
+        title: tr("Getting Ready"),
+        subtitle: tr("Find a comfortable position"),
         description:
-          '• Sit comfortably with your back straight\n• Close your eyes or soften your gaze\n• Place your hands on your lap\n• Take a few deep breaths to settle in',
+          tr("Read the instructions and any warnings below. Prepare the space and position described for this exercise."),
         icon: 'checkmark-circle-outline',
       },
       {
-        title: 'Breathing Pattern',
-        subtitle: 'Your rhythm for this session',
+        title: tr("Breathing Pattern"),
+        subtitle: tr("Your rhythm for this session"),
         customContent: 'breathingPattern',
         icon: 'time-outline',
       },
       {
         title: exerciseInfo.origin,
-        subtitle: 'A short story behind this practice',
+        subtitle: tr("A short story behind this practice"),
         customContent: 'originStory',
         icon: 'compass-outline',
       },
@@ -288,8 +241,8 @@ export const ExerciseSessionScreen: React.FC = () => {
 
     exerciseSteps.forEach((step: string, index: number) => {
       pages.push({
-        title: `Step ${index + 1}`,
-        subtitle: 'Follow along',
+        title: tr("Step {{step}}", { step: index + 1 }),
+        subtitle: tr("Follow along"),
         customContent: 'singleStep',
         payload: { text: step },
         icon: 'list-outline',
@@ -298,15 +251,15 @@ export const ExerciseSessionScreen: React.FC = () => {
 
     if (exerciseTips.length > 0) {
       pages.push({
-        title: 'Tips',
-        subtitle: 'Small details that help',
+        title: tr("Tips"),
+        subtitle: tr("Small details that help"),
         customContent: 'tipsList',
         icon: 'bulb-outline',
       });
     }
 
-    return pages;
-  }, [exerciseName, exerciseInfo.benefits, exerciseInfo.history, exerciseInfo.origin, exerciseSteps, exerciseTips]);
+    return pages.filter((page) => (isBreathingExercise || page.customContent !== 'breathingPattern') && (exerciseInfo.history || page.customContent !== 'originStory') && (exerciseInfo.benefits.length || page.title !== 'Benefits'));
+  }, [exerciseName, exerciseInfo.benefits, exerciseInfo.history, exerciseInfo.origin, exerciseSteps, exerciseTips, isBreathingExercise]);
 
   const handleNextPage = async () => {
     if (currentPage < onboardingPages.length - 1) {
@@ -315,7 +268,7 @@ export const ExerciseSessionScreen: React.FC = () => {
       // Mark onboarding as seen for this exercise
       await AsyncStorage.setItem(`onboarding_${exerciseId}`, 'seen');
       setShowOnboarding(false);
-      setPreSessionStep(stressStepEnabled ? 2 : 3);
+      setPreSessionStep(2);
     }
   };
 
@@ -356,10 +309,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                     {
                       transform: [
                         {
-                          scale: scaleAnim.interpolate({
-                            inputRange: [0, 1, 2, 3],
-                            outputRange: [1, 1.3, 1, 0.8],
-                          }),
+                          scale: 1,
                         },
                       ],
                     },
@@ -369,16 +319,16 @@ export const ExerciseSessionScreen: React.FC = () => {
               </View>
               <View style={styles.patternIndicators}>
                 <View style={styles.indicator}>
-                  <Text style={styles.indicatorLabel}>Inhale</Text>
-                  <Text style={styles.indicatorTime}>{pattern.inhale}s</Text>
+                  <Text style={styles.indicatorLabel}>{tr("Inhale")}</Text>
+                  <Text style={styles.indicatorTime}>{pattern.inhale}{tr("s")}</Text>
                 </View>
                 <View style={styles.indicator}>
-                  <Text style={styles.indicatorLabel}>Hold</Text>
-                  <Text style={styles.indicatorTime}>{pattern.hold}s</Text>
+                  <Text style={styles.indicatorLabel}>{tr("Hold")}</Text>
+                  <Text style={styles.indicatorTime}>{pattern.hold}{tr("s")}</Text>
                 </View>
                 <View style={styles.indicator}>
-                  <Text style={styles.indicatorLabel}>Exhale</Text>
-                  <Text style={styles.indicatorTime}>{pattern.exhale}s</Text>
+                  <Text style={styles.indicatorLabel}>{tr("Exhale")}</Text>
+                  <Text style={styles.indicatorTime}>{pattern.exhale}{tr("s")}</Text>
                 </View>
               </View>
             </View>
@@ -500,55 +450,15 @@ export const ExerciseSessionScreen: React.FC = () => {
                 <View style={styles.dividerDot} />
                 <View style={styles.durationBadgeMinimal}>
                   <Ionicons name="time-outline" size={14} color={Colors.textMuted} />
-                  <Text style={styles.durationLabel}>{durationMinutes} min</Text>
+                  <Text style={styles.durationLabel}>{durationMinutes} {tr("min")}</Text>
                 </View>
               </View>
             </View>
 
             {/* Stress Level Selector */}
-            <Text style={styles.stressQuestion}>How are you feeling now?</Text>
-            <View style={styles.stressList}>
-              {[
-                { level: 1, emoji: '😌', label: 'Calm', description: 'Relaxed and grounded' },
-                { level: 5, emoji: '😐', label: 'Okay', description: 'Neutral / manageable' },
-                { level: 9, emoji: '😰', label: 'Stressed', description: 'Tense or overwhelmed' },
-              ].map((item) => {
-                const isSelected = preStressLevel === item.level;
-                return (
-                  <Pressable
-                    key={item.level}
-                    style={({ pressed }) => [
-                      styles.stressRow,
-                      isSelected && styles.stressRowActive,
-                      pressed && styles.stressRowPressed,
-                      pressed && isSelected && styles.stressRowPressedActive,
-                    ]}
-                    android_ripple={{ color: 'rgba(45, 212, 191, 0.18)' }}
-                    onPressIn={() => {
-                      hapticSelection();
-                    }}
-                    onPress={() => handleStressLevelChange(item.level)}
-                    hitSlop={12}
-                  >
-                    <View style={[styles.stressEmojiWrap, isSelected && styles.stressEmojiWrapActive]}>
-                      <Text style={styles.stressEmoji}>{item.emoji}</Text>
-                    </View>
-                    <View style={styles.stressTextCol}>
-                      <Text style={[styles.stressRowTitle, isSelected && styles.stressRowTitleActive]}>
-                        {item.label}
-                      </Text>
-                      <Text style={[styles.stressRowSubtitle, isSelected && styles.stressRowSubtitleActive]}>
-                        {item.description}
-                      </Text>
-                    </View>
-                    <View style={[styles.stressRadioOuter, isSelected && styles.stressRadioOuterActive]}>
-                      {isSelected && <View style={styles.stressRadioInner} />}
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-            <Text style={styles.stressHint}>This helps personalize your session</Text>
+            <Text style={styles.stressQuestion}>{tr("How are you feeling now?")}</Text>
+            <StressRating value={preStressLevel} onChange={handleStressLevelChange} />
+            <Text style={styles.stressHint}>{tr("This helps personalize your session")}</Text>
 
             {/* Audio Selector */}
             <AudioSelector
@@ -564,20 +474,18 @@ export const ExerciseSessionScreen: React.FC = () => {
     }
   };
 
-  const { play: playAudio, stop: stopAudio, pause: pauseAudio, setVolume, isPlaying: isAudioPlaying, presetInfo } = useAudio({
+  const { play: playAudio, stop: stopAudio, pause: pauseAudio, setVolume, presetInfo } = useAudio({
     preset: audioPresetKey,
     volume: audioVolume,
     loop: true
   });
 
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [preStressLevel, setPreStressLevel] = useState(entryPreStress ?? 5);
+  const [preStressLevel, setPreStressLevel] = useState<number | null>(null);
   const [preSessionStep, setPreSessionStep] = useState<1 | 2 | 3>(1);
-  const [sessionState, setSessionState] = useState<'stress_prompt' | 'countdown' | 'playing' | 'paused'>('stress_prompt');
+  const [sessionState, setSessionState] = useState<PracticeState>('stress_prompt');
   const [showTutorial, setShowTutorial] = useState(false);
 
-  // Get background info for this exercise
-  const exerciseBackground = getExerciseBackground(exerciseCategory || 'default');
 
   const activeOnboardingPage = onboardingPages[currentPage];
 
@@ -616,6 +524,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   // Update audio recommendation when stress level changes
   const handleStressLevelChange = (level: number) => {
+    hapticSelection();
     setPreStressLevel(level);
 
     if (exerciseCategory) {
@@ -632,7 +541,7 @@ export const ExerciseSessionScreen: React.FC = () => {
   // Initialize recommendation on mount
   useEffect(() => {
     if (exerciseCategory) {
-      const recommendation = getAudioRecommendation(exerciseCategory as ExerciseCategory, preStressLevel);
+      const recommendation = getAudioRecommendation(exerciseCategory as ExerciseCategory, preStressLevel ?? 5);
       setAudioRecommendation({
         primary: recommendation.primary,
         reason: recommendation.reason,
@@ -644,349 +553,161 @@ export const ExerciseSessionScreen: React.FC = () => {
     }
   }, []);
   const [countdownValue, setCountdownValue] = useState(3);
-  const [currentPhase, setCurrentPhase] = useState<BreathingPhase>('inhale');
-  const [phaseTime, setPhaseTime] = useState(pattern.inhale);
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [activeElapsedMs, setActiveElapsedMs] = useState(0);
   const sessionDuration = durationMinutes * 60;
-
-  const [smoothPhaseProgress, setSmoothPhaseProgress] = useState(0);
-
-  const phaseFadeAnim = useRef(new Animated.Value(1)).current;
-  const prevPhaseColorRef = useRef<string>(Colors.primary);
-  const currentPhaseColorRef = useRef<string>(Colors.primary);
-
-  const sessionStartedAtMsRef = useRef<number | null>(null);
-  const pausedAtMsRef = useRef<number | null>(null);
-  const pausedTotalMsRef = useRef<number>(0);
-  const isAutoPausingRef = useRef(false);
-
+  const elapsedTime = Math.min(sessionDuration, Math.floor(activeElapsedMs / 1000));
+  const clock = useRef(createPracticeClock()).current;
+  const stateRef = useRef(sessionState);
+  stateRef.current = sessionState;
   const isPlaying = sessionState === 'playing';
+  const cycleSegments = useMemo(() => buildCycleSegments(pattern), [pattern]);
+  const frame = getBreathFrame(cycleSegments.length ? cycleSegments : buildCycleSegments(DEFAULT_PATTERN), activeElapsedMs);
+  const currentPhase = frame.phase;
+  const smoothPhaseProgress = frame.phaseProgress;
+  const activeSegmentIndex = frame.activeSegmentIndex;
+  const cycleProgress = frame.cycleProgress;
+  const cycleTotalSeconds = cycleSegments.reduce((sum, segment) => sum + segment.duration, 0) || 1;
+  const pausePractice = useCallback(() => {
+    clock.pause();
+    setActiveElapsedMs(clock.elapsed());
+    pauseAudio();
+    stateRef.current = interruptPractice(stateRef.current);
+    setSessionState(stateRef.current);
+  }, [clock, pauseAudio]);
 
-  const scaleAnim = useRef(new Animated.Value(0.6)).current;
-  const phaseTextOpacityAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    let active = true;
+    AccessibilityInfo.isReduceMotionEnabled().then((value) => { if (active) setReduceMotion(value); });
+    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
+    return () => { active = false; sub.remove(); };
+  }, []);
 
-  const phaseStartedAtMsRef = useRef<number | null>(null);
-  const phasePausedAtMsRef = useRef<number | null>(null);
-  const phasePausedTotalMsRef = useRef<number>(0);
-  // Tracks the phase we last reset progress for, so resuming from pause does
-  // not restart the current phase's progress (only a real phase change does).
-  const lastResetPhaseRef = useRef<BreathingPhase>('inhale');
-  // Counts completed rapid breaths in the current Wim Hof round so the state
-  // machine knows when to switch from rapid cycling into the retention hold.
-  const wimHofBreathCountRef = useRef<number>(0);
+  useEffect(() => {
+    if (!isPlaying || AppState.currentState !== 'active') { clock.pause(); return; }
+    clock.resume();
+    let id = 0;
+    const tick = () => {
+      if (AppState.currentState !== 'active' || stateRef.current !== 'playing') { pausePractice(); return; }
+      setActiveElapsedMs(clock.elapsed());
+      id = requestAnimationFrame(tick);
+    };
+    id = requestAnimationFrame(tick);
+    return () => { cancelAnimationFrame(id); clock.pause(); };
+  }, [isPlaying, clock, pausePractice]);
+
+  const lastHapticTransition = useRef(-1);
+  useEffect(() => {
+    if (!isPlaying || !isBreathingExercise || lastHapticTransition.current === frame.transition) return;
+    lastHapticTransition.current = frame.transition;
+    hapticBreathingPhase();
+  }, [isPlaying, isBreathingExercise, frame.transition, hapticBreathingPhase]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') pausePractice();
+    });
+    return () => sub.remove();
+  }, [pausePractice]);
+
+  useEffect(() => navigation.addListener('beforeRemove', () => {
+    clock.pause();
+    stopAudio();
+  }), [navigation, clock, stopAudio]);
 
   // Get label for current phase (with special pattern support)
   const getPhaseLabel = (phase: BreathingPhase): string => {
     // Special labels based on pattern type
     if (pattern.special === 'humming' && phase === 'exhale') {
-      return 'Hum ';
+      return tr("Hum ");
     }
     if (pattern.special === 'roar' && phase === 'exhale') {
-      return 'Roar ';
+      return tr("Roar ");
     }
     if (pattern.special === 'ha_sound' && phase === 'exhale') {
-      return 'HA! ';
+      return tr("HA! ");
     }
 
     switch (phase) {
       case 'inhale':
-        return 'Inhale';
+        return tr("Inhale");
       case 'inhale2':
-        return 'Inhale +'; // Second inhale for physiological sigh
+        return tr("Inhale +"); // Second inhale for physiological sigh
       case 'hold':
-        return 'Hold';
+        return tr("Hold");
       case 'exhale':
-        return 'Exhale';
+        return tr("Exhale");
       case 'rest':
-        return 'Rest';
+        return tr("Rest");
       case 'retention':
-        return 'Hold Empty'; // For Wim Hof retention
+        return tr("Hold Empty"); // For Wim Hof retention
       default:
-        return 'Breathe';
+        return tr("Breathe");
     }
   };
 
   const getPhaseCoachLine = (phase: BreathingPhase): string => {
     if (pattern.special === 'humming' && phase === 'exhale') {
-      return 'Exhale with a gentle hum.';
+      return tr("Exhale with a gentle hum.");
     }
     if (pattern.special === 'roar' && phase === 'exhale') {
-      return 'Exhale with a relaxed roar.';
+      return tr("Exhale with a relaxed roar.");
     }
     if (pattern.special === 'ha_sound' && phase === 'exhale') {
-      return 'Exhale and let out a soft “HA”.';
+      return tr("Exhale and let out a soft “HA”.");
     }
     if (pattern.special === 'double_inhale') {
-      if (phase === 'inhale') return 'Inhale gently through the nose.';
-      if (phase === 'inhale2') return 'Top up with a quick sip of air.';
-      if (phase === 'exhale') return 'Long, slow exhale.';
-      if (phase === 'rest') return 'Pause and relax your shoulders.';
+      if (phase === 'inhale') return tr("Inhale gently through the nose.");
+      if (phase === 'inhale2') return tr("Top up with a quick sip of air.");
+      if (phase === 'exhale') return tr("Long, slow exhale.");
+      if (phase === 'rest') return tr("Pause and relax your shoulders.");
     }
     if (pattern.special === 'wim_hof') {
-      if (phase === 'inhale') return 'Deep inhale into the belly and chest.';
-      if (phase === 'exhale') return 'Let it go (no force).';
-      if (phase === 'retention') return 'Hold after exhale. Stay relaxed.';
+      if (phase === 'inhale') return tr("Deep inhale into the belly and chest.");
+      if (phase === 'exhale') return tr("Let it go (no force).");
+      if (phase === 'retention') return tr("Hold after exhale. Stay relaxed.");
     }
 
     switch (phase) {
       case 'inhale':
-        return 'Inhale slowly through the nose.';
+        return tr("Inhale slowly through the nose.");
       case 'inhale2':
-        return 'A second, smaller inhale.';
+        return tr("A second, smaller inhale.");
       case 'hold':
-        return 'Stay still. Soften your face.';
+        return tr("Stay still. Soften your face.");
       case 'exhale':
-        return 'Exhale gently and fully.';
+        return tr("Exhale gently and fully.");
       case 'rest':
-        return 'Rest. Let the breath settle.';
+        return tr("Rest. Let the breath settle.");
       case 'retention':
-        return 'Hold on empty. Stay calm.';
+        return tr("Hold on empty. Stay calm.");
       default:
-        return 'Follow the circle.';
+        return tr("Follow the circle.");
     }
   };
-
-  // Get next phase (with special pattern support)
-  const getNextPhase = (phase: BreathingPhase): BreathingPhase => {
-    // Double inhale pattern (Physiological Sigh)
-    if (pattern.special === 'double_inhale') {
-      switch (phase) {
-        case 'inhale':
-          return 'inhale2'; // Go to second inhale
-        case 'inhale2':
-          return 'exhale';
-        case 'exhale':
-          return pattern.rest > 0 ? 'rest' : 'inhale';
-        case 'rest':
-          return 'inhale';
-        default:
-          return 'inhale';
-      }
-    }
-
-    // Wim Hof pattern: rapid_cycles breaths, then a retention hold, then repeat.
-    // Pure read of the breath counter; the counter is advanced at the point a
-    // phase actually changes (in the timer), never here (this also runs for the
-    // "next phase" preview label).
-    if (pattern.special === 'wim_hof') {
-      const breathsPerRound = pattern.rapid_cycles || 30;
-      switch (phase) {
-        case 'inhale':
-          return 'exhale';
-        case 'exhale':
-          return wimHofBreathCountRef.current + 1 >= breathsPerRound ? 'retention' : 'inhale';
-        case 'retention':
-          return 'inhale'; // After retention, start a new round
-        default:
-          return 'inhale';
-      }
-    }
-
-    // Standard pattern
-    switch (phase) {
-      case 'inhale':
-        return pattern.hold > 0 ? 'hold' : 'exhale';
-      case 'hold':
-        return 'exhale';
-      case 'exhale':
-        return pattern.rest > 0 ? 'rest' : 'inhale';
-      case 'rest':
-        return 'inhale';
-      default:
-        return 'inhale';
-    }
-  };
-
-  // Get duration for phase (with special pattern support)
-  const getPhaseDuration = (phase: BreathingPhase): number => {
-    // Special durations
-    if (pattern.special === 'double_inhale') {
-      if (phase === 'inhale') return 2; // First short inhale
-      if (phase === 'inhale2') return 1; // Second quick inhale
-      if (phase === 'exhale') return 8; // Long exhale
-      if (phase === 'rest') return pattern.rest;
-    }
-
-    if (pattern.special === 'wim_hof') {
-      if (phase === 'retention') return pattern.retention_seconds || 60;
-    }
-
-    // Map phase to pattern property
-    switch (phase) {
-      case 'inhale':
-      case 'inhale2':
-        return pattern.inhale;
-      case 'hold':
-        return pattern.hold;
-      case 'exhale':
-        return pattern.exhale;
-      case 'rest':
-        return pattern.rest;
-      case 'retention':
-        return pattern.retention_seconds || 30;
-      default:
-        return pattern.inhale;
-    }
-  };
-
-  // Animate the breathing circle
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    let targetScale = 0.6;
-    switch (currentPhase) {
-      case 'inhale':
-        targetScale = 1;
-        break;
-      case 'inhale2':
-        targetScale = 1.1; // Slightly larger for second inhale
-        break;
-      case 'hold':
-        targetScale = 1;
-        break;
-      case 'exhale':
-        targetScale = 0.6;
-        break;
-      case 'rest':
-        targetScale = 0.6;
-        break;
-      case 'retention':
-        targetScale = 0.4; // Smallest for empty hold
-        break;
-    }
-
-    Animated.timing(scaleAnim, {
-      toValue: targetScale,
-      duration: getPhaseDuration(currentPhase) * 1000,
-      useNativeDriver: true,
-    }).start();
-
-    // Freeze the circle where it is when the session pauses (or the phase
-    // changes) instead of letting the running animation play on in the background.
-    return () => {
-      scaleAnim.stopAnimation();
-    };
-  }, [currentPhase, isPlaying]);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    phaseTextOpacityAnim.setValue(0);
-    Animated.timing(phaseTextOpacityAnim, {
-      toValue: 1,
-      duration: 260,
-      useNativeDriver: true,
-    }).start();
-  }, [currentPhase, isPlaying, phaseTextOpacityAnim]);
-
-  // Timer logic
-  useEffect(() => {
-    if (!isPlaying) return;
-
-    const ensureSessionStart = () => {
-      if (sessionStartedAtMsRef.current === null) {
-        sessionStartedAtMsRef.current = Date.now();
-        pausedTotalMsRef.current = 0;
-        pausedAtMsRef.current = null;
-        wimHofBreathCountRef.current = 0;
-      }
-      if (pausedAtMsRef.current !== null) {
-        pausedTotalMsRef.current += Date.now() - pausedAtMsRef.current;
-        pausedAtMsRef.current = null;
-      }
-    };
-
-    ensureSessionStart();
-
-    const timer = setInterval(() => {
-      const startedAt = sessionStartedAtMsRef.current;
-      if (startedAt === null) return;
-
-      // Advance the breathing phase off the wall clock, so fractional-second
-      // phases (rapid / holotropic / wim_hof) keep their true duration instead
-      // of being rounded up to whole-second ticks. Non-breathing exercises have
-      // no breath phases, so skip it (otherwise phantom phase haptics fire).
-      const phaseStart = phaseStartedAtMsRef.current;
-      if (isBreathingExercise && phaseStart !== null) {
-        const phaseDurationMs = getPhaseDuration(currentPhase) * 1000;
-        const phaseElapsedMs = Date.now() - phaseStart - phasePausedTotalMsRef.current;
-
-        if (phaseDurationMs > 0 && phaseElapsedMs >= phaseDurationMs) {
-          const nextPhase = getNextPhase(currentPhase);
-          // Count the completed rapid breath before switching; reset when the
-          // round ends (i.e. we move into the retention hold).
-          if (pattern.special === 'wim_hof' && currentPhase === 'exhale') {
-            const breathsPerRound = pattern.rapid_cycles || 30;
-            const completed = wimHofBreathCountRef.current + 1;
-            wimHofBreathCountRef.current = completed >= breathsPerRound ? 0 : completed;
-          }
-          // Carry the phase start forward so a stray tick before the phase-change
-          // effect re-runs cannot advance the phase twice.
-          phaseStartedAtMsRef.current = Date.now();
-          setCurrentPhase(nextPhase);
-          hapticBreathingPhase();
-          setPhaseTime(getPhaseDuration(nextPhase));
-        } else {
-          const remaining = Math.max(0, Math.ceil((phaseDurationMs - phaseElapsedMs) / 1000));
-          setPhaseTime((prev) => (prev === remaining ? prev : remaining));
-        }
-      }
-
-      const elapsedSeconds = Math.floor(
-        (Date.now() - startedAt - pausedTotalMsRef.current) / 1000
-      );
-      const clampedElapsed = Math.min(sessionDuration, Math.max(0, elapsedSeconds));
-      setElapsedTime((prev) => (prev === clampedElapsed ? prev : clampedElapsed));
-    }, 100);
-
-    return () => clearInterval(timer);
-  }, [isPlaying, currentPhase]);
-
-  useEffect(() => {
-    if (sessionState !== 'paused') return;
-    if (pausedAtMsRef.current !== null) return;
-    if (sessionStartedAtMsRef.current === null) return;
-    pausedAtMsRef.current = Date.now();
-  }, [sessionState]);
-
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active') {
-        isAutoPausingRef.current = false;
-        return;
-      }
-      if (sessionState !== 'playing') return;
-      if (isAutoPausingRef.current) return;
-      isAutoPausingRef.current = true;
-      pauseAudio();
-      setSessionState('paused');
-    });
-
-    return () => {
-      sub.remove();
-    };
-  }, [pauseAudio, sessionState]);
 
   // Handle session completion
   useEffect(() => {
-    if (elapsedTime >= sessionDuration && sessionId && sessionState === 'playing') {
+    if (elapsedTime >= sessionDuration && sessionId && sessionState === 'playing' && isStressRating(preStressLevel)) {
+      clock.pause();
       setSessionState('paused');
       stopAudio();
       // Haptic feedback for session completion
       hapticSuccess();
       navigation.replace('PostSession', {
         sessionId,
+        exerciseId,
         exerciseName,
         durationSeconds: elapsedTime,
         preStressLevel,
-        journeyId,
-        journeyChapterIndex,
+        journeyContext,
       });
     }
-  }, [elapsedTime, sessionDuration, sessionId, sessionState, journeyId, journeyChapterIndex]);
+  }, [elapsedTime, sessionDuration, sessionId, sessionState, journeyContext]);
 
   // Countdown timer
   useEffect(() => {
     if (sessionState !== 'countdown') return;
+    if (AppState.currentState !== 'active') { pausePractice(); return; }
 
     if (countdownValue === 0) {
       setSessionState('playing');
@@ -998,11 +719,12 @@ export const ExerciseSessionScreen: React.FC = () => {
     }
 
     const timer = setTimeout(() => {
-      setCountdownValue((prev) => prev - 1);
+      if (AppState.currentState !== 'active' || stateRef.current !== 'countdown') { pausePractice(); return; }
+      setCountdownValue((prev) => Math.max(0, prev - 1));
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [sessionState, countdownValue, audioPresetKey, playAudio]);
+  }, [sessionState, countdownValue, audioPresetKey, playAudio, pausePractice]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -1011,14 +733,21 @@ export const ExerciseSessionScreen: React.FC = () => {
   };
 
   const [isStartingSession, setIsStartingSession] = useState(false);
+  const startingSessionRef = useRef(false);
 
   const handleStartSession = async () => {
-    if (isStartingSession) return;
+    if (startingSessionRef.current) return;
+    if (!isStressRating(preStressLevel)) {
+      setPreSessionStep(2);
+      Alert.alert(tr("Choose your stress level"), tr("Select how stressed you feel before starting this practice."));
+      return;
+    }
     if (!exerciseId) {
-      Alert.alert('Error', 'Missing exercise id. Please go back and try again.');
+      Alert.alert(tr("Error"), tr("Missing exercise id. Please go back and try again."));
       return;
     }
 
+    startingSessionRef.current = true;
     setIsStartingSession(true);
     try {
       // Start the session
@@ -1029,27 +758,28 @@ export const ExerciseSessionScreen: React.FC = () => {
       });
       if (error) {
         console.error('[ExerciseSessionScreen] Failed to start session:', error);
-        Alert.alert('Error', error.message || 'Failed to start session. Please try again.');
+        Alert.alert(tr("Error"), tr("Failed to start session. Please try again."));
         return;
       }
 
       if (!sessionData) {
         console.error('[ExerciseSessionScreen] Failed to start session: empty response');
-        Alert.alert('Error', 'Failed to start session. Please try again.');
+        Alert.alert(tr("Error"), tr("Failed to start session. Please try again."));
         return;
       }
 
       setSessionId(sessionData.id);
       // Start countdown
       setCountdownValue(3);
-      setSessionState('countdown');
+      setSessionState(AppState.currentState === 'active' ? 'countdown' : 'countdown_paused');
     } catch (error) {
       console.error('[ExerciseSessionScreen] Unexpected startSession error:', error);
       Alert.alert(
-        'Error',
-        error instanceof Error ? error.message : 'Failed to start session. Please try again.'
+        tr("Error"),
+        tr("Failed to start session. Please try again.")
       );
     } finally {
+      startingSessionRef.current = false;
       setIsStartingSession(false);
     }
   };
@@ -1057,17 +787,34 @@ export const ExerciseSessionScreen: React.FC = () => {
   const handlePlayPause = async () => {
     if (sessionState === 'stress_prompt') {
       handleStartSession();
-    } else if (sessionState === 'playing') {
-      pauseAudio();
-      setSessionState('paused');
-    } else if (sessionState === 'paused') {
-      playAudio();
-      setSessionState('playing');
+    } else if (sessionState === 'playing' || sessionState === 'countdown') {
+      pausePractice();
+    } else if (AppState.currentState === 'active') {
+      if (sessionState === 'countdown_paused') {
+        setSessionState('countdown');
+      } else {
+        setSessionState('playing');
+        playAudio();
+      }
     }
   };
 
+  const openExerciseInfo = () => {
+    pausePractice();
+    setShowExerciseInfo(true);
+  };
+  const closeExerciseInfo = () => {
+    setShowExerciseInfo(false);
+    requestAnimationFrame(() => { const node = findNodeHandle(infoButtonRef.current); if (node) AccessibilityInfo.setAccessibilityFocus(node); });
+  };
+  const focusInfoButton = () => {
+    const node = findNodeHandle(infoButtonRef.current);
+    if (node) AccessibilityInfo.setAccessibilityFocus(node);
+  };
+
   const handleClose = async () => {
-    // Stop audio before leaving
+    // Interrupt countdown and clock before awaiting the database write.
+    pausePractice();
     await stopAudio();
 
     // Mark session as abandoned if it was started
@@ -1080,10 +827,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   const handleHeaderLeft = async () => {
     if (sessionState === 'stress_prompt' && preSessionStep > 1) {
-      setPreSessionStep((prev) => {
-        const back = (prev - 1) as 1 | 2 | 3;
-        return !stressStepEnabled && back === 2 ? 1 : back;
-      });
+      setPreSessionStep((prev) => (prev - 1) as 1 | 2 | 3);
       return;
     }
 
@@ -1093,16 +837,16 @@ export const ExerciseSessionScreen: React.FC = () => {
   const headerTitle = useMemo(() => {
     if (sessionState !== 'stress_prompt') return exerciseName;
     if (preSessionStep === 1) return exerciseName;
-    if (preSessionStep === 2) return 'Before we start';
-    return 'Audio';
-  }, [exerciseName, preSessionStep, sessionState]);
+    if (preSessionStep === 2) return tr("Before we start");
+    return tr("Audio");
+  }, [exerciseName, preSessionStep, sessionState, language]);
 
   const headerSubtitle = useMemo(() => {
-    if (sessionState !== 'stress_prompt') return `${exerciseInfo.origin} · ${durationMinutes} min`;
-    if (preSessionStep === 1) return `${exerciseInfo.origin} - ${durationMinutes} min`;
-    if (preSessionStep === 2) return 'How are you feeling right now?';
-    return 'Choose a background sound';
-  }, [durationMinutes, exerciseInfo.origin, preSessionStep, sessionState]);
+    if (sessionState !== 'stress_prompt') return `${exerciseInfo.origin} · ${formatMinutes(durationMinutes)}`;
+    if (preSessionStep === 1) return `${exerciseInfo.origin} · ${formatMinutes(durationMinutes)}`;
+    if (preSessionStep === 2) return tr("How stressed do you feel right now?");
+    return tr("Choose a background sound");
+  }, [durationMinutes, exerciseInfo.origin, preSessionStep, sessionState, language]);
 
   const progress = elapsedTime / sessionDuration;
 
@@ -1113,154 +857,22 @@ export const ExerciseSessionScreen: React.FC = () => {
 
   const volumeLevels = [0, 0.25, 0.5, 0.75, 1];
 
-  const bottomBarPaddingBottom = Math.max(Math.min(insets.bottom, Spacing.md), Spacing.xs);
-  const bottomBarHeight = BOTTOM_BAR_HEIGHT + bottomBarPaddingBottom;
+  const bottomBarPaddingBottom = Math.max(insets.bottom, Spacing.sm);
+  const [measuredBottomBarHeight, setMeasuredBottomBarHeight] = useState(BOTTOM_BAR_HEIGHT);
+  const bottomBarHeight = measuredBottomBarHeight;
   const onboardingContentPaddingBottom = 140 + insets.bottom;
   const onboardingFooterPaddingBottom = Spacing.lg + insets.bottom;
 
-  const nextPhase = useMemo(() => getNextPhase(currentPhase), [currentPhase]);
-  const nowLabel = useMemo(() => getPhaseLabel(currentPhase), [currentPhase]);
-  const nextLabel = useMemo(() => getPhaseLabel(nextPhase), [nextPhase]);
-  const nowCoachLine = useMemo(() => getPhaseCoachLine(currentPhase), [currentPhase]);
-  const nextCoachLine = useMemo(() => getPhaseCoachLine(nextPhase), [nextPhase]);
-
-  const phaseDuration = useMemo(() => getPhaseDuration(currentPhase), [currentPhase]);
-
+  const nextPhase = frame.nextPhase;
+  const nowLabel = getPhaseLabel(currentPhase);
+  const nextLabel = getPhaseLabel(nextPhase);
+  const nowCoachLine = getPhaseCoachLine(currentPhase);
   const phasePalette = useMemo(() => getPhaseTypePalette(), []);
-  const activePhaseColor = useMemo(() => getPhaseColor(currentPhase, phasePalette), [currentPhase, phasePalette]);
-
-  // Smooth phase progress (for ring + dot), based on real time rather than 1s ticks
-  useEffect(() => {
-    if (sessionState !== 'playing') {
-      if (phaseStartedAtMsRef.current !== null && phasePausedAtMsRef.current === null) {
-        phasePausedAtMsRef.current = Date.now();
-      }
-      return;
-    }
-
-    // entering/resuming playing
-    if (phaseStartedAtMsRef.current === null) {
-      phaseStartedAtMsRef.current = Date.now();
-      phasePausedTotalMsRef.current = 0;
-      phasePausedAtMsRef.current = null;
-      setSmoothPhaseProgress(0);
-      return;
-    }
-
-    if (phasePausedAtMsRef.current !== null) {
-      phasePausedTotalMsRef.current += Date.now() - phasePausedAtMsRef.current;
-      phasePausedAtMsRef.current = null;
-    }
-  }, [sessionState]);
-
-  useEffect(() => {
-    // Crossfade from the *previous* active color to the new one
-    const previous = currentPhaseColorRef.current;
-    prevPhaseColorRef.current = previous;
-    currentPhaseColorRef.current = activePhaseColor;
-
-    phaseFadeAnim.stopAnimation();
-    phaseFadeAnim.setValue(0);
-    Animated.timing(phaseFadeAnim, {
-      toValue: 1,
-      duration: 320,
-      useNativeDriver: false,
-    }).start();
-  }, [activePhaseColor, phaseFadeAnim]);
-
-  useEffect(() => {
-    if (sessionState !== 'playing') return;
-    // Only restart phase progress on an actual phase change. On resume from
-    // pause the phase is unchanged, so we let the pause-accounting effect above
-    // keep the progress continuous instead of snapping the graph back to 0.
-    if (lastResetPhaseRef.current === currentPhase) return;
-    lastResetPhaseRef.current = currentPhase;
-    phaseStartedAtMsRef.current = Date.now();
-    phasePausedAtMsRef.current = null;
-    phasePausedTotalMsRef.current = 0;
-    setSmoothPhaseProgress(0);
-  }, [currentPhase, sessionState]);
-
-  useEffect(() => {
-    if (sessionState !== 'playing') return;
-    if (phaseDuration <= 0) return;
-
-    let rafId = 0;
-
-    const tick = () => {
-      const startedAt = phaseStartedAtMsRef.current;
-      if (startedAt === null) {
-        rafId = requestAnimationFrame(tick);
-        return;
-      }
-
-      const elapsedMs = Date.now() - startedAt - phasePausedTotalMsRef.current;
-      const progress = clampNumber(elapsedMs / (phaseDuration * 1000), 0, 1);
-      setSmoothPhaseProgress(progress);
-
-      rafId = requestAnimationFrame(tick);
-    };
-
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-  }, [phaseDuration, sessionState]);
-
-  const cycleSegments = useMemo(() => buildCycleSegments(pattern), [pattern]);
-
-  const cycleTotalSeconds = useMemo(() => {
-    const total = cycleSegments.reduce((sum, s) => sum + s.duration, 0);
-    return total > 0 ? total : 1;
-  }, [cycleSegments]);
-
-  const activeSegmentIndex = useMemo(() => {
-    const idx = cycleSegments.findIndex((s) => s.phase === currentPhase);
-    return idx >= 0 ? idx : 0;
-  }, [currentPhase, cycleSegments]);
-
+  const activePhaseColor = getPhaseColor(currentPhase, phasePalette);
   const phaseColor = activePhaseColor;
-
-  const cycleProgress = useMemo(() => {
-    // Wim Hof retention is a hold on empty lungs and is not part of the rhythm
-    // cycle; park the dot at the end of the cycle (the exhale trough) for the
-    // whole hold instead of crawling it through the inhale segment.
-    if (currentPhase === 'retention') return 1;
-    const elapsedBefore = cycleSegments
-      .slice(0, activeSegmentIndex)
-      .reduce((sum, segment) => sum + segment.duration, 0);
-    const currentDuration = cycleSegments[activeSegmentIndex]?.duration ?? 1;
-    const progressInSegment = clampNumber(smoothPhaseProgress, 0, 1) * currentDuration;
-    return clampNumber((elapsedBefore + progressInSegment) / cycleTotalSeconds, 0, 1);
-  }, [activeSegmentIndex, cycleSegments, cycleTotalSeconds, smoothPhaseProgress, currentPhase]);
-
-  const graphMarkers = useMemo<GraphMarker[]>(() => {
-    if (!presetInfo || audioPresetKey === 'silence') return [];
-    const option = AUDIO_OPTIONS.find((audio) => audio.id === audioPresetKey);
-    const tone = (() => {
-      if (audioPresetKey.includes('binaural')) return 'binaural';
-      if (audioPresetKey === 'om') return 'om';
-      if (audioPresetKey.includes('ocean') || audioPresetKey.includes('rain') || audioPresetKey.includes('creek')) {
-        return 'water';
-      }
-      if (option?.type === 'nature') return 'nature';
-      if (option?.type === 'tibetan') return 'tibetan';
-      if (option?.type === 'frequency') return 'frequency';
-      return 'default';
-    })();
-
-    return [
-      {
-        id: `audio-${audioPresetKey}`,
-        label: presetInfo.name,
-        icon: option?.icon ?? 'musical-notes-outline',
-        offset: 0.5,
-        tone,
-      },
-    ];
-  }, [audioPresetKey, presetInfo]);
-
   const curvePreset = useMemo<GraphCurvePreset>(() => {
-    if (preStressLevel >= 7) return 'energy';
-    if (preStressLevel <= 3) return 'relax';
+    if (preStressLevel !== null && preStressLevel >= 7) return 'energy';
+    if (preStressLevel !== null && preStressLevel <= 3) return 'relax';
     return 'default';
   }, [preStressLevel]);
 
@@ -1269,32 +881,16 @@ export const ExerciseSessionScreen: React.FC = () => {
     return curvePresetOverride;
   }, [curvePreset, curvePresetOverride]);
 
-  const suggestedPresetLabel = useMemo(() => {
-    switch (curvePreset) {
-      case 'relax':
-        return 'Relax';
-      case 'energy':
-        return 'Energy';
-      default:
-        return 'Balanced';
-    }
-  }, [curvePreset]);
+  const announcedPhase = isBreathingExercise ? nowLabel : '';
+  useEffect(() => {
+    if (showExerciseInfo || AppState.currentState !== 'active' || sessionState === 'stress_prompt') return;
+    const message = sessionState === 'paused' ? tr("Practice paused") : sessionState === 'countdown_paused' ? tr("Countdown paused") : sessionState === 'countdown' ? tr("Get ready") : isBreathingExercise ? nowLabel : tr("Step {{step}}. {{instruction}}", { step: instructionIndex + 1, instruction: exerciseSteps[instructionIndex] });
+    AccessibilityInfo.announceForAccessibility(message);
+    // Announce state/step/phase changes, never animation frames or tenths of a second.
+  }, [sessionState, announcedPhase, instructionIndex, showExerciseInfo, isBreathingExercise, language]);
 
-  const suggestedPresetColor = useMemo(() => {
-    switch (curvePreset) {
-      case 'relax':
-        return Colors.success;
-      case 'energy':
-        return Colors.warning;
-      default:
-        return Colors.primary;
-    }
-  }, [curvePreset]);
-
-  const phaseTimeText = useMemo(() => {
-    if (sessionState === 'countdown') return '';
-    return `${phaseTime}s`;
-  }, [phaseTime, sessionState]);
+  const rawPhaseTime = sessionState === 'countdown' ? '' : formatPhaseRemaining(frame.remainingSeconds, frame.phaseDuration);
+  const phaseTimeText = rawPhaseTime ? `${formatNumber(Number(rawPhaseTime.slice(0, -1)), { minimumFractionDigits: rawPhaseTime.includes('.') ? 1 : 0 })}s` : '';
 
   useEffect(() => {
     const loadVisualization = async () => {
@@ -1307,26 +903,6 @@ export const ExerciseSessionScreen: React.FC = () => {
     };
     loadVisualization();
   }, []);
-
-  const presetSnapAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    presetSnapAnim.stopAnimation();
-    presetSnapAnim.setValue(0.98);
-    Animated.sequence([
-      Animated.timing(presetSnapAnim, {
-        toValue: 1.02,
-        duration: 120,
-        useNativeDriver: true,
-      }),
-      Animated.spring(presetSnapAnim, {
-        toValue: 1,
-        speed: 18,
-        bounciness: 8,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [resolvedCurvePreset, presetSnapAnim]);
 
   const handlePresetOverrideChange = async (preset: BreathingCurvePresetOverride) => {
     setCurvePresetOverride(preset);
@@ -1365,8 +941,8 @@ export const ExerciseSessionScreen: React.FC = () => {
         {!onboardingChecked ? null : showOnboarding ? (
           <View style={styles.onboardingContainer}>
             <View style={styles.onboardingHeader}>
-              <TouchableOpacity onPress={handleSkipOnboarding}>
-                <Text style={styles.skipText}>Skip</Text>
+              <TouchableOpacity accessibilityRole="button" onPress={handleSkipOnboarding} style={styles.panelCloseButton}>
+                <Text style={styles.skipText}>{tr("Skip")}</Text>
               </TouchableOpacity>
             </View>
 
@@ -1379,6 +955,10 @@ export const ExerciseSessionScreen: React.FC = () => {
               ]}
               showsVerticalScrollIndicator={false}
             >
+              {safetyWarning ? <View style={styles.warningSection}>
+                <Text style={styles.warningTitle}>{tr("Before you begin")}</Text>
+                <Text style={styles.warningText}>{safetyWarning}</Text>
+              </View> : null}
               {!activeOnboardingPage ? null : activeOnboardingPage.customContent ? (
                 renderCustomContent()
               ) : (
@@ -1421,6 +1001,7 @@ export const ExerciseSessionScreen: React.FC = () => {
             <View style={[styles.onboardingFooter, { paddingBottom: onboardingFooterPaddingBottom }]}>
               <TouchableOpacity
                 style={styles.nextButton}
+                accessibilityRole="button"
                 onPress={handleNextPage}
               >
                 <LinearGradient
@@ -1429,7 +1010,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                 >
                   <View style={styles.nextButtonContent}>
                     <Text style={styles.nextButtonText}>
-                      {currentPage === onboardingPages.length - 1 ? 'Get Started' : 'Next'}
+                      {currentPage === onboardingPages.length - 1 ? tr("Get Started") : tr("Next")}
                     </Text>
                   </View>
                   <Ionicons
@@ -1459,7 +1040,7 @@ export const ExerciseSessionScreen: React.FC = () => {
             />
 
             <View style={styles.header}>
-              <TouchableOpacity onPress={handleHeaderLeft} style={styles.headerIconButton}>
+              <TouchableOpacity onPress={handleHeaderLeft} style={styles.headerIconButton} accessibilityRole="button" accessibilityLabel={sessionState === 'stress_prompt' && preSessionStep > 1 ? tr("Previous preparation step") : tr("End practice and close")}>
                 <Ionicons
                   name={sessionState === 'stress_prompt' && preSessionStep > 1 ? 'chevron-back' : 'close'}
                   size={22}
@@ -1467,11 +1048,11 @@ export const ExerciseSessionScreen: React.FC = () => {
                 />
               </TouchableOpacity>
               <View style={styles.headerTitleContainer}>
-                <Text style={styles.headerTitle} numberOfLines={1}>
+                <Text style={styles.headerTitle} numberOfLines={2}>
                   {headerTitle}
                 </Text>
                 <View style={styles.headerMetaRow}>
-                  <Text style={styles.headerSubtitle} numberOfLines={1}>
+                  <Text style={styles.headerSubtitle} numberOfLines={2}>
                     {headerSubtitle}
                   </Text>
                 </View>
@@ -1494,9 +1075,14 @@ export const ExerciseSessionScreen: React.FC = () => {
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={styles.preSessionInfoContent}
                       >
+                        {safetyWarning ? <View style={styles.warningSection}>
+                          <Text style={styles.warningTitle}>{tr("Before you begin")}</Text>
+                          <Text style={styles.warningText}>{safetyWarning}</Text>
+                        </View> : null}
+                        {!isBreathingExercise && <Text style={styles.infoHistory}>{tr("Manual practice: follow the steps at your own pace. No breathing rhythm or hold duration is imposed.")}</Text>}
                         <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
 
-                        <Text style={styles.infoSectionTitle}>How to do it</Text>
+                    <Text style={styles.infoSectionTitle}>{tr("How to do it")}</Text>
                         {exerciseSteps.map((step: string, index: number) => (
                           <View key={index} style={styles.infoStepRow}>
                             <View style={styles.infoStepNumber}>
@@ -1508,7 +1094,7 @@ export const ExerciseSessionScreen: React.FC = () => {
 
                         {exerciseTips && exerciseTips.length > 0 && (
                           <>
-                            <Text style={styles.infoSectionTitle}> Tips</Text>
+                            <Text style={styles.infoSectionTitle}> {tr("Tips")}</Text>
                             {exerciseTips.map((tip: string, index: number) => (
                               <Text key={index} style={styles.infoTip}>
                                 • {tip}
@@ -1517,7 +1103,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                           </>
                         )}
 
-                        <Text style={styles.infoSectionTitle}> Benefits</Text>
+                        <Text style={styles.infoSectionTitle}> {tr("Benefits")}</Text>
                         <View style={styles.infoBenefits}>
                           {exerciseInfo.benefits.map((benefit: string, idx: number) => (
                             <View key={idx} style={styles.infoBenefitBadge}>
@@ -1530,52 +1116,10 @@ export const ExerciseSessionScreen: React.FC = () => {
                       <View style={styles.preSessionSpacer} />
                     </View>
                   ) : preSessionStep === 2 ? (
-                    <View style={styles.preSessionStepContainer}>
-                      <View style={styles.stressList}>
-                        {[
-                          { level: 1, emoji: '', label: 'Calm', description: 'Relaxed and grounded' },
-                          { level: 5, emoji: '', label: 'Okay', description: 'Neutral / manageable' },
-                          { level: 9, emoji: '', label: 'Stressed', description: 'Tense or overwhelmed' },
-                        ].map((item) => {
-                          const isSelected = preStressLevel === item.level;
-                          return (
-                            <Pressable
-                              key={item.level}
-                              style={({ pressed }) => [
-                                styles.stressRow,
-                                isSelected && styles.stressRowActive,
-                                pressed && styles.stressRowPressed,
-                                pressed && isSelected && styles.stressRowPressedActive,
-                              ]}
-                              android_ripple={{ color: 'rgba(45, 212, 191, 0.18)' }}
-                              onPressIn={() => {
-                                hapticSelection();
-                              }}
-                              onPress={() => handleStressLevelChange(item.level)}
-                              hitSlop={12}
-                            >
-                              <View style={[styles.stressEmojiWrap, isSelected && styles.stressEmojiWrapActive]}>
-                                <Text style={styles.stressEmoji}>{item.emoji}</Text>
-                              </View>
-                              <View style={styles.stressTextCol}>
-                                <Text style={[styles.stressRowTitle, isSelected && styles.stressRowTitleActive]}>
-                                  {item.label}
-                                </Text>
-                                <Text style={[styles.stressRowSubtitle, isSelected && styles.stressRowSubtitleActive]}>
-                                  {item.description}
-                                </Text>
-                              </View>
-                              <View style={[styles.stressRadioOuter, isSelected && styles.stressRadioOuterActive]}>
-                                {isSelected && <View style={styles.stressRadioInner} />}
-                              </View>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
-                      <Text style={styles.stressHint}>This helps personalize your session</Text>
-
-                      <View style={styles.preSessionSpacer} />
-                    </View>
+                    <ScrollView style={styles.preSessionStepContainer} contentContainerStyle={styles.preSessionInfoContent}>
+                      <StressRating value={preStressLevel} onChange={handleStressLevelChange} />
+                      <Text style={styles.stressHint}>{tr("This helps personalize your session")}</Text>
+                    </ScrollView>
                   ) : (
                     <View style={styles.preSessionStepContainer}>
                       <ScrollView
@@ -1595,292 +1139,106 @@ export const ExerciseSessionScreen: React.FC = () => {
                   )}
                 </View>
               ) : (
-                <View style={styles.circleContainer}>
-                  {sessionState === 'countdown' ? (
-                    <>
-                      <Text style={styles.countdownLabel}>Get Ready</Text>
+                <ScrollView style={styles.activeScroll} contentContainerStyle={styles.activeContent}>
+                  {sessionState === 'countdown' || sessionState === 'countdown_paused' ? (
+                    <View style={styles.phaseGuidanceContainer}>
+                      <Text style={styles.countdownLabel} accessibilityLiveRegion="polite">
+                        {sessionState === 'countdown_paused' ? tr("Countdown paused") : tr("Get ready")}
+                      </Text>
                       <Text style={styles.countdownValue}>{countdownValue}</Text>
-                    </>
+                      {sessionState === 'countdown_paused' && <Text style={styles.phaseCoachLine}>{tr("Resume when you are ready.")}</Text>}
+                    </View>
                   ) : (
                     <>
-                      {isBreathingExercise ? (
-                        <View style={styles.phaseGuidanceContainer}>
-                          <Text style={styles.guidanceCaption}>Now</Text>
-                          <Animated.Text style={[styles.phaseLabel, { opacity: phaseTextOpacityAnim }]}>
-                            {nowLabel}
-                          </Animated.Text>
-                          <Animated.Text style={[styles.phaseTime, { opacity: phaseTextOpacityAnim }]}>
-                            {phaseTimeText}
-                          </Animated.Text>
-                          <Animated.Text style={[styles.phaseCoachLine, { opacity: phaseTextOpacityAnim }]}>
-                            {nowCoachLine}
-                          </Animated.Text>
-                          <Text style={styles.guidanceCaption}>Next</Text>
-                          <Text style={styles.nextPhaseLabel}>{nextLabel}</Text>
-                          <Text style={styles.nextPhaseCoachLine}>{nextCoachLine}</Text>
-                        </View>
-                      ) : (
-                        <View style={styles.phaseGuidanceContainer}>
-                          <Text style={styles.guidanceCaption}>Follow along</Text>
-                          <Animated.Text style={[styles.phaseLabel, { opacity: phaseTextOpacityAnim }]}>
-                            {exerciseName}
-                          </Animated.Text>
-                          <Text style={styles.phaseCoachLine}>{exerciseSteps[0] ?? 'Move gently, at your own pace.'}</Text>
-                        </View>
+                      <View style={styles.phaseGuidanceContainer}>
+                        <Text style={styles.phaseLabel}>
+                          {sessionState === 'paused' ? tr("Paused") : isBreathingExercise ? nowLabel : tr("At your own pace")}
+                        </Text>
+                        {isBreathingExercise ? (
+                          <>
+                            <Text style={styles.phaseTime}>{phaseTimeText}</Text>
+                            <Text style={styles.phaseCoachLine}>
+                              {sessionState === 'paused' ? tr("Your place is saved. Resume when you are ready.") : nowCoachLine}
+                            </Text>
+                            <Text style={styles.nextPhaseLabel}>
+                              {sessionState === 'paused' ? tr("Resume: {{phase}}", { phase: nowLabel }) : tr("Next: {{phase}}", { phase: nextLabel })}
+                            </Text>
+                          </>
+                        ) : (
+                          <>
+                            <Text style={styles.guidanceCaption}>{tr("Manual steps · {{step}} of {{total}}", { step: instructionIndex + 1, total: exerciseSteps.length })}</Text>
+                            <Text style={styles.manualInstruction}>{exerciseSteps[instructionIndex]}</Text>
+                            <Text style={styles.phaseCoachLine}>
+                              {sessionState === 'paused' ? tr("Resume before continuing.") : tr("Advance each step when ready. The timer measures your practice; it does not time these instructions.")}
+                            </Text>
+                            <View style={styles.stepControls}>
+                              <TouchableOpacity style={styles.stepButton} disabled={!isPlaying || instructionIndex === 0}
+                                accessibilityRole="button" accessibilityState={{ disabled: !isPlaying || instructionIndex === 0 }}
+                                onPress={() => setInstructionIndex((index) => Math.max(0, index - 1))}>
+                                <Text style={styles.stepButtonText}>{tr("Previous step")}</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity style={styles.stepButton} disabled={!isPlaying}
+                                accessibilityRole="button" accessibilityState={{ disabled: !isPlaying }}
+                                onPress={() => setInstructionIndex((index) => index + 1 < exerciseSteps.length ? index + 1 : 0)}>
+                                <Text style={styles.stepButtonText}>{instructionIndex + 1 < exerciseSteps.length ? tr("Next step") : tr("Back to first step")}</Text>
+                              </TouchableOpacity>
+                            </View>
+                          </>
+                        )}
+                      </View>
+                      {isBreathingExercise && !reduceMotion && (
+                        breathingVisualizationMode === 'graph' ? (
+                          <BreathingGraph width={CIRCLE_SIZE} height={GRAPH_HEIGHT}
+                            segments={cycleSegments} cycleTotalSeconds={cycleTotalSeconds}
+                            cycleProgress={cycleProgress} activePhaseColor={phaseColor}
+                            strokeColor={Colors.textMuted} curvePreset={resolvedCurvePreset} />
+                        ) : (
+                          <View style={[styles.circleWrapper, { width: CIRCLE_SIZE, height: CIRCLE_SIZE }]} accessible={false} importantForAccessibility="no-hide-descendants">
+                            <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE} style={styles.phaseRingSvg}>
+                              {(() => {
+                                let angle = 0;
+                                const radius = CIRCLE_SIZE / 2 - 8;
+                                return cycleSegments.map((segment, index) => {
+                                  const start = angle;
+                                  angle += segment.duration / cycleTotalSeconds * 360;
+                                  const color = getPhaseColor(segment.phase, phasePalette);
+                                  return (
+                                    <React.Fragment key={`${segment.phase}-${index}`}>
+                                      <Path d={describeArcPath(CIRCLE_SIZE / 2, CIRCLE_SIZE / 2, radius, start, angle)} stroke={color} strokeWidth={4} opacity={0.35} fill="none" />
+                                      {index === activeSegmentIndex && smoothPhaseProgress > 0 && (
+                                        <Path d={describeArcPath(CIRCLE_SIZE / 2, CIRCLE_SIZE / 2, radius, start, start + (angle - start) * smoothPhaseProgress)} stroke={color} strokeWidth={6} fill="none" />
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                });
+                              })()}
+                            </Svg>
+                            <View style={[styles.breathingCircle, { width: CIRCLE_SIZE * 0.76, height: CIRCLE_SIZE * 0.76, borderRadius: CIRCLE_SIZE / 2, transform: [{ scale: frame.circleScale }] }]}>
+                              <View style={{ width: '65%', height: '65%', borderRadius: CIRCLE_SIZE / 2, backgroundColor: phaseColor, opacity: 0.18 }} />
+                            </View>
+                          </View>
+                        )
                       )}
                     </>
                   )}
-
-                  {!isBreathingExercise ? (
-                    <View style={styles.circleWrapper}>
-                      <ExerciseAnimation
-                        exercise={{ category: (exerciseCategory ?? 'movement') } as any}
-                        size={CIRCLE_SIZE}
-                        paused={!isPlaying}
-                      />
-                    </View>
-                  ) : breathingVisualizationMode === 'graph' ? (
-                    <Animated.View style={[styles.graphWrapper, { transform: [{ scale: presetSnapAnim }] }]}>
-                      <BreathingGraph
-                        width={CIRCLE_SIZE}
-                        height={GRAPH_HEIGHT}
-                        segments={cycleSegments}
-                        cycleTotalSeconds={cycleTotalSeconds}
-                        cycleProgress={cycleProgress}
-                        activePhaseColor={phaseColor}
-                        strokeColor={Colors.textMuted}
-                        markers={graphMarkers}
-                        curvePreset={resolvedCurvePreset}
-                      />
-                      <View style={styles.graphLegendRow}>
-                        {([
-                          { key: 'inhale', label: 'Inhale' },
-                          { key: 'hold', label: 'Hold' },
-                          { key: 'exhale', label: 'Exhale' },
-                        ] as const).map((item) => (
-                          <View key={item.key} style={styles.graphLegendItem}>
-                            <View
-                              style={[
-                                styles.graphLegendDot,
-                                { backgroundColor: getPhaseColor(item.key, phasePalette) },
-                              ]}
-                            />
-                            <Text style={styles.graphLegendLabel}>{item.label}</Text>
-                          </View>
-                        ))}
-                      </View>
-                      <View style={styles.graphPresetRow}>
-                        <Text style={styles.graphPresetLabel}>Curve</Text>
-                        {([
-                          { id: 'auto', label: 'Auto' },
-                          { id: 'relax', label: 'Relax' },
-                          { id: 'energy', label: 'Energy' },
-                        ] as const).map((item) => {
-                          const isActive = curvePresetOverride === item.id;
-                          return (
-                            <TouchableOpacity
-                              key={item.id}
-                              style={[styles.graphPresetPill, isActive && styles.graphPresetPillActive]}
-                              onPress={() => handlePresetOverrideChange(item.id)}
-                            >
-                              <Text
-                                style={[
-                                  styles.graphPresetPillText,
-                                  isActive && styles.graphPresetPillTextActive,
-                                ]}
-                              >
-                                {item.label}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
-                        {curvePresetOverride === 'auto' && (
-                          <View
-                            style={[
-                              styles.graphSuggestedPill,
-                              {
-                                borderColor: suggestedPresetColor + '33',
-                                backgroundColor: suggestedPresetColor + '14',
-                              },
-                            ]}
-                          >
-                            <Ionicons name="sparkles-outline" size={12} color={suggestedPresetColor} />
-                            <Text style={[styles.graphSuggestedText, { color: suggestedPresetColor }]}
-                            >
-                              Suggested {suggestedPresetLabel}
-                            </Text>
-                          </View>
-                        )}
-                      </View>
-                    </Animated.View>
-                  ) : (
-                    <View style={styles.circleWrapper}>
-                      <View style={styles.outerRing}>
-                        <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE} style={styles.phaseRingSvg}>
-                          {(() => {
-                            const cx = CIRCLE_SIZE / 2;
-                            const cy = CIRCLE_SIZE / 2;
-                            const r = CIRCLE_SIZE / 2 - 8;
-                            const strokeWidth = 6;
-                            let angleCursor = -90;
-
-                            const AnimatedPath = Animated.createAnimatedComponent(Path);
-                            const AnimatedSvgCircle = Animated.createAnimatedComponent(Circle);
-
-                            return cycleSegments.map((segment, index) => {
-                              const sweep = (segment.duration / cycleTotalSeconds) * 360;
-                              const startAngle = angleCursor;
-                              const endAngle = angleCursor + sweep;
-                              angleCursor += sweep;
-
-                              const basePath = describeArcPath(cx, cy, r, startAngle, endAngle);
-                              const isActive = index === activeSegmentIndex;
-                              const activeEndAngle = startAngle + sweep * smoothPhaseProgress;
-                              const activeSweep = activeEndAngle - startAngle;
-                              const safeActiveEndAngle = activeSweep < 0.5 ? startAngle + 0.5 : activeEndAngle;
-                              const activePath = describeArcPath(cx, cy, r, startAngle, safeActiveEndAngle);
-
-                              const segmentColor = getPhaseColor(segment.phase, phasePalette);
-
-                              return (
-                                <React.Fragment key={`${segment.phase}-${index}`}>
-                                  <Path
-                                    d={basePath}
-                                    stroke={segmentColor}
-                                    strokeWidth={strokeWidth}
-                                    strokeLinecap="round"
-                                    fill="transparent"
-                                    opacity={isActive ? 0.35 : 0.14}
-                                  />
-                                  {isActive && (
-                                    <>
-                                      <AnimatedPath
-                                        d={activePath}
-                                        stroke={prevPhaseColorRef.current}
-                                        strokeWidth={strokeWidth}
-                                        strokeLinecap="round"
-                                        fill="transparent"
-                                        opacity={phaseFadeAnim.interpolate({
-                                          inputRange: [0, 1],
-                                          outputRange: [0.95, 0],
-                                        })}
-                                      />
-                                      <AnimatedPath
-                                        d={activePath}
-                                        stroke={segmentColor}
-                                        strokeWidth={strokeWidth}
-                                        strokeLinecap="round"
-                                        fill="transparent"
-                                        opacity={phaseFadeAnim.interpolate({
-                                          inputRange: [0, 1],
-                                          outputRange: [0, 0.95],
-                                        })}
-                                      />
-                                      {(() => {
-                                        const dotPos = polarToCartesian(cx, cy, r, safeActiveEndAngle);
-                                        return (
-                                          <>
-                                            <AnimatedSvgCircle
-                                              cx={dotPos.x}
-                                              cy={dotPos.y}
-                                              r={10}
-                                              fill={prevPhaseColorRef.current}
-                                              opacity={phaseFadeAnim.interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [0.18, 0],
-                                              })}
-                                            />
-                                            <AnimatedSvgCircle
-                                              cx={dotPos.x}
-                                              cy={dotPos.y}
-                                              r={7}
-                                              fill={prevPhaseColorRef.current}
-                                              opacity={phaseFadeAnim.interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [0.28, 0],
-                                              })}
-                                            />
-                                            <AnimatedSvgCircle
-                                              cx={dotPos.x}
-                                              cy={dotPos.y}
-                                              r={4}
-                                              fill={prevPhaseColorRef.current}
-                                              opacity={phaseFadeAnim.interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [0.95, 0],
-                                              })}
-                                            />
-                                            <AnimatedSvgCircle
-                                              cx={dotPos.x}
-                                              cy={dotPos.y}
-                                              r={10}
-                                              fill={segmentColor}
-                                              opacity={phaseFadeAnim.interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [0, 0.18],
-                                              })}
-                                            />
-                                            <AnimatedSvgCircle
-                                              cx={dotPos.x}
-                                              cy={dotPos.y}
-                                              r={7}
-                                              fill={segmentColor}
-                                              opacity={phaseFadeAnim.interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [0, 0.28],
-                                              })}
-                                            />
-                                            <AnimatedSvgCircle
-                                              cx={dotPos.x}
-                                              cy={dotPos.y}
-                                              r={4}
-                                              fill={segmentColor}
-                                              opacity={phaseFadeAnim.interpolate({
-                                                inputRange: [0, 1],
-                                                outputRange: [0, 0.95],
-                                              })}
-                                            />
-                                          </>
-                                        );
-                                      })()}
-                                    </>
-                                  )}
-                                </React.Fragment>
-                              );
-                            });
-                          })()}
-                        </Svg>
-                      </View>
-                      <Animated.View
-                        style={[
-                          styles.breathingCircle,
-                          { backgroundColor: Colors.backgroundElevated },
-                          { transform: [{ scale: scaleAnim }] },
-                        ]}
-                      >
-                        <View style={[styles.innerCircle, { backgroundColor: phaseColor, opacity: 0.14 }]} />
-                      </Animated.View>
-                    </View>
-                  )}
-
                   <View style={styles.progressContainerInline}>
-                    <View style={styles.progressBar}>
+                    <View style={styles.progressBar} accessible={false}>
                       <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
                     </View>
                     <View style={styles.timeLabels}>
-                      <Text style={styles.timeLabel}>{formatTime(elapsedTime)}</Text>
-                      <Text style={styles.timeLabel}>{formatTime(sessionDuration)}</Text>
+                      <Text style={styles.timeLabel}>{tr("Elapsed")} {' '}{formatTime(elapsedTime)}</Text>
+                      <Text style={styles.timeLabel}>{tr("Remaining")} {' '}{formatTime(sessionDuration - elapsedTime)}</Text>
                     </View>
                   </View>
-                </View>
+                </ScrollView>
               )}
             </View>
 
             {showVolumeControl && sessionState !== 'stress_prompt' && (
               <View style={[styles.volumePanel, { bottom: bottomBarHeight + Spacing.md }]}>
                 <View style={styles.volumeHeader}>
-                  <Text style={styles.volumePanelTitle}>Volume</Text>
-                  <TouchableOpacity onPress={() => setShowVolumeControl(false)}>
+                  <Text style={styles.volumePanelTitle}>{tr("Volume")}</Text>
+                  <TouchableOpacity onPress={() => setShowVolumeControl(false)} style={styles.panelCloseButton} accessibilityRole="button" accessibilityLabel={tr("Close volume controls")}>
                     <Ionicons name="close" size={20} color={Colors.textMuted} />
                   </TouchableOpacity>
                 </View>
@@ -1888,6 +1246,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                   {volumeLevels.map((level) => (
                     <TouchableOpacity
                       key={level}
+                      accessibilityRole="radio" accessibilityLabel={tr("Volume {{value}} percent", { value: Math.round(level * 100) })} accessibilityState={{ checked: audioVolume === level }}
                       style={[styles.volumeButton, audioVolume === level && styles.volumeButtonActive]}
                       onPress={() => handleVolumeChange(level)}
                     >
@@ -1907,20 +1266,22 @@ export const ExerciseSessionScreen: React.FC = () => {
                     </TouchableOpacity>
                   ))}
                 </View>
-                {presetInfo && <Text style={styles.volumePresetName}>Playing: {presetInfo.name}</Text>}
+                {presetInfo && <Text style={styles.volumePresetName}>{tr("Playing:")} {' '}{tr(presetInfo.name)}</Text>}
               </View>
             )}
 
-            <View style={[styles.bottomControls, { paddingBottom: bottomBarPaddingBottom }]}>
+            <View onLayout={(event) => setMeasuredBottomBarHeight(event.nativeEvent.layout.height)} style={[styles.bottomControls, { paddingBottom: bottomBarPaddingBottom }]}>
               {sessionState === 'stress_prompt' ? (
                 <TouchableOpacity
                   style={styles.primaryCta}
+                  disabled={isStartingSession} accessibilityRole="button" accessibilityState={{ disabled: isStartingSession }}
                   onPress={() => {
+                    if (preSessionStep === 2 && !isStressRating(preStressLevel)) {
+                      Alert.alert(tr("Choose your stress level"), tr("Select one option to continue."));
+                      return;
+                    }
                     if (preSessionStep < 3) {
-                      setPreSessionStep((prev) => {
-                        const next = (prev + 1) as 1 | 2 | 3;
-                        return !stressStepEnabled && next === 2 ? 3 : next;
-                      });
+                      setPreSessionStep((prev) => (prev + 1) as 1 | 2 | 3);
                       return;
                     }
                     handleStartSession();
@@ -1933,12 +1294,13 @@ export const ExerciseSessionScreen: React.FC = () => {
                       size={20}
                       color={Colors.background}
                     />
-                    <Text style={styles.primaryCtaText}>{preSessionStep < 3 ? 'Next' : 'Start'}</Text>
+                    <Text style={styles.primaryCtaText}>{preSessionStep < 3 ? tr("Next") : tr("Start")}</Text>
                   </LinearGradient>
                 </TouchableOpacity>
               ) : (
                 <View style={styles.controlRow}>
                   <TouchableOpacity
+                    accessibilityRole="button" accessibilityLabel={tr("Audio volume")} accessibilityState={{ expanded: showVolumeControl }}
                     style={[styles.controlButton, showVolumeControl && styles.controlButtonActive]}
                     onPress={() => setShowVolumeControl(!showVolumeControl)}
                   >
@@ -1949,51 +1311,59 @@ export const ExerciseSessionScreen: React.FC = () => {
                     />
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.playButton} onPress={handlePlayPause}>
-                    <Ionicons name={isPlaying ? 'pause' : 'play'} size={28} color={Colors.background} />
+                  <TouchableOpacity style={styles.playButton} onPress={handlePlayPause} accessibilityRole="button"
+                    accessibilityLabel={isPlaying || sessionState === 'countdown' ? tr("Pause practice") : tr("Resume practice")}>
+                    <Ionicons name={isPlaying || sessionState === 'countdown' ? 'pause' : 'play'} size={24} color={Colors.background} />
+                    <Text style={styles.playButtonLabel}>{isPlaying || sessionState === 'countdown' ? tr("Pause") : tr("Resume")}</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
+                    ref={infoButtonRef}
+                    accessibilityRole="button" accessibilityLabel={tr("Instructions and practice options")} accessibilityState={{ expanded: showExerciseInfo }}
                     style={[styles.controlButton, showExerciseInfo && styles.controlButtonActive]}
-                    onPress={() => setShowExerciseInfo(true)}
+                    onPress={openExerciseInfo}
                   >
                     <Ionicons name="information-circle-outline" size={22} color={Colors.textPrimary} />
                   </TouchableOpacity>
 
-                  {isBreathingExercise && (
-                    <TouchableOpacity
-                      style={[
-                        styles.controlButton,
-                        breathingVisualizationMode === 'graph' && styles.controlButtonActive,
-                      ]}
-                      onPress={toggleVisualizationMode}
-                    >
-                      <Ionicons
-                        name={breathingVisualizationMode === 'graph' ? 'analytics-outline' : 'radio-button-off'}
-                        size={22}
-                        color={
-                          breathingVisualizationMode === 'graph' ? Colors.primary : Colors.textPrimary
-                        }
-                      />
-                    </TouchableOpacity>
-                  )}
+
                 </View>
               )}
             </View>
 
             {showExerciseInfo && (
-              <View style={styles.infoModalOverlay}>
+              <Modal transparent animationType="fade" visible onRequestClose={closeExerciseInfo} onDismiss={focusInfoButton}
+                onShow={() => { const node = findNodeHandle(infoHeadingRef.current); if (node) AccessibilityInfo.setAccessibilityFocus(node); }}>
+              <View style={styles.infoModalOverlay} accessibilityViewIsModal>
                 <View style={styles.infoModalContent}>
                   <ScrollView showsVerticalScrollIndicator={false}>
                     <View style={styles.infoModalHeader}>
-                      <Text style={styles.infoModalTitle}>{exerciseName}</Text>
+                      <Text ref={infoHeadingRef} accessible accessibilityRole="header" style={styles.infoModalTitle}>{exerciseName}</Text>
                       <View style={styles.infoOriginBadge}>
                         <OriginIcon origin={exerciseInfo.originKey} size={18} />
                         <Text style={styles.originLabel}>{exerciseInfo.origin}</Text>
                       </View>
                     </View>
-                    <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
-                    <Text style={styles.infoSectionTitle}>How to do it</Text>
+                    {safetyWarning ? <View style={styles.warningSection}>
+                          <Text style={styles.warningTitle}>{tr("Before you begin")}</Text>
+                          <Text style={styles.warningText}>{safetyWarning}</Text>
+                        </View> : null}
+                        {!isBreathingExercise && <Text style={styles.infoHistory}>{tr("Manual practice: follow the steps at your own pace. No breathing rhythm or hold duration is imposed.")}</Text>}
+                        <Text style={styles.infoHistory}>{exerciseInfo.history}</Text>
+                    <Text style={styles.infoHistory}>{tr("Practice is paused while these instructions are open. Close this panel, then choose Resume.")}</Text>
+                    {isBreathingExercise && <View style={styles.visualOptions}>
+                      <Text style={styles.infoSectionTitle}>{tr("Visual guide")}</Text>
+                      <Text style={styles.infoHistory}>{tr("Appearance only. These options do not change the breathing protocol.")}</Text>
+                      <TouchableOpacity style={styles.stepButton} onPress={toggleVisualizationMode} accessibilityRole="button" accessibilityLabel={breathingVisualizationMode === 'circle' ? tr("Switch to graph view") : tr("Switch to circle view")}>
+                        <Text style={styles.stepButtonText}>{tr("View:")} {' '}{breathingVisualizationMode === 'circle' ? tr("Circle") : tr("Graph")}</Text>
+                      </TouchableOpacity>
+                      {(['default', 'relax', 'energy'] as const).map((preset) => (
+                        <TouchableOpacity key={preset} style={styles.stepButton} onPress={() => handlePresetOverrideChange(preset)} accessibilityRole="radio" accessibilityState={{ checked: resolvedCurvePreset === preset }}>
+                          <Text style={styles.stepButtonText}>{tr("Curve:")} {' '}{preset === 'default' ? tr("Linear") : preset === 'relax' ? tr("Smooth") : tr("Quick rise")}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>}
+                    <Text style={styles.infoSectionTitle}>{tr("How to do it")}</Text>
                     {exerciseSteps.map((step: string, index: number) => (
                       <View key={index} style={styles.infoStepRow}>
                         <View style={styles.infoStepNumber}>
@@ -2004,7 +1374,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                     ))}
                     {exerciseTips && exerciseTips.length > 0 && (
                       <>
-                        <Text style={styles.infoSectionTitle}> Tips</Text>
+                        <Text style={styles.infoSectionTitle}> {tr("Tips")}</Text>
                         {exerciseTips.map((tip: string, index: number) => (
                           <Text key={index} style={styles.infoTip}>
                             • {tip}
@@ -2012,7 +1382,7 @@ export const ExerciseSessionScreen: React.FC = () => {
                         ))}
                       </>
                     )}
-                    <Text style={styles.infoSectionTitle}> Benefits</Text>
+                    <Text style={styles.infoSectionTitle}> {tr("Benefits")}</Text>
                     <View style={styles.infoBenefits}>
                       {exerciseInfo.benefits.map((benefit: string, idx: number) => (
                         <View key={idx} style={styles.infoBenefitBadge}>
@@ -2022,11 +1392,12 @@ export const ExerciseSessionScreen: React.FC = () => {
                     </View>
                   </ScrollView>
 
-                  <TouchableOpacity style={styles.infoModalClose} onPress={() => setShowExerciseInfo(false)}>
-                    <Text style={styles.infoModalCloseText}>Got it!</Text>
+                  <TouchableOpacity style={styles.infoModalClose} onPress={closeExerciseInfo} accessibilityRole="button" accessibilityLabel={tr("Close instructions")}>
+                    <Text style={styles.infoModalCloseText}>{tr("Close instructions")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
+              </Modal>
             )}
           </View>
         )}
@@ -2036,24 +1407,21 @@ export const ExerciseSessionScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  activeScroll: { flex: 1, width: '100%' },
+  activeContent: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: Spacing.md },
+  manualInstruction: { color: Colors.textPrimary, fontSize: FontSize.lg, textAlign: 'center', marginVertical: Spacing.md },
+  stepControls: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: Spacing.sm },
+  stepButton: { minHeight: 48, padding: Spacing.md, justifyContent: 'center', borderRadius: BorderRadius.md, backgroundColor: Colors.backgroundCard, marginBottom: Spacing.xs },
+  stepButtonText: { color: Colors.primary, fontSize: FontSize.md },
+  playButtonLabel: { color: Colors.background, fontSize: FontSize.sm, fontWeight: FontWeight.semibold },
+  panelCloseButton: { minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  warningSection: { gap: Spacing.sm, marginBottom: Spacing.lg },
+  warningTitle: { color: Colors.warning, fontSize: FontSize.md, fontWeight: FontWeight.semibold },
+  warningText: { color: Colors.textPrimary, fontSize: FontSize.md },
+  visualOptions: { marginBottom: Spacing.lg },
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-  },
-  backgroundImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  backgroundOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   header: {
     flexDirection: 'row',
@@ -2063,8 +1431,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
   },
   headerIconButton: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
@@ -2099,26 +1467,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
   },
-  originBadgeCompact: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  originLabelCompact: {
-    color: Colors.textMuted,
-    fontSize: FontSize.xs,
-    fontFamily: FontFamily.medium,
-  },
-  durationBadgeCompact: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  durationLabelCompact: {
-    color: Colors.textMuted,
-    fontSize: FontSize.xs,
-    fontFamily: FontFamily.medium,
-  },
   content: {
     flex: 1,
     paddingHorizontal: Spacing.lg,
@@ -2128,10 +1476,6 @@ const styles = StyleSheet.create({
   contentPreSession: {
     paddingHorizontal: 0,
     paddingTop: 0,
-  },
-  progressContainer: {
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.xl,
   },
   progressContainerInline: {
     width: '100%',
@@ -2161,12 +1505,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
     paddingHorizontal: Spacing.lg,
   },
-  nextPhaseCoachLine: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-    textAlign: 'center',
-    paddingHorizontal: Spacing.lg,
-  },
   progressBar: {
     height: 4,
     backgroundColor: Colors.backgroundLight,
@@ -2179,6 +1517,8 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   timeLabels: {
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: Spacing.xs,
@@ -2186,15 +1526,6 @@ const styles = StyleSheet.create({
   timeLabel: {
     color: Colors.textMuted,
     fontSize: FontSize.sm,
-  },
-  circleContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circleContainerPre: {
-    justifyContent: 'flex-start',
-    paddingTop: Spacing.xl,
   },
   phaseLabel: {
     color: Colors.textPrimary,
@@ -2209,91 +1540,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   circleWrapper: {
-    width: CIRCLE_SIZE,
-    height: CIRCLE_SIZE,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  graphWrapper: {
-    width: CIRCLE_SIZE,
-    height: GRAPH_HEIGHT,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  graphLegendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.md,
-    marginTop: Spacing.sm,
-  },
-  graphLegendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  graphLegendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  graphLegendLabel: {
-    color: Colors.textMuted,
-    fontSize: FontSize.xs,
-  },
-  graphPresetRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.sm,
-  },
-  graphPresetLabel: {
-    color: Colors.textMuted,
-    fontSize: FontSize.xs,
-    marginRight: Spacing.xs,
-  },
-  graphPresetPill: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: 999,
-    backgroundColor: Colors.backgroundElevated,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  graphPresetPillActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  graphPresetPillText: {
-    color: Colors.textMuted,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.semibold,
-  },
-  graphPresetPillTextActive: {
-    color: Colors.background,
-  },
-  graphSuggestedPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: Colors.primary + '33',
-    backgroundColor: Colors.primary + '14',
-  },
-  graphSuggestedText: {
-    color: Colors.primary,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.semibold,
-  },
-  outerRing: {
-    position: 'absolute',
-    width: CIRCLE_SIZE,
-    height: CIRCLE_SIZE,
-    borderRadius: CIRCLE_SIZE / 2,
   },
   phaseRingSvg: {
     position: 'absolute',
@@ -2301,79 +1549,18 @@ const styles = StyleSheet.create({
     left: 0,
   },
   breathingCircle: {
-    width: CIRCLE_SIZE * 0.8,
-    height: CIRCLE_SIZE * 0.8,
-    borderRadius: CIRCLE_SIZE * 0.4,
     backgroundColor: Colors.backgroundElevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  innerCircle: {
-    width: CIRCLE_SIZE * 0.5,
-    height: CIRCLE_SIZE * 0.5,
-    borderRadius: CIRCLE_SIZE * 0.25,
-    backgroundColor: Colors.backgroundCard,
-  },
   // Split screen styles
-  splitScreen: {
-    flex: 1,
-    flexDirection: 'column',
-  },
   mainContent: {
     flex: 1,
   },
-  topSection: {
-    flex: 1,
-    backgroundColor: Colors.backgroundCard,
-    padding: Spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  bottomSection: {
-    flex: 1.5,
-    backgroundColor: Colors.background,
-  },
-  instructionsScroll: {
-    flex: 1,
-  },
-  instructionsContent: {
-    padding: Spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-  },
   // Breathing preview
-  breathingPreview: {
-    alignItems: 'center',
-    marginTop: Spacing.md,
-  },
-  previewCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: Colors.primary + '20',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.lg,
-  },
-  previewInnerCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: Colors.primary,
-  },
-  previewText: {
-    position: 'absolute',
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.bold,
-    color: Colors.primary,
-  },
   patternIndicators: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     width: '100%',
   },
   indicator: {
@@ -2390,31 +1577,6 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   // Steps section
-  stepsSection: {
-    marginBottom: Spacing.xl,
-  },
-  stepCard: {
-    flexDirection: 'row',
-    backgroundColor: Colors.backgroundCard,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.sm,
-    alignItems: 'flex-start',
-  },
-  stepNumber: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: Spacing.md,
-  },
-  stepNumberText: {
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.bold,
-    color: Colors.background,
-  },
   stepText: {
     flex: 1,
     fontSize: FontSize.md,
@@ -2422,48 +1584,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   // Tips section
-  tipsSection: {
-    marginBottom: Spacing.xl,
-  },
-  tipCard: {
-    flexDirection: 'row',
-    backgroundColor: Colors.backgroundElevated,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.sm,
-    alignItems: 'flex-start',
-    borderWidth: 1,
-    borderColor: Colors.warning + '33',
-  },
-  tipIcon: {
-    marginRight: Spacing.md,
-    marginTop: 2,
-  },
-  tipText: {
-    flex: 1,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-    lineHeight: 20,
-  },
   // Start button
-  startButton: {
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.xl,
-  },
-  startButtonGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.full,
-    gap: Spacing.sm,
-  },
-  startButtonText: {
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-    color: Colors.background,
-  },
 
   setupScroll: {
     width: '100%',
@@ -2476,35 +1597,12 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'stretch',
   },
-  setupScrollContent: {
-    paddingBottom: Spacing.md,
-    gap: Spacing.md,
-  },
   tipsListContent: {
     paddingBottom: Spacing.md,
     gap: Spacing.md,
     width: '100%',
     alignSelf: 'stretch',
     alignItems: 'stretch',
-  },
-  setupCard: {
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  setupTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-    marginBottom: Spacing.xs,
-    fontFamily: FontFamily.heading,
-  },
-  setupSubtitle: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    marginBottom: Spacing.md,
   },
   audioSelectorContainer: {
     marginTop: Spacing.md,
@@ -2525,41 +1623,8 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xxl,
     gap: Spacing.lg,
   },
-  preSessionAudioIntro: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    lineHeight: 20,
-    fontFamily: FontFamily.regular,
-  },
   preSessionSpacer: {
     flex: 1,
-  },
-  setupFullScroll: {
-    flex: 1,
-  },
-  setupFullScrollContent: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-    gap: Spacing.lg,
-  },
-  setupSecondaryCard: {
-    backgroundColor: Colors.backgroundElevated,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  setupSecondaryTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
-    marginBottom: Spacing.xs,
-  },
-  setupSecondaryText: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    lineHeight: 20,
   },
 
   bottomControls: {
@@ -2647,22 +1712,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 26, // Increased line height for better readability
     fontFamily: FontFamily.regular,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginVertical: Spacing.xl,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.border,
-    marginHorizontal: 4,
-  },
-  dotActive: {
-    backgroundColor: Colors.primary,
-    width: 24,
   },
   onboardingProgressContainer: {
     alignItems: 'center',
@@ -2757,11 +1806,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontFamily: FontFamily.bold,
   },
-  stepsScroll: {
-    flex: 1,
-    width: '100%',
-    marginTop: Spacing.lg,
-  },
   stepItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -2769,11 +1813,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundCard,
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
-  },
-  tipsScroll: {
-    flex: 1,
-    width: '100%',
-    marginTop: Spacing.lg,
   },
   tipItem: {
     flexDirection: 'row',
@@ -2828,9 +1867,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   playButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    minWidth: 96,
+    minHeight: 64,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -2848,95 +1889,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   // Stress prompt styles
-  stressValue: {
-    color: Colors.primary,
-    fontSize: 36,
-    fontWeight: FontWeight.bold,
-    marginBottom: Spacing.sm,
-  },
-  stressList: {
-    marginTop: Spacing.lg,
-    gap: Spacing.sm,
-  },
-  stressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.backgroundElevated,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    minHeight: 64,
-    gap: Spacing.md,
-  },
-  stressRowPressed: {
-    opacity: 0.9,
-  },
-  stressRowPressedActive: {
-    opacity: 0.95,
-  },
-  stressRowActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.backgroundCard,
-  },
-  stressEmojiWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.backgroundCard,
-  },
-  stressEmojiWrapActive: {
-    backgroundColor: Colors.primary,
-  },
-  stressEmoji: {
-    fontSize: 22,
-  },
-  stressTextCol: {
-    flex: 1,
-  },
-  stressRowTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontFamily: FontFamily.semibold,
-  },
-  stressRowTitleActive: {
-    color: Colors.textPrimary,
-  },
-  stressRowSubtitle: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    marginTop: 2,
-  },
-  stressRowSubtitleActive: {
-    color: Colors.textSecondary,
-  },
-  stressRadioOuter: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    borderColor: Colors.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stressRadioOuterActive: {
-    borderColor: Colors.primary,
-  },
-  stressRadioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.primary,
-  },
-  stressPromptContent: {
-    alignItems: 'center',
-    paddingBottom: 120,
-    paddingTop: Spacing.sm,
-    flexGrow: 1,
-  },
   volumeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -2949,12 +1901,15 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.semibold,
   },
   volumeButtons: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: Spacing.xs,
   },
   volumeButton: {
-    flex: 1,
+    flexGrow: 1,
+    minWidth: 56,
+    minHeight: 48,
     alignItems: 'center',
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.md,
@@ -3013,7 +1968,7 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.semibold,
   },
   infoModalHeader: {
-    flexDirection: 'row',
+    gap: Spacing.sm,
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: Spacing.md,
@@ -3032,13 +1987,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.full,
-  },
-  infoOriginFlag: {
-    fontSize: 16,
-  },
-  infoOriginText: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
   },
   infoHistory: {
     color: Colors.textSecondary,
@@ -3102,107 +2050,7 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.medium,
   },
   // Recommendation card styles
-  recommendationCard: {
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
-  },
-  recommendationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    marginBottom: Spacing.xs,
-  },
-  recommendationTitle: {
-    color: Colors.primary,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
-  },
-  recommendationAudio: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.bold,
-    marginBottom: Spacing.xs,
-  },
-  recommendationReason: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-    lineHeight: 18,
-  },
-  recommendationCardActive: {
-    borderLeftColor: Colors.success,
-    backgroundColor: Colors.backgroundElevated,
-  },
-  recommendationTap: {
-    color: Colors.primary,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.medium,
-    marginTop: Spacing.sm,
-    textAlign: 'center',
-  },
-  recommendationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.xs,
-  },
-  selectedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: Colors.success,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  selectedBadgeText: {
-    color: Colors.background,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.semibold,
-  },
-  selectBadge: {
-    backgroundColor: Colors.backgroundLight,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  selectBadgeText: {
-    color: Colors.primary,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.medium,
-  },
   // Exercise info header styles
-  exerciseInfoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: Spacing.md,
-  },
-  durationBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    backgroundColor: Colors.backgroundCard,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  durationText: {
-    color: Colors.primary,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
-  },
-  exerciseInfoSection: {
-    alignItems: 'center',
-    marginBottom: Spacing.lg,
-    paddingHorizontal: Spacing.md,
-  },
   originDurationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -3214,9 +2062,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
-  },
-  originFlag: {
-    fontSize: 18,
   },
   originLabel: {
     color: Colors.textPrimary,
@@ -3237,52 +2082,5 @@ const styles = StyleSheet.create({
   durationLabel: {
     color: Colors.textMuted,
     fontSize: FontSize.sm,
-  },
-  exerciseHistory: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.md,
-    lineHeight: 22,
-    textAlign: 'center',
-    marginBottom: Spacing.md,
-    fontStyle: 'italic',
-  },
-  benefitsList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-  },
-  benefitItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  benefitCheck: {
-    color: Colors.primary,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.bold,
-  },
-  benefitLabel: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-  },
-  benefitsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.xs,
-  },
-  benefitTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: Colors.success + '15',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  benefitText: {
-    color: Colors.success,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.medium,
   },
 });

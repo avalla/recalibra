@@ -6,3 +6,4 @@ export { StressTrendChart } from './StressTrendChart';
 export { SuggestedExerciseCard } from './SuggestedExerciseCard';
 export { TodayStatusCards } from './TodayStatusCards';
 export { WeeklyGoalsCard } from './WeeklyGoalsCard';
+export { JourneyCard } from './JourneyCard';

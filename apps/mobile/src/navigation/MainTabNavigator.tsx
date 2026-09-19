@@ -1,3 +1,5 @@
+import { useLanguage } from '../i18n/LanguageProvider';
+import { tr } from '../i18n/core';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -41,19 +43,20 @@ const getTabIcon = (routeName: keyof MainTabParamList, focused: boolean): TabIco
 const getTabLabel = (routeName: keyof MainTabParamList): string => {
   switch (routeName) {
     case 'HomeTab':
-      return 'Home';
+      return tr("Home");
     case 'ExercisesTab':
-      return 'Exercises';
+      return tr("Exercises");
     case 'ProgressTab':
-      return 'Progress';
+      return tr("Progress");
     case 'ProfileTab':
-      return 'Settings';
+      return tr("Settings");
     default:
       return '';
   }
 };
 
 export const MainTabNavigator: React.FC = () => {
+  useLanguage();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({

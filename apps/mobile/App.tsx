@@ -1,3 +1,4 @@
+import { LanguageProvider } from './src/i18n/LanguageProvider';
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
@@ -19,7 +20,6 @@ enableScreens(false);
 applyDefaultTextProps();
 
 export default function App() {
-  const [isRevenueCatReady, setIsRevenueCatReady] = useState(false);
   const [isDbReady, setIsDbReady] = useState(false);
 
   const [fontsLoaded] = useFonts({
@@ -36,18 +36,15 @@ export default function App() {
       try {
         await initializeApp();
         setIsDbReady(true);
-        setIsRevenueCatReady(true);
       } catch (error) {
-        console.error('Failed to initialize RevenueCat:', error);
-        // Continue anyway - subscription features won't work but app will load
-        setIsRevenueCatReady(true);
+        console.error('Failed to initialize app:', error);
         setIsDbReady(true);
       }
     };
     init();
   }, []);
 
-  if (!fontsLoaded || !isRevenueCatReady || !isDbReady) {
+  if (!fontsLoaded || !isDbReady) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
@@ -56,16 +53,18 @@ export default function App() {
   }
 
   return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <SafeAreaProvider>
-          <NavigationContainer theme={DarkTheme}>
-            <RootNavigator />
-          </NavigationContainer>
-          <StatusBar style="light" />
-        </SafeAreaProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+    <LanguageProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <SafeAreaProvider>
+            <NavigationContainer theme={DarkTheme}>
+              <RootNavigator />
+            </NavigationContainer>
+            <StatusBar style="light" />
+          </SafeAreaProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+    </LanguageProvider>
   );
 }
 

@@ -1,3 +1,5 @@
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -45,6 +47,7 @@ const slides: OnboardingSlide[] = [
 ];
 
 export const OnboardingScreen: React.FC = () => {
+  useLanguage();
   const rootNavigation = useNavigation<RootStackScreenProps<'Onboarding'>['navigation']>();
   const { completeOnboarding } = useAuth();
   const { isAnonymous, isLoading } = useAuth();
@@ -95,8 +98,8 @@ export const OnboardingScreen: React.FC = () => {
       <View style={styles.iconContainer}>
         <Ionicons name={item.icon} size={120} color={Colors.primary} />
       </View>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.description}>{item.description}</Text>
+      <Text style={styles.title}>{tr(item.title)}</Text>
+      <Text style={styles.description}>{tr(item.description)}</Text>
     </View>
   );
 
@@ -117,7 +120,7 @@ export const OnboardingScreen: React.FC = () => {
   return (
     <Screen style={styles.container} edges={['top']}>
       <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-        <Text style={styles.skipText}>Skip</Text>
+        <Text style={styles.skipText}>{tr("Skip")}</Text>
       </TouchableOpacity>
 
       <FlatList
@@ -138,7 +141,7 @@ export const OnboardingScreen: React.FC = () => {
 
       <View style={styles.footer}>
         <GradientButton
-          label={isCompleting ? 'Loading...' : (currentIndex === slides.length - 1 ? 'Get Started' : 'Next')}
+          label={isCompleting ? tr("Loading...") : (currentIndex === slides.length - 1 ? tr("Get Started") : tr("Next"))}
           onPress={handleNext}
           disabled={isCompleting}
         />

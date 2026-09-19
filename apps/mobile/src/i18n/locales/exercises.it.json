@@ -1,0 +1,3989 @@
+{
+  "8a5e255d-8320-42aa-acf4-f67f8c308894": {
+    "name": "Rilassamento in 2 minuti",
+    "description": "Tecnica di rilassamento rapido per alleviare subito lo stress.",
+    "history": "Tecnica semplice che combina principi di respirazione e rilassamento progressivo.",
+    "safety_warning": "Se avverti vertigini, stordimento o mancanza di fiato, interrompi e torna a respirare normalmente. Evita di trattenere il respiro in gravidanza o in caso di pressione alta non controllata, disturbi del ritmo cardiaco o precedenti svenimenti; in caso di dubbi, consulta un medico.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Interrompi ciò che stai facendo. Chiudi gli occhi."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente per 4 secondi."
+      },
+      {
+        "step": 3,
+        "instruction": "Trattieni per 2 secondi."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira lentamente per 6 secondi, rilassando le spalle."
+      },
+      {
+        "step": 5,
+        "instruction": "Ripeti 4-5 volte."
+      },
+      {
+        "step": 6,
+        "instruction": "Apri lentamente gli occhi, sentendoti più calmo."
+      }
+    ],
+    "benefits": [
+      "Rapido sollievo dallo stress",
+      "Si può praticare ovunque",
+      "Riequilibra il sistema nervoso"
+    ],
+    "tips": [
+      "Ideale nelle pause di lavoro",
+      "Pratica prima di riunioni stressanti",
+      "Imposta un promemoria sul telefono"
+    ]
+  },
+  "3a5cbbd8-3e91-49db-a082-0362bee11168": {
+    "name": "Respirazione 4-7-8",
+    "description": "Favorisce il rilassamento e aiuta ad addormentarsi più velocemente. Nota anche come respiro rilassante.",
+    "history": "Sviluppata dal dottor Andrew Weil a partire dalle tecniche di pranayama.",
+    "safety_warning": "Se avverti vertigini, torna a respirare normalmente.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Appoggia la punta della lingua sulla cresta dietro gli incisivi superiori."
+      },
+      {
+        "step": 2,
+        "instruction": "Espira completamente dalla bocca, producendo un suono simile a un soffio."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira silenziosamente dal naso per 4 secondi."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni il respiro per 7 secondi."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira completamente dalla bocca per 8 secondi."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti il ciclo 3-4 volte."
+      }
+    ],
+    "benefits": [
+      "Aiuto naturale per il sonno",
+      "Riduce l’ansia",
+      "Calma la mente"
+    ],
+    "tips": [
+      "Creata dal dottor Andrew Weil",
+      "Agisce come un tranquillante naturale",
+      "Da praticare preferibilmente prima di dormire"
+    ]
+  },
+  "a9e16563-e95e-4297-adfe-34134fa2c2a6": {
+    "name": "Respirazione a narici alternate",
+    "description": "Equilibra gli emisferi destro e sinistro del cervello. Una pratica yogica per la lucidità mentale.",
+    "history": "Antica tecnica di pranayama della tradizione yoga (circa 3000 a.C.).",
+    "safety_warning": "Evita in caso di raffreddore o congestione nasale.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi la narice destra con il pollice destro."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente dalla narice sinistra."
+      },
+      {
+        "step": 4,
+        "instruction": "Chiudi la narice sinistra con l’anulare."
+      },
+      {
+        "step": 5,
+        "instruction": "Apri la narice destra ed espira lentamente."
+      },
+      {
+        "step": 6,
+        "instruction": "Inspira dalla narice destra."
+      },
+      {
+        "step": 7,
+        "instruction": "Chiudi la narice destra, apri la sinistra ed espira."
+      },
+      {
+        "step": 8,
+        "instruction": "Hai completato un ciclo. Ripeti per tutta la durata della sessione."
+      }
+    ],
+    "benefits": [
+      "Equilibra gli emisferi",
+      "Calma la mente",
+      "Migliora la concentrazione"
+    ],
+    "tips": [
+      "Mantieni il respiro lento e regolare",
+      "Equilibra gli emisferi cerebrali destro e sinistro",
+      "Utile per concentrarsi e calmare l’ansia"
+    ]
+  },
+  "52d10895-2cad-4723-a713-099f63a334ab": {
+    "name": "Anapanasati",
+    "description": "Consapevolezza buddhista thailandese del respiro. Direttamente dagli insegnamenti del Buddha.",
+    "history": "Anapanasati è l’insegnamento meditativo centrale del Buddha, conservato nella tradizione thailandese della foresta. «Ana» significa inspirazione, «apana» espirazione e «sati» consapevolezza.",
+    "safety_warning": "Se concentrarti sul respiro aumenta ansia, sintomi di panico o vertigini, interrompi e sposta l’attenzione sui suoni esterni oppure apri gli occhi. Pratica seduto in una posizione sicura; consulta un medico se hai vissuto traumi e concentrarti sul respiro riattiva reazioni legate a essi.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti in una postura meditativa stabile e comoda."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi gli occhi e porta l’attenzione al respiro naturale."
+      },
+      {
+        "step": 3,
+        "instruction": "Osserva semplicemente il respiro alle narici o nell’addome."
+      },
+      {
+        "step": 4,
+        "instruction": "Quando la mente divaga, torna delicatamente al respiro."
+      },
+      {
+        "step": 5,
+        "instruction": "Non occorre controllare il respiro: osserva soltanto il suo ritmo naturale."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua per 20-45 minuti, approfondendo la concentrazione."
+      }
+    ],
+    "benefits": [
+      "Sviluppa la concentrazione",
+      "Calma la mente",
+      "Meditazione di visione profonda",
+      "Riduce la sofferenza"
+    ],
+    "tips": [
+      "Non controllare il respiro",
+      "Nota mentalmente: «dentro, fuori»",
+      "Pratica ogni giorno per ottenere risultati migliori"
+    ]
+  },
+  "340bfa7c-c42c-4071-aeb8-1533d47383e4": {
+    "name": "Respiro del berserker",
+    "description": "Respirazione dei guerrieri norreni per coraggio e audacia. Intensità controllata.",
+    "history": "Ispirata ai guerrieri berserker norreni, che usavano respiro e meditazione per entrare in stati alterati di coscienza prima della battaglia.",
+    "safety_warning": "Pratica molto intensa. Non adatta in caso di problemi cardiaci o pressione alta. Non guidare dopo la pratica.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Assumi in piedi una solida posizione da guerriero."
+      },
+      {
+        "step": 2,
+        "instruction": "Esegui 20 respiri rapidi e potenti dal naso."
+      },
+      {
+        "step": 3,
+        "instruction": "Ogni respiro deve essere energico ma controllato."
+      },
+      {
+        "step": 4,
+        "instruction": "Durante l’ultima espirazione, emetti un ruggito o un ringhio primordiale."
+      },
+      {
+        "step": 5,
+        "instruction": "Inspira profondamente e trattieni il respiro il più a lungo possibile."
+      },
+      {
+        "step": 6,
+        "instruction": "Espira e torna alla calma. Senti la tua forza mantenendo il tuo centro."
+      }
+    ],
+    "benefits": [
+      "Aiuta a superare la paura",
+      "Sviluppa il coraggio",
+      "Aumenta l’energia",
+      "Forza mentale"
+    ],
+    "tips": [
+      "Incanala l’energia in modo costruttivo",
+      "Concludi ritrovando il contatto con il corpo e il terreno",
+      "Pratica prima delle sfide, non ogni giorno"
+    ]
+  },
+  "53efdc88-1fc3-48f2-8c3d-01a765b97ae3": {
+    "name": "Bhastrika",
+    "description": "Respiro a mantice. Una potente tecnica energizzante con inspirazioni ed espirazioni rapide e vigorose.",
+    "history": "Respiro a mantice dell’antica tradizione yoga per aumentare l’energia.",
+    "safety_warning": "Evita in gravidanza, in caso di pressione alta, cardiopatie o durante le mestruazioni. Interrompi se avverti vertigini.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente ed espira completamente."
+      },
+      {
+        "step": 3,
+        "instruction": "Inizia a respirare in modo rapido e vigoroso da entrambe le narici."
+      },
+      {
+        "step": 4,
+        "instruction": "Inspirazione ed espirazione sono entrambe attive e di uguale intensità."
+      },
+      {
+        "step": 5,
+        "instruction": "Esegui 20-30 respiri, poi inspira profondamente e trattieni brevemente."
+      },
+      {
+        "step": 6,
+        "instruction": "Espira lentamente. Riposa e ripeti per 2-3 cicli."
+      }
+    ],
+    "benefits": [
+      "Aumenta la vitalità",
+      "Riscalda il corpo",
+      "Migliora la digestione"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "1f551efa-967d-4620-9637-1046c1cbc286": {
+    "name": "Bhramari",
+    "description": "Respiro dell’ape. La vibrazione del ronzio calma la mente e attiva profondamente il nervo vago.",
+    "history": "Bhramari pranayama, il respiro dell’ape della tradizione yoga.",
+    "safety_warning": "Emetti un ronzio delicato, senza sforzarti né forzare l’espirazione. Interrompi se avverti vertigini, pressione o dolore alle orecchie, oppure un peggioramento dell’acufene. Evita di premere sulle orecchie in caso di infezione, recente intervento chirurgico all’orecchio o dolore significativo; in caso di dubbi, consulta un medico.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente e chiudi gli occhi."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia delicatamente gli indici sulla cartilagine delle orecchie."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira profondamente dal naso."
+      },
+      {
+        "step": 4,
+        "instruction": "Mentre espiri, emetti un ronzio simile a quello di un’ape (mmmmm)."
+      },
+      {
+        "step": 5,
+        "instruction": "Senti la vibrazione nella testa, nel viso e nel petto."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua per 5-10 cicli, respirando naturalmente tra un ronzio e l’altro."
+      }
+    ],
+    "benefits": [
+      "Stimola il nervo vago",
+      "Riduce l’ansia",
+      "Migliora il sonno"
+    ],
+    "tips": [
+      "La vibrazione stimola direttamente il nervo vago",
+      "I suoni più gravi producono vibrazioni più forti",
+      "Utile per l’ansia e prima di dormire"
+    ]
+  },
+  "a99e5344-425e-4c3d-81e2-6736bd051c55": {
+    "name": "Respirazione quadrata",
+    "description": "Una tecnica semplice per calmare il sistema nervoso e ridurre lo stress. Usata dai Navy SEAL per concentrazione e calma.",
+    "history": "Usata dai Navy SEAL per controllare lo stress in situazioni di forte pressione.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta e i piedi ben appoggiati a terra."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira lentamente dal naso per 4 secondi."
+      },
+      {
+        "step": 3,
+        "instruction": "Trattieni il respiro per 4 secondi."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira lentamente dalla bocca per 4 secondi."
+      },
+      {
+        "step": 5,
+        "instruction": "Trattieni il respiro per 4 secondi."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti il ciclo per tutta la durata della sessione."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Regola il sistema nervoso"
+    ],
+    "tips": [
+      "Usata dai Navy SEAL per controllare lo stress",
+      "Mantieni la stessa durata per tutte e 4 le fasi",
+      "Concentrati sugli angoli del «quadrato»"
+    ]
+  },
+  "e78f8b20-d857-4b95-8e72-b1ea2409cce1": {
+    "name": "Respiro di fuoco",
+    "description": "Tecnica di respirazione Kundalini con respiri rapidi e ritmici azionati dal diaframma.",
+    "history": "Antica tecnica di Kundalini Yoga per risvegliare l’energia e purificare il corpo.",
+    "safety_warning": "Evita durante gravidanza, mestruazioni e in caso di pressione alta. Interrompi se avverti vertigini o stordimento.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti con la schiena dritta e le mani sulle ginocchia."
+      },
+      {
+        "step": 2,
+        "instruction": "Fai un respiro profondo per prepararti."
+      },
+      {
+        "step": 3,
+        "instruction": "Inizia con inspirazioni ed espirazioni rapide e uguali dal naso."
+      },
+      {
+        "step": 4,
+        "instruction": "Muovi l’addome come una pompa: ritrailo espirando e rilascialo inspirando."
+      },
+      {
+        "step": 5,
+        "instruction": "Mantieni il petto relativamente fermo: il respiro parte dal diaframma."
+      },
+      {
+        "step": 6,
+        "instruction": "Inizia con 1 minuto, riposa e poi ripeti."
+      }
+    ],
+    "benefits": [
+      "Energizza il corpo",
+      "Libera la mente",
+      "Rafforza il centro del corpo",
+      "Favorisce la disintossicazione"
+    ],
+    "tips": [
+      "Inizia lentamente: 1 respiro al secondo",
+      "Tieni la bocca chiusa",
+      "Concentrati sul movimento dell’ombelico"
+    ]
+  },
+  "900c82e8-9a30-493c-895e-a9375263c9ab": {
+    "name": "Respirazione a raffiche",
+    "description": "Respiri brevi e decisi per energizzare e riequilibrare il sistema nervoso. Dal Systema russo.",
+    "history": "Tecnica di respirazione del Systema per energia e prontezza immediate.",
+    "safety_warning": "Può causare stordimento. All’inizio pratica seduto o sdraiato.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi con i piedi alla larghezza delle spalle."
+      },
+      {
+        "step": 2,
+        "instruction": "Esegui 20-30 respiri rapidi a raffica dal naso."
+      },
+      {
+        "step": 3,
+        "instruction": "Ogni respiro è simile a una breve annusata: deciso e rapido."
+      },
+      {
+        "step": 4,
+        "instruction": "Dopo le raffiche, espira completamente e trattieni il respiro."
+      },
+      {
+        "step": 5,
+        "instruction": "Resta a polmoni vuoti finché ti è confortevole."
+      },
+      {
+        "step": 6,
+        "instruction": "Riprendi la respirazione normale. Ripeti per 2-3 cicli."
+      }
+    ],
+    "benefits": [
+      "Aumento immediato dell’energia",
+      "Dissipa la nebbia mentale",
+      "Prepara all’azione",
+      "Riequilibra il sistema nervoso"
+    ],
+    "tips": [
+      "Mantieni un ritmo regolare nelle raffiche",
+      "Non iperventilare",
+      "Utile prima dell’esposizione al freddo"
+    ]
+  },
+  "72fa1046-66e4-42cf-8c0d-9d8ca1776399": {
+    "name": "Metodo Buteyko",
+    "description": "Sviluppato dal dottor Buteyko. Si concentra sulla respirazione nasale e sulla riduzione della respirazione eccessiva.",
+    "history": "Sviluppato dal dottor Buteyko per l’asma e la respirazione nasale.",
+    "safety_warning": "Non andare oltre un lieve disagio. Non adatto durante gli attacchi d’asma.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente e rilassa il corpo."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi la bocca e respira soltanto dal naso."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira normalmente ed espira normalmente."
+      },
+      {
+        "step": 4,
+        "instruction": "Stringi il naso e trattieni il respiro."
+      },
+      {
+        "step": 5,
+        "instruction": "Al primo bisogno di respirare, rilascia il naso e respira normalmente."
+      },
+      {
+        "step": 6,
+        "instruction": "Attendi 30 secondi. Ripeti, cercando di prolungare la pausa confortevole."
+      }
+    ],
+    "benefits": [
+      "Migliora l’asma",
+      "Respirazione nasale",
+      "Riduce la respirazione eccessiva"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "f5b97978-6c86-46c6-af89-eded3e1e0079": {
+    "name": "Chandra Bhedana",
+    "description": "Respirazione dalla narice sinistra per attivare il canale lunare, rinfrescante e calmante.",
+    "history": "Respiro che attraversa la luna, dallo Hatha Yoga: attiva Ida nadi, il canale lunare.",
+    "safety_warning": "Evita in caso di pressione bassa o depressione. Da praticare preferibilmente la sera.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi la narice destra con il pollice."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente soltanto dalla narice sinistra."
+      },
+      {
+        "step": 4,
+        "instruction": "Chiudi entrambe le narici e trattieni brevemente."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira dalla narice destra."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti: inspira sempre a sinistra ed espira a destra."
+      }
+    ],
+    "benefits": [
+      "Rinfresca il corpo",
+      "Calma la mente",
+      "Riduce lo stress",
+      "Favorisce il sonno"
+    ],
+    "tips": [
+      "Da praticare preferibilmente la sera",
+      "Utile nelle giornate calde",
+      "Aiuta in caso di insonnia"
+    ]
+  },
+  "623aa462-aaa5-482c-a00e-f8c4542ffe71": {
+    "name": "Respirazione coerente",
+    "description": "Respira a un ritmo di 5 respiri al minuto per sincronizzare cuore, cervello e sistema nervoso.",
+    "history": "Respirazione a 5,5 respiri al minuto per ottimizzare HRV e coerenza.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente e rilassa il corpo."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira lentamente per 6 secondi."
+      },
+      {
+        "step": 3,
+        "instruction": "Espira lentamente per 6 secondi."
+      },
+      {
+        "step": 4,
+        "instruction": "Non c’è pausa tra inspirazione ed espirazione."
+      },
+      {
+        "step": 5,
+        "instruction": "Continua con questo ritmo fluido e regolare."
+      },
+      {
+        "step": 6,
+        "instruction": "Questa frequenza crea una variabilità della frequenza cardiaca ottimale."
+      }
+    ],
+    "benefits": [
+      "Ottimizza l’HRV",
+      "Coerenza cardiaca",
+      "Riduce l’ansia"
+    ],
+    "tips": [
+      "Questa frequenza (5,5 respiri/min) ottimizza la variabilità della frequenza cardiaca",
+      "Crea «coerenza» tra cuore e cervello",
+      "La frequenza respiratoria più calmante per la maggior parte delle persone"
+    ]
+  },
+  "a0cb55cf-81d7-4e1c-bd24-1afcca7946a5": {
+    "name": "Respirazione Dahn Jon",
+    "description": "Respirazione coreana del centro energetico. Concentrati sul centro energetico nel basso addome, il Dahn Jon.",
+    "history": "Dalla tradizione coreana Sundo, risalente a migliaia di anni fa. Dahn Jon (단전) è l’equivalente coreano del Dantian cinese.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente, con la schiena dritta ma rilassata."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia entrambe le mani sul basso addome, circa 5 cm sotto l’ombelico."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira profondamente, espandendo il basso addome contro le mani."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira lentamente, ritraendo delicatamente l’addome."
+      },
+      {
+        "step": 5,
+        "instruction": "Concentra l’attenzione sul calore che si sviluppa nel tuo Dahn Jon."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua per 10-15 minuti, coltivando l’energia."
+      }
+    ],
+    "benefits": [
+      "Sviluppa l’energia del centro del corpo",
+      "Migliora la digestione",
+      "Stabilità emotiva",
+      "Effetto di radicamento"
+    ],
+    "tips": [
+      "Deve muoversi l’addome, non il petto",
+      "Immagina una sfera luminosa di energia",
+      "Da praticare preferibilmente a stomaco vuoto"
+    ]
+  },
+  "888fec01-e5ea-45c2-91dd-70414db01523": {
+    "name": "Respirazione Dan Tian",
+    "description": "Antica tecnica di respirazione cinese focalizzata sul centro energetico del basso addome. Calma la mente e rafforza il Qi.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Respira delicatamente e senza sforzo. Interrompi e torna alla respirazione normale se avverti vertigini, stordimento, mancanza di fiato o ansia. Presta particolare attenzione in caso di importanti problemi respiratori o cardiaci e pratica seduto se sei soggetto a svenimenti.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti o stai in piedi con la schiena dritta e le spalle rilassate."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia le mani sul basso addome, circa 5 cm sotto l’ombelico (Dan Tian)."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente dal naso, espandendo l’addome."
+      },
+      {
+        "step": 4,
+        "instruction": "Senti il respiro riempire il tuo centro energetico Dan Tian."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira lentamente, contraendo delicatamente l’addome."
+      },
+      {
+        "step": 6,
+        "instruction": "Visualizza una calda luce dorata nel tuo centro."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "27b7963f-aaff-42b4-ac0d-c04015b9d6fc": {
+    "name": "Respirazione diaframmatica",
+    "description": "Rafforza il diaframma e riduce il fabbisogno di ossigeno. Utile per alleviare lo stress e attivare il centro del corpo.",
+    "history": "Fondamento di tutte le pratiche respiratorie: respirazione profonda naturale.",
+    "safety_warning": "Mantieni il respiro confortevole, evitando inspirazioni profonde forzate. Interrompi e torna a respirare normalmente se avverti vertigini, formicolii o mancanza di fiato. Pratica seduto o sdraiato se sei soggetto a stordimento; consulta un medico in caso di asma o BPCO non controllate o cardiopatie importanti.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati sulla schiena con le ginocchia piegate oppure siediti comodamente."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia una mano sul petto e una sull’addome."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente dal naso, sentendo l’addome sollevarsi."
+      },
+      {
+        "step": 4,
+        "instruction": "Il petto dovrebbe rimanere relativamente fermo."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira lentamente a labbra socchiuse, sentendo l’addome abbassarsi."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua per tutta la durata, concentrandoti sul movimento dell’addome."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora l’ossigenazione",
+      "Rafforza il diaframma"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "028c74ef-06d4-4e7a-8202-22a0c5ccfc5e": {
+    "name": "Respirazione circolare del didgeridoo",
+    "description": "Tecnica di respirazione aborigena per un flusso d’aria continuo. In origine usata per suonare il didgeridoo.",
+    "history": "Tecnica essenziale per suonare il didgeridoo, lo strumento a fiato più antico del mondo (oltre 40.000 anni). Studi mostrano che suonare il didgeridoo tratta l’apnea del sonno.",
+    "safety_warning": "All’inizio può causare vertigini. Pratica seduto.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con una buona postura."
+      },
+      {
+        "step": 2,
+        "instruction": "Riempi le guance d’aria, come uno scoiattolo."
+      },
+      {
+        "step": 3,
+        "instruction": "Mentre spingi l’aria fuori con le guance, inspira rapidamente dal naso."
+      },
+      {
+        "step": 4,
+        "instruction": "Esercita la coordinazione: le guance spingono fuori l’aria mentre il naso inspira."
+      },
+      {
+        "step": 5,
+        "instruction": "Inizia con sessioni brevi: occorrono settimane per padroneggiare questa tecnica."
+      },
+      {
+        "step": 6,
+        "instruction": "Arriva gradualmente a creare un flusso d’aria continuo, senza pause."
+      }
+    ],
+    "benefits": [
+      "Tratta l’apnea del sonno",
+      "Rafforza i muscoli respiratori",
+      "Meditazione particolare",
+      "Legame con le origini"
+    ],
+    "tips": [
+      "Abbi pazienza: servono settimane per imparare",
+      "All’inizio esercitati con una cannuccia nell’acqua",
+      "Emetti un ronzio per simulare il didgeridoo"
+    ]
+  },
+  "355ce88b-d4c7-4a8b-9625-7da936c48bf9": {
+    "name": "Respiro del Tempo del Sogno",
+    "description": "Respirazione meditativa ispirata alla tradizione aborigena per connettersi con l’eterno Tempo del Sogno.",
+    "history": "Ispirata al concetto aborigeno del Tempo del Sogno (Tjukurpa): il tempo eterno della creazione in cui passato, presente e futuro coesistono.",
+    "safety_warning": "Se pratichi all’aperto, scegli una superficie sicura e comoda ed evita temperature estreme. Respira delicatamente e interrompi se avverti vertigini, stordimento o disagio; pratica seduto se sei soggetto a svenimenti.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Se possibile, siediti o sdraiati sulla terra: erba, sabbia o suolo."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi gli occhi e senti il corpo entrare in contatto con la terra."
+      },
+      {
+        "step": 3,
+        "instruction": "Respira lentamente, immaginando radici che dal corpo scendono nella terra."
+      },
+      {
+        "step": 4,
+        "instruction": "Con ogni inspirazione, attingi all’antica saggezza della terra."
+      },
+      {
+        "step": 5,
+        "instruction": "Con ogni espirazione, affida la tua storia alla terra."
+      },
+      {
+        "step": 6,
+        "instruction": "Riposa in una consapevolezza senza tempo, in connessione con tutti gli antenati."
+      }
+    ],
+    "benefits": [
+      "Radicamento profondo",
+      "Connessione con gli antenati",
+      "Consapevolezza senza tempo",
+      "Guarigione attraverso la terra"
+    ],
+    "tips": [
+      "Da praticare preferibilmente a contatto diretto con la terra",
+      "Stare a piedi nudi rafforza la connessione",
+      "Ideale al tramonto o all’alba"
+    ]
+  },
+  "0692fb3a-9d73-42ef-b96e-91f5d3bd638f": {
+    "name": "Respiro dell’aquila",
+    "description": "Respirazione espansiva che richiama lo spirito dell’aquila per visione e libertà.",
+    "history": "L’aquila è sacra in molte tradizioni native e rappresenta il legame con il Creatore e una prospettiva superiore.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi ben eretto, con le braccia lungo i fianchi."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira lentamente, sollevando le braccia ai lati come ali."
+      },
+      {
+        "step": 3,
+        "instruction": "Al termine dell’inspirazione, le braccia sono completamente distese e il petto aperto."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni brevemente, sentendoti ampio come un’aquila in volo."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira lentamente, abbassando le ali, cioè le braccia."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti 10 volte, percependo libertà e una visione più ampia."
+      }
+    ],
+    "benefits": [
+      "Amplia la prospettiva",
+      "Apre cuore e petto",
+      "Richiama il coraggio",
+      "Sensazione di libertà"
+    ],
+    "tips": [
+      "Muoviti lentamente come un’aquila in volo",
+      "Guarda verso l’alto al culmine dell’inspirazione",
+      "Percepisci le ali, non soltanto le braccia"
+    ]
+  },
+  "bdf4c867-21f0-4cd9-a19d-d928b1133fd9": {
+    "name": "Respirazione dei cinque elementi",
+    "description": "Attraversa i cinque elementi della medicina tradizionale cinese per equilibrare organi ed emozioni.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Legno (fegato): respira il verde e lascia andare la rabbia. 5 respiri."
+      },
+      {
+        "step": 2,
+        "instruction": "Fuoco (cuore): respira il rosso e coltiva la gioia. 5 respiri."
+      },
+      {
+        "step": 3,
+        "instruction": "Terra (milza): respira il giallo e trova stabilità. 5 respiri."
+      },
+      {
+        "step": 4,
+        "instruction": "Metallo (polmoni): respira il bianco e lascia andare il dolore. 5 respiri."
+      },
+      {
+        "step": 5,
+        "instruction": "Acqua (reni): respira il blu e lascia andare la paura. 5 respiri."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti il ciclo completo 2-3 volte."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "4a7c6dab-c5c0-4365-bb52-fa14ebdf16ed": {
+    "name": "Respiro delle quattro direzioni",
+    "description": "Respirazione della ruota di medicina dei nativi americani, in onore delle quattro direzioni sacre.",
+    "history": "Basata sulla Ruota di Medicina, sacra in molte tradizioni native americane. Ogni direzione ha un preciso significato spirituale.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi o siediti rivolto a est, la direzione dei nuovi inizi."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira rivolto a est, accogliendo illuminazione e chiarezza."
+      },
+      {
+        "step": 3,
+        "instruction": "Girati a sud. Inspira, accogliendo calore e innocenza."
+      },
+      {
+        "step": 4,
+        "instruction": "Girati a ovest. Inspira, accogliendo introspezione e trasformazione."
+      },
+      {
+        "step": 5,
+        "instruction": "Girati a nord. Inspira, accogliendo saggezza e resistenza."
+      },
+      {
+        "step": 6,
+        "instruction": "Torna a est. Completa 4 cicli di tutte le direzioni."
+      }
+    ],
+    "benefits": [
+      "Equilibrio e armonia",
+      "Connessione con la natura",
+      "Radicamento spirituale",
+      "Prospettiva"
+    ],
+    "tips": [
+      "Se possibile, orientati secondo le direzioni reali",
+      "Onora ogni direzione allo stesso modo",
+      "Da praticare preferibilmente all’aperto"
+    ]
+  },
+  "343eac0b-0d9d-425a-a2a9-3701178b9848": {
+    "name": "Respiro Ha",
+    "description": "Sacro respiro hawaiano della vita. In hawaiano, «Ha» significa respiro e forza vitale.",
+    "history": "Respiro hawaiano della vita, sacro nella tradizione Huna.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi o siediti con i piedi a contatto con la terra."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente dal naso."
+      },
+      {
+        "step": 3,
+        "instruction": "Espira con forza dalla bocca emettendo il suono «HA!»."
+      },
+      {
+        "step": 4,
+        "instruction": "Senti la tensione liberarsi a ogni espirazione energica."
+      },
+      {
+        "step": 5,
+        "instruction": "Ripeti 7-10 volte, aumentando l’energia a ogni respiro."
+      },
+      {
+        "step": 6,
+        "instruction": "Concludi con alcuni respiri naturali, sentendoti rivitalizzato."
+      }
+    ],
+    "benefits": [
+      "Connette al mana",
+      "Energizza il corpo",
+      "Libera dalla negatività"
+    ],
+    "tips": [
+      "In hawaiano «Ha» significa respiro della vita",
+      "Usato nella tradizione Huna per liberare l’energia",
+      "Utile per liberare emozioni bloccate"
+    ]
+  },
+  "87bbad1e-eda2-4189-b28f-2e11ff4de2a1": {
+    "name": "Respirazione Hara",
+    "description": "Pratica giapponese focalizzata sul centro di gravità del corpo, 3 dita sotto l’ombelico.",
+    "history": "Respirazione nell’hara, il centro dell’addome, nelle arti marziali.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti in seiza, in ginocchio, oppure a gambe incrociate."
+      },
+      {
+        "step": 2,
+        "instruction": "Porta l’attenzione al tuo hara, 3 dita sotto l’ombelico."
+      },
+      {
+        "step": 3,
+        "instruction": "Respira profondamente, dirigendo ogni respiro verso l’hara."
+      },
+      {
+        "step": 4,
+        "instruction": "Senti il basso addome espandersi inspirando e contrarsi espirando."
+      },
+      {
+        "step": 5,
+        "instruction": "Immagina l’hara come il tuo centro di forza e stabilità."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua a respirare in questo centro, sentendoti radicato."
+      }
+    ],
+    "benefits": [
+      "Sviluppa la forza",
+      "Migliora l’equilibrio",
+      "Aumenta la stabilità"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "7b1bb204-383c-4e31-bba2-9aa0a88f528a": {
+    "name": "Respiro del cuore",
+    "description": "Meditazione sufi focalizzata sul cuore spirituale. Coltiva amore e connessione con il divino.",
+    "history": "Pratica sufi che concentra il respiro sul centro del cuore.",
+    "safety_warning": "Se avverti stordimento, ansia o mancanza di fiato, torna alla respirazione normale e interrompi. Pratica seduto se sei soggetto a vertigini.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente e appoggia la mano destra sul cuore."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi gli occhi e porta l’attenzione al centro del cuore."
+      },
+      {
+        "step": 3,
+        "instruction": "Respira lentamente, immaginando il respiro entrare e uscire dal cuore."
+      },
+      {
+        "step": 4,
+        "instruction": "Con ogni inspirazione, accogli amore e pace."
+      },
+      {
+        "step": 5,
+        "instruction": "Con ogni espirazione, lascia andare pesantezza e preoccupazioni."
+      },
+      {
+        "step": 6,
+        "instruction": "Senti il cuore espandersi a ogni ciclo respiratorio."
+      }
+    ],
+    "benefits": [
+      "Apre il cuore",
+      "Connette al divino",
+      "Coltiva l’amore"
+    ],
+    "tips": [
+      "Concentrati su sentimenti di amore e gratitudine",
+      "Puoi praticare ogni volta che hai bisogno di ritrovare il tuo centro",
+      "Nella tradizione sufi, il respiro è un legame con il divino"
+    ]
+  },
+  "ff7d31b1-6ec3-42ab-8688-e7d2070533ca": {
+    "name": "Respirazione olotropica",
+    "description": "Creata da Stanislav Grof. Respirazione intensa per accedere a stati di coscienza non ordinari.",
+    "history": "Creata da Stanislav Grof per accedere a stati alterati.",
+    "safety_warning": "Pratica soltanto con un facilitatore qualificato. Non adatta in gravidanza o in caso di problemi cardiaci, epilessia o disturbi mentali.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati in uno spazio sicuro e confortevole, con una persona che ti assista."
+      },
+      {
+        "step": 2,
+        "instruction": "Inizia a respirare più velocemente e profondamente del normale, senza pause."
+      },
+      {
+        "step": 3,
+        "instruction": "Mantieni una respirazione circolare continua: l’inspirazione sfocia nell’espirazione."
+      },
+      {
+        "step": 4,
+        "instruction": "Lascia emergere emozioni, sensazioni o movimenti."
+      },
+      {
+        "step": 5,
+        "instruction": "Continua per 30-60 minuti con musica evocativa."
+      },
+      {
+        "step": 6,
+        "instruction": "Rallenta gradualmente il respiro e riposa. Integrare l’esperienza è importante."
+      }
+    ],
+    "benefits": [
+      "Liberazione emotiva",
+      "Scoperta di sé",
+      "Guarigione dei traumi"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "86f810a8-62ff-4807-b4ba-74ed32d23722": {
+    "name": "Respirazione olotropica leggera",
+    "description": "Versione semplificata della respirazione olotropica per la liberazione emotiva.",
+    "history": "Sviluppata da Stanislav Grof, ceco-americano attivo in Brasile. Usa la respirazione accelerata per accedere a stati di coscienza non ordinari.",
+    "safety_warning": "Tecnica potente che può far emergere emozioni intense. Preferibile con un facilitatore qualificato. Non adatta in gravidanza o in caso di problemi cardiaci o disturbi di salute mentale.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati in uno spazio sicuro e confortevole."
+      },
+      {
+        "step": 2,
+        "instruction": "Inizia a respirare più velocemente e profondamente del normale, con un respiro circolare."
+      },
+      {
+        "step": 3,
+        "instruction": "Nessuna pausa tra inspirazione ed espirazione."
+      },
+      {
+        "step": 4,
+        "instruction": "Continua per 15-20 minuti senza fermarti."
+      },
+      {
+        "step": 5,
+        "instruction": "Lascia emergere e liberarsi emozioni o sensazioni."
+      },
+      {
+        "step": 6,
+        "instruction": "Rallenta gradualmente e poi riposa per 10 minuti."
+      }
+    ],
+    "benefits": [
+      "Liberazione emotiva",
+      "Guarigione dei traumi",
+      "Consapevolezza ampliata",
+      "Comprensioni profonde"
+    ],
+    "tips": [
+      "Fai in modo che sia presente qualcuno",
+      "Scrivi un diario dopo la pratica",
+      "Dedica diverse ore all’integrazione dell’esperienza"
+    ]
+  },
+  "659c38f4-6b52-4037-a96b-389db1a60749": {
+    "name": "Respiro Hygge",
+    "description": "Respirazione danese per una sensazione di intimità, appagamento e conforto nel presente.",
+    "history": "Hygge, pronunciato «hù-ga», è il concetto danese di intimo appagamento. Questa pratica respiratoria esprime lo stile di vita hygge.",
+    "safety_warning": "Mantieni il respiro delicato e spontaneo. Interrompi se avverti stordimento o disagio ed evita le candele se potresti addormentarti.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Crea un ambiente accogliente, con candele, una coperta e una bevanda calda vicino a te."
+      },
+      {
+        "step": 2,
+        "instruction": "Siediti o sdraiati comodamente, lasciando rilassare completamente il corpo."
+      },
+      {
+        "step": 3,
+        "instruction": "Respira lentamente e naturalmente, senza sforzo né conteggi."
+      },
+      {
+        "step": 4,
+        "instruction": "Con ogni espirazione, lascia andare il bisogno di essere altrove."
+      },
+      {
+        "step": 5,
+        "instruction": "Prova un profondo appagamento per questo momento, esattamente com’è."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua per 10 minuti, coltivando intimità e gratitudine."
+      }
+    ],
+    "benefits": [
+      "Coltiva l’appagamento",
+      "Riduce lo stress",
+      "Consapevolezza del momento presente",
+      "Rituale di cura di sé"
+    ],
+    "tips": [
+      "Crea prima un’atmosfera accogliente",
+      "Niente telefoni né distrazioni",
+      "Pratica nelle sere d’autunno o d’inverno"
+    ]
+  },
+  "1c407f50-1a77-435b-8f54-375562943657": {
+    "name": "Respirazione Jang Saeng",
+    "description": "Respiro coreano della longevità per salute e vitalità. Antica pratica Sundo.",
+    "history": "Dalla tradizione coreana degli eremiti di montagna, Sundo, per raggiungere longevità e sviluppo spirituale.",
+    "safety_warning": "Include una ritenzione del respiro. Saltala o accorciala se avverti vertigini, ansia o mancanza di fiato. Non trattenere il respiro in gravidanza, in caso di pressione alta non controllata, importanti patologie cardiache o polmonari, oppure precedenti svenimenti; in caso di dubbi, consulta un medico. Pratica seduto e interrompi se compaiono sintomi.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti in mezzo loto oppure comodamente a gambe incrociate."
+      },
+      {
+        "step": 2,
+        "instruction": "Raddrizza la schiena, abbassa leggermente il mento e rilassa le spalle."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira contando fino a 5, riempiendo dall’addome al petto."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni il respiro contando fino a 5, concentrandoti sul terzo occhio."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira contando fino a 10, svuotando dal petto all’addome."
+      },
+      {
+        "step": 6,
+        "instruction": "Visualizza una luce dorata che riempie il corpo mentre inspiri."
+      }
+    ],
+    "benefits": [
+      "Favorisce la longevità",
+      "Equilibra l’energia",
+      "Libera la mente",
+      "Rafforza le difese immunitarie"
+    ],
+    "tips": [
+      "Pratica ogni giorno alla stessa ora",
+      "Ideale al mattino, rivolti a est",
+      "Almeno 100 giorni per una trasformazione"
+    ]
+  },
+  "b7ca5e6c-ec2e-483f-a817-e9816c3be10d": {
+    "name": "Kapalbhati",
+    "description": "Respiro del cranio splendente. Potente tecnica di purificazione con espirazioni rapide e vigorose.",
+    "history": "Respiro del cranio splendente dello Hatha Yoga, una tecnica di purificazione.",
+    "safety_warning": "Evita durante gravidanza e mestruazioni, in caso di pressione alta o problemi cardiaci. Interrompi se avverti vertigini.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti con la schiena dritta e le mani sulle ginocchia."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente per prepararti."
+      },
+      {
+        "step": 3,
+        "instruction": "Espira con forza dal naso, portando l’ombelico verso la colonna vertebrale."
+      },
+      {
+        "step": 4,
+        "instruction": "Lascia che l’inspirazione avvenga passivamente mentre l’addome si rilassa."
+      },
+      {
+        "step": 5,
+        "instruction": "Inizia con 20 espirazioni rapide, poi riposa respirando normalmente."
+      },
+      {
+        "step": 6,
+        "instruction": "Aumenta gradualmente fino a 60-100 espirazioni per ciclo."
+      }
+    ],
+    "benefits": [
+      "Purifica i polmoni",
+      "Energizza il corpo",
+      "Libera la mente"
+    ],
+    "tips": [
+      "Concentrati sull’espirazione: l’inspirazione è passiva",
+      "Mantieni fermi petto e spalle",
+      "Interrompi se avverti vertigini"
+    ]
+  },
+  "2bd0942d-f2db-4d36-b563-c95f1b3cef76": {
+    "name": "Respirazione dei reni",
+    "description": "Pratica della medicina tradizionale cinese per nutrire il Qi dei reni e ridurre paura e ansia. Sostiene la salute delle ghiandole surrenali.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Mantieni il respiro confortevole ed evita gli sforzi. Interrompi se avverti vertigini, mancanza di fiato o malessere; pratica seduto se sei soggetto a stordimento.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente e appoggia le mani sulla parte bassa della schiena, all’altezza dei reni."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira e visualizza l’energia che fluisce verso i reni."
+      },
+      {
+        "step": 3,
+        "instruction": "Trattieni brevemente e senti calore nella zona lombare."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira lentamente, lasciando andare paura e tensione."
+      },
+      {
+        "step": 5,
+        "instruction": "Ripeti, sviluppando calore e vitalità."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "3c7f37bf-a286-4607-991b-e10bb0b4f3b6": {
+    "name": "Kumbhaka",
+    "description": "Pratica di ritenzione prolungata del respiro per aumentare la capacità polmonare e calmare la mente.",
+    "history": "Antica pratica yogica citata negli Yoga Sutra di Patanjali per padroneggiare il prana.",
+    "safety_warning": "Non sforzarti. Aumenta gradualmente il tempo di ritenzione nel corso delle settimane. Interrompi se provi disagio.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente contando fino a 4."
+      },
+      {
+        "step": 3,
+        "instruction": "Trattieni il respiro (Kumbhaka) contando da 8 a 16."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira lentamente contando fino a 8."
+      },
+      {
+        "step": 5,
+        "instruction": "Facoltativo: resta a polmoni vuoti contando fino a 4."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti, aumentando gradualmente il tempo di ritenzione."
+      }
+    ],
+    "benefits": [
+      "Aumenta la capacità polmonare",
+      "Calma la mente",
+      "Sviluppa la forza di volontà",
+      "Equilibra l’energia"
+    ],
+    "tips": [
+      "Non forzare mai la ritenzione",
+      "Aumenta di 1 secondo alla settimana",
+      "È preferibile praticare a stomaco vuoto"
+    ]
+  },
+  "e8863212-5694-44b0-8864-a25feb84dc96": {
+    "name": "Respiro del leone",
+    "description": "Un respiro yoga giocoso che libera la tensione di viso e gola, attivando il nervo vago.",
+    "history": "Simhasana dello yoga: libera la tensione attraverso un’espirazione vigorosa.",
+    "safety_warning": "Espira con forza soltanto finché ti è confortevole. Interrompi in caso di vertigini, tosse, dolore alla mandibola o irritazione della gola; pratica seduto se sei soggetto a stordimento.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente oppure inginocchiati a terra."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente dal naso."
+      },
+      {
+        "step": 3,
+        "instruction": "Apri bene la bocca e tira fuori la lingua verso il mento."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira con forza emettendo un suono «HA», come il ruggito di un leone."
+      },
+      {
+        "step": 5,
+        "instruction": "Spalanca gli occhi e guarda verso l’alto mentre espiri."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti 5-7 volte. Lasciati andare al gioco!"
+      }
+    ],
+    "benefits": [
+      "Libera la tensione",
+      "Stimola la gola",
+      "Aumenta la fiducia in sé"
+    ],
+    "tips": [
+      "Distendi bene i muscoli del viso!",
+      "Lascia andare l’imbarazzo: è liberatorio",
+      "Utile per liberare tensione mandibolare e stress"
+    ]
+  },
+  "628ec143-0f73-4ba8-91d0-f5a1d7ef0865": {
+    "name": "Nadi Shodhana",
+    "description": "Respiro di purificazione dei canali. Respirazione a narici alternate per equilibrio e lucidità mentale.",
+    "history": "Antica tecnica di pranayama della tradizione yoga (circa 3000 a.C.).",
+    "safety_warning": "Evita in caso di raffreddore o congestione nasale.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi la narice destra con il pollice destro."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente dalla narice sinistra contando fino a 4."
+      },
+      {
+        "step": 4,
+        "instruction": "Chiudi la narice sinistra con l’anulare e trattieni contando fino a 4."
+      },
+      {
+        "step": 5,
+        "instruction": "Libera la narice destra ed espira contando fino a 4."
+      },
+      {
+        "step": 6,
+        "instruction": "Inspira a destra, trattieni ed espira a sinistra. Questo è un ciclo."
+      },
+      {
+        "step": 7,
+        "instruction": "Continua per 5-10 cicli."
+      }
+    ],
+    "benefits": [
+      "Equilibra gli emisferi",
+      "Calma la mente",
+      "Migliora la concentrazione"
+    ],
+    "tips": [
+      "Mantieni il respiro lento e regolare",
+      "Equilibra gli emisferi cerebrali destro e sinistro",
+      "Utile per concentrarsi e calmare l’ansia"
+    ]
+  },
+  "7922c669-772a-4242-b5a5-0701c6810867": {
+    "name": "Respirazione in nove cicli",
+    "description": "Pratica di purificazione del buddhismo tibetano per liberare i canali energetici e calmare la mente.",
+    "history": "Pratica buddhista per purificare le energie negative attraverso 9 respiri.",
+    "safety_warning": "Respira delicatamente e senza forzare. Interrompi se avverti vertigini, congestione o mancanza di fiato; evita in caso di importante ostruzione nasale o sanguinamento dal naso.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta e le mani sulle cosce."
+      },
+      {
+        "step": 2,
+        "instruction": "Primi 3 respiri: chiudi la narice destra, inspira a sinistra ed espira a destra."
+      },
+      {
+        "step": 3,
+        "instruction": "Successivi 3 respiri: chiudi la narice sinistra, inspira a destra ed espira a sinistra."
+      },
+      {
+        "step": 4,
+        "instruction": "Ultimi 3 respiri: respira in modo uniforme da entrambe le narici."
+      },
+      {
+        "step": 5,
+        "instruction": "Con ogni espirazione, visualizza il rilascio di negatività e ostacoli."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti il ciclo completo di 9 respiri 2-3 volte."
+      }
+    ],
+    "benefits": [
+      "Purifica dalla negatività",
+      "Libera dagli ostacoli",
+      "Equilibra i venti"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "e6dea69c-6d9b-4fc9-898c-c106b4af850f": {
+    "name": "Sospiro fisiologico",
+    "description": "Il modo più rapido per calmarsi, scoperto dai ricercatori di Stanford.",
+    "history": "Scoperto dai ricercatori di Stanford come il modo più rapido per calmarsi.",
+    "safety_warning": "Non forzare respiri ampi. Interrompi se avverti stordimento, formicolii o disagio; pratica seduto se sei soggetto a vertigini.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Fai un respiro profondo."
+      },
+      {
+        "step": 2,
+        "instruction": "Al termine, aggiungi una seconda inspirazione più piccola."
+      },
+      {
+        "step": 3,
+        "instruction": "Espira lentamente tutta l’aria."
+      },
+      {
+        "step": 4,
+        "instruction": "Ripeti 3-5 volte."
+      }
+    ],
+    "benefits": [
+      "Calma immediata",
+      "Riduce il cortisolo",
+      "Riequilibra la respirazione"
+    ],
+    "tips": [
+      "La doppia inspirazione è essenziale: riapre gli alveoli collassati",
+      "Fai durare l’espirazione almeno il doppio dell’inspirazione",
+      "È il modo più rapido per calmare il sistema nervoso"
+    ]
+  },
+  "e9d652ea-e0e1-4dd5-b513-1eeb4958bd2f": {
+    "name": "Sospiro fisiologico",
+    "description": "Il modo più rapido per calmarsi sul momento. Scoperto dal neuroscienziato di Stanford Andrew Huberman.",
+    "history": "Scoperto dai ricercatori di Stanford come il modo più rapido per calmarsi.",
+    "safety_warning": "Non forzare respiri ampi. Interrompi se avverti stordimento, formicolii o disagio; pratica seduto se sei soggetto a vertigini.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Puoi praticare ovunque, ogni volta che senti stress."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente dal naso."
+      },
+      {
+        "step": 3,
+        "instruction": "Al termine, fai una seconda inspirazione rapida per riempire completamente i polmoni."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira lentamente e completamente dalla bocca."
+      },
+      {
+        "step": 5,
+        "instruction": "La doppia inspirazione riapre gli alveoli collassati nei polmoni."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti 1-3 volte per una calma immediata."
+      }
+    ],
+    "benefits": [
+      "Calma immediata",
+      "Riduce il cortisolo",
+      "Riequilibra la respirazione"
+    ],
+    "tips": [
+      "La doppia inspirazione è essenziale: riapre gli alveoli collassati",
+      "Fai durare l’espirazione almeno il doppio dell’inspirazione",
+      "È il modo più rapido per calmare il sistema nervoso"
+    ]
+  },
+  "791d6e1d-d276-4ea5-822c-9d314660be61": {
+    "name": "Pranayama di Bali",
+    "description": "Respirazione dei templi balinesi per la purificazione spirituale e la connessione con gli spiriti della natura.",
+    "history": "Pratica respiratoria induista balinese, il pranayama, adattata alle tradizioni animiste locali. Fa parte del rituale quotidiano delle offerte al tempio.",
+    "safety_warning": "Se avverti stordimento, ansia o mancanza di fiato, torna a respirare normalmente e interrompi. Evita di trattenere il respiro in gravidanza o in caso di pressione alta non controllata, disturbi del ritmo cardiaco o precedenti svenimenti, salvo autorizzazione medica.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti rivolto al sole nascente o a un bel paesaggio naturale."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi gli occhi e senti la connessione con la natura intorno a te."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente, immaginando di assorbire energia dalla natura."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni brevemente, sentendo gratitudine nel cuore."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira, restituendo alla terra l’energia negativa perché si trasformi."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua con profondo rispetto per il mondo naturale."
+      }
+    ],
+    "benefits": [
+      "Connessione spirituale",
+      "Sintonia con la natura",
+      "Pace interiore",
+      "Coltivazione della gratitudine"
+    ],
+    "tips": [
+      "Da praticare preferibilmente all’aperto",
+      "Rivolgiti verso acqua, montagne o alberi",
+      "Abbina a offerte di fiori"
+    ]
+  },
+  "9514882e-da33-4c97-b547-fe8f18a86cc8": {
+    "name": "Respirazione Qigong",
+    "description": "Antica pratica cinese che combina respiro, movimento e visualizzazione dell’energia per la guarigione.",
+    "history": "Pratica fondamentale del Qigong, focalizzata sul centro energetico sotto l’ombelico.",
+    "safety_warning": "Respira in modo confortevole: non sforzarti né forzare respiri ampi. Interrompi e torna a respirare normalmente in caso di vertigini, formicolii, fastidio al petto o ansia; pratica seduto se sei soggetto a stordimento.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi con i piedi alla larghezza delle spalle e le ginocchia leggermente piegate."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia le mani sul basso addome, il dantian."
+      },
+      {
+        "step": 3,
+        "instruction": "Respira profondamente nell’addome, sentendolo espandersi sotto le mani."
+      },
+      {
+        "step": 4,
+        "instruction": "Mentre inspiri, visualizza l’energia che raccogli dalla terra."
+      },
+      {
+        "step": 5,
+        "instruction": "Mentre espiri, immagina di liberare tensione ed energia stagnante."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua con respiri lenti e profondi, sentendoti radicato e calmo."
+      }
+    ],
+    "benefits": [
+      "Centra l’energia",
+      "Radica la mente",
+      "Sviluppa il chi"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "409ab72c-8c33-4044-a0fa-6754e3a56dbc": {
+    "name": "Calma rapida",
+    "description": "Un riequilibrio del respiro di 1 minuto per ridurre subito lo stress. Ideale nei momenti intensi.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Mantieni il respiro delicato e confortevole. Se avverti stordimento o fame d’aria, accorcia i conteggi oppure torna alla respirazione normale e interrompi.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Chiudi gli occhi e fai un respiro profondo."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira contando fino a 4 ed espira contando fino a 6."
+      },
+      {
+        "step": 3,
+        "instruction": "Concentrati soltanto sul respiro."
+      },
+      {
+        "step": 4,
+        "instruction": "Continua fino alla fine della sessione."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "882fb6dd-c808-4de7-91ea-c26cd613a4af": {
+    "name": "Respirazione risonante",
+    "description": "Sincronizza il respiro con il battito cardiaco per la massima calma. Raggiunge la coerenza cardiaca a circa 5 respiri al minuto.",
+    "history": "Respirazione a 5,5 respiri al minuto per ottimizzare HRV e coerenza.",
+    "safety_warning": "Non forzare i tempi: se necessario, usa un conteggio più breve e confortevole. Interrompi in caso di vertigini, affanno o disagio e torna a respirare normalmente; presta attenzione in caso di BPCO, asma o tendenza a svenire.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Trova una posizione seduta comoda."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira lentamente per 6 secondi."
+      },
+      {
+        "step": 3,
+        "instruction": "Espira lentamente per 6 secondi."
+      },
+      {
+        "step": 4,
+        "instruction": "Mantieni questo ritmo senza pause tra i respiri."
+      },
+      {
+        "step": 5,
+        "instruction": "Concentrati sul flusso regolare e continuo del respiro."
+      }
+    ],
+    "benefits": [
+      "Ottimizza l’HRV",
+      "Coerenza cardiaca",
+      "Riduce l’ansia"
+    ],
+    "tips": [
+      "Questa frequenza (5,5 respiri/min) ottimizza la variabilità della frequenza cardiaca",
+      "Crea «coerenza» tra cuore e cervello",
+      "La frequenza respiratoria più calmante per la maggior parte delle persone"
+    ]
+  },
+  "57de4961-2181-4b30-b71e-d77b39ad6903": {
+    "name": "Respirazione inversa",
+    "description": "Tecnica taoista in cui l’addome si contrae durante l’inspirazione. Sviluppa forza interiore e concentrazione.",
+    "history": "Tecnica taoista in cui l’addome si contrae durante l’inspirazione.",
+    "safety_warning": "Pratica avanzata. Padroneggia prima la respirazione naturale. Interrompi se provi disagio.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti o stai in piedi in una postura rilassata."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia una mano sull’addome per sentirne il movimento."
+      },
+      {
+        "step": 3,
+        "instruction": "Mentre inspiri, ritrai delicatamente l’addome VERSO l’interno, in direzione della colonna vertebrale."
+      },
+      {
+        "step": 4,
+        "instruction": "Mentre espiri, lascia espandere l’addome VERSO l’esterno."
+      },
+      {
+        "step": 5,
+        "instruction": "È l’opposto della respirazione naturale."
+      },
+      {
+        "step": 6,
+        "instruction": "Pratica lentamente per 10-15 respiri. Serve tempo per padroneggiare la tecnica."
+      }
+    ],
+    "benefits": [
+      "Rafforza il centro del corpo",
+      "Sviluppa la forza interiore",
+      "Aumenta la concentrazione"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "1f49d6a2-53bd-4a8a-9f65-84121d4ae485": {
+    "name": "Respiro Ruesri Dat Ton",
+    "description": "Respirazione dello yoga thailandese per l’autoguarigione. Antiche tecniche dei saggi eremiti.",
+    "history": "Ruesri Dat Ton è lo yoga thailandese, praticato dai saggi eremiti, i ruesri, da migliaia di anni. Combina il respiro con automassaggio e movimento.",
+    "safety_warning": "Muoviti senza dolore ed evita di forzare collo e zona lombare. Salta la ritenzione e continua a respirare se avverti vertigini; evita le posizioni in ginocchio o con la schiena inarcata se peggiorano sintomi a ginocchia, schiena o collo.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti nella posizione del diamante, in ginocchio con i glutei sui talloni."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia le mani sulle cosce e mantieni la schiena dritta."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente, inarcando la schiena e guardando verso l’alto."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni brevemente al culmine."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira, arrotondando la colonna e avvicinando il mento al petto."
+      },
+      {
+        "step": 6,
+        "instruction": "Coordina respiro e movimento della colonna per 10 minuti."
+      }
+    ],
+    "benefits": [
+      "Flessibilità della colonna",
+      "Massaggio degli organi interni",
+      "Flusso di energia",
+      "Autoguarigione"
+    ],
+    "tips": [
+      "Movimento e respiro devono essere fluidi",
+      "Ascolta il tuo corpo",
+      "Puoi aggiungere un automassaggio tra i cicli"
+    ]
+  },
+  "a6dfe711-e70a-47e9-8e58-45c20835807e": {
+    "name": "Sitali Pranayama",
+    "description": "Respiro rinfrescante. Arrotola la lingua e respira per rinfrescare il corpo e calmare le emozioni.",
+    "history": "Respiro rinfrescante dell’antica tradizione Hatha Yoga.",
+    "safety_warning": "Evita con il freddo o in caso di asma o infezioni respiratorie.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con gli occhi chiusi."
+      },
+      {
+        "step": 2,
+        "instruction": "Arrotola la lingua a tubo oppure, se non riesci, socchiudi le labbra."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente attraverso la lingua arrotolata, sentendo l’aria fresca."
+      },
+      {
+        "step": 4,
+        "instruction": "Chiudi la bocca ed espira dal naso."
+      },
+      {
+        "step": 5,
+        "instruction": "Nota la sensazione di freschezza sulla lingua e nella gola."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti per 10-15 respiri."
+      }
+    ],
+    "benefits": [
+      "Rinfresca il corpo",
+      "Riduce la rabbia",
+      "Calma la mente"
+    ],
+    "tips": [
+      "Rinfresca il corpo e calma la mente",
+      "Utile con il caldo o in caso di rabbia",
+      "Evita con il freddo o in caso di problemi respiratori"
+    ]
+  },
+  "aac8b050-7afa-4dc2-80ce-302fb2258884": {
+    "name": "Respiro del vento della steppa",
+    "description": "Respirazione mongola ispirata alle vaste steppe aperte. Espansiva e radicante.",
+    "history": "Ispirata alla cultura nomade mongola, in cui la vastità della steppa e del cielo crea un particolare senso di spazio e libertà.",
+    "safety_warning": "Mantieni i respiri lenti e confortevoli, evitando di respirare eccessivamente. Se avverti stordimento, instabilità o ansia, interrompi e torna a respirare normalmente; se necessario, pratica seduto.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi o siediti rivolto a uno spazio aperto, oppure visualizza vaste pianure."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira lentamente, immaginando un orizzonte infinito che si espande."
+      },
+      {
+        "step": 3,
+        "instruction": "Lascia che la consapevolezza si espanda con il respiro fino all’orizzonte."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira, sentendoti radicato come una montagna nella steppa."
+      },
+      {
+        "step": 5,
+        "instruction": "Sentiti allo stesso tempo vasto e radicato."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua, connettendoti con lo spirito dello spazio infinito."
+      }
+    ],
+    "benefits": [
+      "Consapevolezza espansiva",
+      "Sensazione di libertà",
+      "Radicamento",
+      "Prospettiva"
+    ],
+    "tips": [
+      "Da praticare preferibilmente all’aperto",
+      "Rivolgiti verso una veduta aperta",
+      "Sentiti piccolo e immenso nello stesso momento"
+    ]
+  },
+  "aa482f3b-c1ad-4776-beb6-de5f9802e720": {
+    "name": "Antistress rapido",
+    "description": "Tecnica respiratoria ad azione rapida per abbassare il cortisolo in 2 minuti.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "I respiri rapidi possono causare vertigini o formicolii in alcune persone. Mantieni brevi le inspirazioni, privilegia un’espirazione lunga e confortevole e interrompi in caso di stordimento, panico o malessere; evita se scatena sintomi d’asma.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti o stai in piedi comodamente."
+      },
+      {
+        "step": 2,
+        "instruction": "Fai 3 inspirazioni rapide dal naso."
+      },
+      {
+        "step": 3,
+        "instruction": "Fai una lunga espirazione dalla bocca."
+      },
+      {
+        "step": 4,
+        "instruction": "Ripeti per tutta la durata."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "a44a055c-6bfe-432f-b069-c0c115ac2399": {
+    "name": "Surya Bhedana",
+    "description": "Respirazione dalla narice destra per attivare il canale solare, riscaldante ed energizzante.",
+    "history": "Respiro che attraversa il sole, dallo Hatha Yoga: attiva Pingala nadi, il canale solare.",
+    "safety_warning": "Evita in caso di pressione alta o problemi cardiaci. Da praticare preferibilmente al mattino.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi la narice sinistra con l’anulare."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente soltanto dalla narice destra."
+      },
+      {
+        "step": 4,
+        "instruction": "Chiudi entrambe le narici e trattieni brevemente."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira dalla narice sinistra."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti: inspira sempre a destra ed espira a sinistra."
+      }
+    ],
+    "benefits": [
+      "Aumenta l’energia",
+      "Riscalda il corpo",
+      "Migliora la digestione",
+      "Stimola il metabolismo"
+    ],
+    "tips": [
+      "Da praticare preferibilmente al mattino",
+      "Evita prima di dormire",
+      "Utile nelle giornate fredde"
+    ]
+  },
+  "4e81ff72-6c03-466a-8a53-69a87f5b8eb9": {
+    "name": "Respirazione Systema",
+    "description": "Respirazione delle arti marziali russe per resistenza allo stress e recupero. Usata dalle forze speciali Spetsnaz.",
+    "history": "Sviluppata a partire dalle antiche pratiche respiratorie ortodosse russe e perfezionata da Mikhail Ryabko per il Systema. Usata dalle forze speciali russe per gestire stress estremi.",
+    "safety_warning": "Evita di forzare una respirazione rapida: può causare vertigini o ansia. Se avverti stordimento, intorpidimento, formicolii o mancanza di fiato, rallenta oppure interrompi e torna alla respirazione normale; se i sintomi persistono, consulta un medico.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi o siediti naturalmente, completamente rilassato."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira dal naso ed espira dalla bocca, con un flusso continuo."
+      },
+      {
+        "step": 3,
+        "instruction": "Adatta il respiro al movimento o al livello di stress."
+      },
+      {
+        "step": 4,
+        "instruction": "Sotto stress: respiri brevi e rapidi. Nella calma: respiri lunghi e lenti."
+      },
+      {
+        "step": 5,
+        "instruction": "Non trattenere mai il respiro: mantienilo fluido."
+      },
+      {
+        "step": 6,
+        "instruction": "Pratica il respiro di recupero: inspirazione profonda ed espirazione molto lunga."
+      }
+    ],
+    "benefits": [
+      "Resistenza allo stress estremo",
+      "Recupero rapido",
+      "Gestione del dolore",
+      "Lucidità mentale sotto pressione"
+    ],
+    "tips": [
+      "Il respiro non deve mai interrompere il suo flusso",
+      "Per calmarti, espira più a lungo di quanto inspiri",
+      "Puoi praticare durante qualsiasi attività"
+    ]
+  },
+  "5f7d38df-f537-4f07-ad76-a63ed291d8d7": {
+    "name": "Respiro Temazcal",
+    "description": "Respirazione messicana della capanna sudatoria per purificazione e rinascita.",
+    "history": "Il Temazcal è un’antica cerimonia mesoamericana nella capanna sudatoria, usata da Aztechi, Maya e altri popoli indigeni per guarigione e purificazione spirituale.",
+    "safety_warning": "Mantieniti idratato. Esci dal caldo se ti senti male. Non adatto in gravidanza o in caso di problemi cardiaci.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti in uno spazio caldo e chiuso: bagno caldo, sauna o stanza riscaldata."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi gli occhi ed entra in contatto con il calore intorno a te."
+      },
+      {
+        "step": 3,
+        "instruction": "Respira lentamente dal naso, accogliendo il calore."
+      },
+      {
+        "step": 4,
+        "instruction": "Con ogni espirazione, libera tossine e vecchi schemi."
+      },
+      {
+        "step": 5,
+        "instruction": "Visualizza te stesso rinato e purificato."
+      },
+      {
+        "step": 6,
+        "instruction": "Se pratichi realmente al caldo, limita la durata a 15-20 minuti."
+      }
+    ],
+    "benefits": [
+      "Disintossicazione",
+      "Rinascita spirituale",
+      "Liberazione emotiva",
+      "Purificazione profonda"
+    ],
+    "tips": [
+      "Puoi praticare il respiro anche senza calore reale",
+      "Mantieniti ben idratato",
+      "Riposa dopo la pratica"
+    ]
+  },
+  "d1ec4bb1-6ddd-40d8-b30f-6e3ec8713383": {
+    "name": "Tenaga Dalam",
+    "description": "Respirazione indonesiana della forza interiore. Tecnica delle arti marziali per coltivare l’energia interna.",
+    "history": "Dalle arti marziali indonesiane Pencak Silat. Tenaga Dalam significa «forza interiore»: coltivare chi e prana attraverso respiro e tensione.",
+    "safety_warning": "Non praticare in caso di pressione alta o problemi cardiaci.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Assumi la posizione del cavaliere oppure siediti in postura meditativa."
+      },
+      {
+        "step": 2,
+        "instruction": "Respira profondamente nel basso addome con piena attenzione."
+      },
+      {
+        "step": 3,
+        "instruction": "Mentre inspiri, contrai progressivamente i muscoli dai piedi verso l’alto."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni il respiro e la tensione completa per 5-10 secondi."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira in modo esplosivo, liberando tutta la tensione in una volta."
+      },
+      {
+        "step": 6,
+        "instruction": "Senti l’energia circolare. Ripeti 7 volte."
+      }
+    ],
+    "benefits": [
+      "Sviluppa la forza interiore",
+      "Aumenta l’energia",
+      "Rafforza la volontà",
+      "Consapevolezza corporea"
+    ],
+    "tips": [
+      "La tensione deve aumentare progressivamente",
+      "Il rilascio deve essere completo",
+      "Non adatto ai principianti"
+    ]
+  },
+  "db6df80c-7266-4fa0-9289-62fc5c3555d3": {
+    "name": "Respirazione Tummo",
+    "description": "Meditazione del fuoco interiore. Tecnica tibetana avanzata per generare calore ed energia interni.",
+    "history": "Meditazione del fuoco interiore del buddhismo tibetano per generare calore.",
+    "safety_warning": "È una pratica avanzata. Impara da un insegnante qualificato. Interrompi se provi disagio.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti in una postura meditativa comoda."
+      },
+      {
+        "step": 2,
+        "instruction": "Visualizza una piccola fiamma al centro dell’ombelico."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira profondamente, dirigendo l’energia verso la fiamma."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni il respiro e visualizza la fiamma diventare più luminosa."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira lentamente, sentendo il calore diffondersi nel corpo."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua, aumentando gradualmente la sensazione di calore interiore."
+      }
+    ],
+    "benefits": [
+      "Genera calore",
+      "Brucia la negatività",
+      "Risveglia l’energia"
+    ],
+    "tips": [
+      "Pratica avanzata del buddhismo tibetano",
+      "Può effettivamente aumentare la temperatura corporea",
+      "Per la pratica completa, impara da un insegnante qualificato"
+    ]
+  },
+  "09b991d2-6238-4c0d-a156-99a77a3cf5bb": {
+    "name": "Respirazione della tartaruga",
+    "description": "Antica pratica taoista per la longevità. Respiri estremamente lenti ispirati alla durata della vita della tartaruga.",
+    "history": "Antica pratica taoista per la longevità, ispirata al respiro lento della tartaruga.",
+    "safety_warning": "Pratica molto avanzata. Provala soltanto dopo anni di allenamento respiratorio.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti in una postura di meditazione profonda, completamente rilassato."
+      },
+      {
+        "step": 2,
+        "instruction": "Inizia con respiri normali, rallentandoli gradualmente."
+      },
+      {
+        "step": 3,
+        "instruction": "Cerca di rendere i respiri così lenti da essere quasi impercettibili."
+      },
+      {
+        "step": 4,
+        "instruction": "Inspira per 15-30 secondi o più."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira altrettanto lentamente, senza pause intermedie."
+      },
+      {
+        "step": 6,
+        "instruction": "Lascia che il respiro diventi sottile come un filo, quasi fermandosi."
+      }
+    ],
+    "benefits": [
+      "Favorisce la longevità",
+      "Rilassamento profondo",
+      "Rallenta il metabolismo"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "6b503756-4be6-49dc-a60b-49839d6bb215": {
+    "name": "Respiro Ubuntu",
+    "description": "Pratica africana di respirazione comunitaria. «Io sono perché noi siamo»: respirare in connessione con gli altri.",
+    "history": "Basata sulla filosofia Ubuntu dell’Africa meridionale. Ubuntu significa «umanità verso gli altri»: la fiducia in un legame universale di condivisione.",
+    "safety_warning": "Mantieni il respiro naturale e confortevole. Interrompi se avverti vertigini, stordimento, ansia o mancanza di fiato. In caso di patologie respiratorie o cardiache, pratica delicatamente e valuta di consultare un medico.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente, idealmente in cerchio con altre persone, oppure visualizza una comunità."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia una mano sul cuore e respira naturalmente."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira, immaginando di ricevere amore e sostegno dalla tua comunità."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira, inviando amore e sostegno alla tua comunità."
+      },
+      {
+        "step": 5,
+        "instruction": "Senti il legame con tutti gli esseri."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua, ampliando il cerchio fino a includere tutta l’umanità."
+      }
+    ],
+    "benefits": [
+      "Riduce l’isolamento",
+      "Coltiva la compassione",
+      "Rafforza i legami comunitari",
+      "Apertura del cuore"
+    ],
+    "tips": [
+      "Puoi praticare da solo visualizzando una comunità",
+      "Potente in gruppo",
+      "Concentrati sul dare e ricevere in egual misura"
+    ]
+  },
+  "b9d7ed6e-36d6-4735-9590-08da8259355f": {
+    "name": "Respirazione Ujjayi",
+    "description": "Il respiro vittorioso della tradizione yoga. Crea un tenue suono oceanico restringendo delicatamente la gola.",
+    "history": "Respiro oceanico dello yoga, usato nella pratica Ashtanga.",
+    "safety_warning": "Inizia delicatamente. Se senti tensione alla gola, allenta il restringimento.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta e le spalle rilassate."
+      },
+      {
+        "step": 2,
+        "instruction": "Restringi leggermente la parte posteriore della gola, come per appannare uno specchio."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente dal naso, creando un lieve sibilo."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira dal naso mantenendo lo stesso delicato restringimento."
+      },
+      {
+        "step": 5,
+        "instruction": "Il respiro dovrebbe ricordare le onde dell’oceano o un leggero russare."
+      },
+      {
+        "step": 6,
+        "instruction": "Mantieni sempre il respiro lento, fluido e ritmico."
+      }
+    ],
+    "benefits": [
+      "Riscalda il corpo",
+      "Calma i nervi",
+      "Migliora la concentrazione"
+    ],
+    "tips": [
+      "Immagina di appannare uno specchio con il respiro",
+      "Mantieni il suono delicato, non forzato",
+      "Usata durante la pratica yoga per favorire la concentrazione"
+    ]
+  },
+  "f0ca4134-2b78-443c-962d-b465d17005e6": {
+    "name": "Respirazione del vaso",
+    "description": "Pratica di Kumbhaka. Trattenere il respiro nell’addome come in un vaso per conservare il prana e approfondire la meditazione.",
+    "history": "Trattenere il respiro nell’addome come in un vaso, una pratica dello yoga tibetano.",
+    "safety_warning": "Pratica avanzata. Impara da un insegnante qualificato. Non sforzarti.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti in postura meditativa con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente, dirigendo il respiro verso l’addome."
+      },
+      {
+        "step": 3,
+        "instruction": "Deglutisci delicatamente e premi verso il basso, sigillando il respiro."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni il respiro nel basso addome come acqua in un vaso."
+      },
+      {
+        "step": 5,
+        "instruction": "Quando hai bisogno di espirare, rilascia lentamente dal naso."
+      },
+      {
+        "step": 6,
+        "instruction": "Riposa e ripeti. Inizia con ritenzioni brevi e aumentale gradualmente."
+      }
+    ],
+    "benefits": [
+      "Conserva il prana",
+      "Risveglia la kundalini",
+      "Approfondisce la meditazione"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "92c3876c-78cf-446b-9381-f75d8af2395f": {
+    "name": "Viloma Pranayama",
+    "description": "Respirazione interrotta: inspira o espira per fasi con pause.",
+    "history": "Pranayama classico il cui nome significa «contropelo»: interrompe il flusso naturale del respiro.",
+    "safety_warning": "Evita in caso di ansia o disturbo di panico. Mantieni le pause delicate.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati o siediti comodamente."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira per 2 secondi, poi fai una pausa di 2 secondi."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira ancora per 2 secondi e fai un’altra pausa."
+      },
+      {
+        "step": 4,
+        "instruction": "Continua fino a riempire i polmoni, in 3-4 fasi."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira in modo fluido e completo."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti 5-10 cicli. Puoi praticare anche l’espirazione interrotta."
+      }
+    ],
+    "benefits": [
+      "Amplia la capacità polmonare",
+      "Aumenta la consapevolezza",
+      "Calma il sistema nervoso"
+    ],
+    "tips": [
+      "Mantieni le pause morbide, senza tensione",
+      "Puoi interrompere l’inspirazione O l’espirazione",
+      "Utile per l’ansia"
+    ]
+  },
+  "9e2e5d34-5f47-44ee-81e9-f6d31d979017": {
+    "name": "Respirazione Wim Hof",
+    "description": "Potente metodo respiratorio per energia, concentrazione e resistenza allo stress. Creato da «The Iceman».",
+    "history": "Creato da Wim Hof combinando respirazione, freddo e impegno.",
+    "safety_warning": "Non praticare mai in acqua o mentre guidi. Sdraiati in un luogo sicuro. Il formicolio è normale; interrompi se provi disagio.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati o siediti comodamente in un luogo sicuro."
+      },
+      {
+        "step": 2,
+        "instruction": "Esegui 30-40 respiri profondi: inspira completamente ed espira senza forzare."
+      },
+      {
+        "step": 3,
+        "instruction": "Durante l’ultima espirazione, trattieni il respiro a polmoni vuoti."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni finché ti è confortevole, per 1-3 minuti."
+      },
+      {
+        "step": 5,
+        "instruction": "Quando hai bisogno di respirare, inspira completamente e trattieni per 15 secondi."
+      },
+      {
+        "step": 6,
+        "instruction": "Espira e ripeti il ciclo 3-4 volte."
+      }
+    ],
+    "benefits": [
+      "Stimola le difese immunitarie",
+      "Aumenta l’energia",
+      "Lucidità mentale"
+    ],
+    "tips": [
+      "Non praticare mai in acqua o mentre guidi!",
+      "Formicolio e stordimento sono normali",
+      "La ritenzione diventa più facile con la pratica",
+      "Facoltativo: prosegui con una doccia fredda"
+    ]
+  },
+  "f832d044-9a15-461c-90f8-946fe6463ee6": {
+    "name": "Metodo Wim Hof",
+    "description": "La tecnica dell’Uomo di Ghiaccio. Combina respirazione profonda, ritenzioni del respiro ed esposizione al freddo.",
+    "history": "Creato da Wim Hof combinando respirazione, freddo e impegno.",
+    "safety_warning": "Non praticare mai in acqua o mentre guidi. Può causare stordimento. Per sicurezza, sdraiati.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati o siediti comodamente in un luogo sicuro."
+      },
+      {
+        "step": 2,
+        "instruction": "Esegui 30-40 respiri profondi e potenti: inspirazione completa, espirazione rilassata."
+      },
+      {
+        "step": 3,
+        "instruction": "Durante l’ultima espirazione, trattieni il respiro con i polmoni vuoti."
+      },
+      {
+        "step": 4,
+        "instruction": "Trattieni finché ti è confortevole: 1-3 minuti è normale."
+      },
+      {
+        "step": 5,
+        "instruction": "Quando hai bisogno di respirare, fai un respiro profondo e trattieni per 15 secondi."
+      },
+      {
+        "step": 6,
+        "instruction": "Espira e ripeti per 3-4 cicli. Facoltativo: prosegui con l’esposizione al freddo."
+      }
+    ],
+    "benefits": [
+      "Stimola le difese immunitarie",
+      "Aumenta l’energia",
+      "Lucidità mentale"
+    ],
+    "tips": [
+      "Non praticare mai in acqua o mentre guidi!",
+      "Formicolio e stordimento sono normali",
+      "La ritenzione diventa più facile con la pratica",
+      "Facoltativo: prosegui con una doccia fredda"
+    ]
+  },
+  "c2007bf4-802e-41ed-ac84-2f3d5d032e35": {
+    "name": "Respirazione Yoruba Ase",
+    "description": "Respirazione spirituale nigeriana per attivare Ase, la forza vitale e il potere di far accadere le cose.",
+    "history": "Dalla tradizione spirituale Yoruba della Nigeria. Ase, anche Ashe, è la forza vitale divina che scorre in tutte le cose.",
+    "safety_warning": "Usa un sussurro delicato ed evita di sforzarti o forzare respiri profondi. Interrompi se avverti vertigini, formicolii o disagio. In caso di asma, BPCO, problemi da sforzo vocale o cardiopatie, pratica delicatamente e valuta un parere medico.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai seduto o in piedi con la schiena dritta e i piedi ben appoggiati."
+      },
+      {
+        "step": 2,
+        "instruction": "Appoggia le mani sul basso addome, dove risiede Ase."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente dal naso, riempiendo l’addome di forza vitale."
+      },
+      {
+        "step": 4,
+        "instruction": "Sussurra «Ase», pronunciato «a-scè», durante l’espirazione."
+      },
+      {
+        "step": 5,
+        "instruction": "Senti la parola vibrare attraverso il corpo."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua, formulando intenzioni per ciò che desideri realizzare."
+      }
+    ],
+    "benefits": [
+      "Attiva la forza vitale",
+      "Potere di manifestazione",
+      "Connessione spirituale",
+      "Senso di forza personale"
+    ],
+    "tips": [
+      "Ase si pronuncia «a-SCÈ»",
+      "Formula intenzioni chiare",
+      "Pratica con gratitudine"
+    ]
+  },
+  "181811cb-ba5b-43f0-b0fe-ba710a743e37": {
+    "name": "Conteggio dei respiri Zazen",
+    "description": "Tecnica tradizionale di meditazione Zen. Conta i respiri per ancorare la mente che divaga.",
+    "history": "Respirazione meditativa Zen, fondamento della pratica Zazen.",
+    "safety_warning": "Respira normalmente: non forzare una respirazione lenta o profonda. Se avverti vertigini, panico o disagio, torna al respiro naturale oppure interrompi. Se stare seduto causa dolore o intorpidimento, cambia postura o usa un sostegno.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti in una posizione comoda e stabile, con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Abbassa lo sguardo verso un punto a circa un metro davanti a te, con gli occhi socchiusi."
+      },
+      {
+        "step": 3,
+        "instruction": "Respira naturalmente dal naso."
+      },
+      {
+        "step": 4,
+        "instruction": "Conta ogni espirazione: 1, 2, 3… fino a 10."
+      },
+      {
+        "step": 5,
+        "instruction": "Quando arrivi a 10, ricomincia da 1."
+      },
+      {
+        "step": 6,
+        "instruction": "Se perdi il conto, torna delicatamente a 1 senza giudicarti."
+      }
+    ],
+    "benefits": [
+      "Rafforza la presenza",
+      "Acquieta la mente",
+      "Approfondisce la consapevolezza"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "eae95e86-bd7d-4a0f-9748-fd2d1da78414": {
+    "name": "Respirazione Zikr",
+    "description": "Respirazione sufi del ricordo, con nomi divini. Pratica devozionale centrata sul cuore.",
+    "history": "Zikr, o dhikr, significa ricordo del Divino. È una pratica centrale del sufismo per purificare il cuore e avvicinarsi a Dio.",
+    "safety_warning": "Mantieni una respirazione facile e spontanea. Se la ripetizione provoca angoscia, vertigini o ansia, fai una pausa e torna alla respirazione normale. Se hai avuto attacchi di panico, inizia con sessioni brevi e una parola neutra.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con una mano sul cuore."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi gli occhi e respira naturalmente per un minuto."
+      },
+      {
+        "step": 3,
+        "instruction": "Mentre inspiri, pronuncia mentalmente una parola sacra: Allah, Amore, Pace."
+      },
+      {
+        "step": 4,
+        "instruction": "Mentre espiri, lascia risuonare la parola nel cuore."
+      },
+      {
+        "step": 5,
+        "instruction": "Continua ritmicamente, finché la parola diventa automatica."
+      },
+      {
+        "step": 6,
+        "instruction": "Lascia che il ricordo pervada tutto il tuo essere."
+      }
+    ],
+    "benefits": [
+      "Apertura del cuore",
+      "Connessione spirituale",
+      "Pace interiore",
+      "Concentrazione devozionale"
+    ],
+    "tips": [
+      "Usa una parola sacra che abbia significato per te",
+      "La parola può diventare essa stessa un respiro",
+      "Pratica con amore, non con sforzo"
+    ]
+  },
+  "821665a0-61ea-4aa1-8a56-ef6fac68ed09": {
+    "name": "Respiro del guerriero Zulu",
+    "description": "Potente tecnica respiratoria per coraggio e forza. Dalle tradizioni dei guerrieri Zulu.",
+    "history": "Ispirata ai rituali di preparazione dei guerrieri Zulu, che respiravano e cantavano insieme prima della battaglia.",
+    "safety_warning": "È una pratica energizzante e vigorosa: procedi delicatamente ed evita l’iperventilazione. Interrompi subito in caso di vertigini, formicolii, dolore al petto o mancanza di fiato. Evita in gravidanza, in caso di pressione alta non controllata, disturbi del ritmo cardiaco, glaucoma o precedenti svenimenti, salvo autorizzazione medica.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi ben eretto, con i piedi distanziati e le mani sui fianchi, come un guerriero."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira con energia dal naso, espandendo petto e addome."
+      },
+      {
+        "step": 3,
+        "instruction": "Trattieni brevemente, sentendo forza e coraggio."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira con un forte suono «HA!» che nasce dal profondo dell’addome."
+      },
+      {
+        "step": 5,
+        "instruction": "Batti un piede a terra mentre espiri per radicarti."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti 10-20 volte, sviluppando energia e coraggio."
+      }
+    ],
+    "benefits": [
+      "Sviluppa il coraggio",
+      "Aumenta la fiducia in sé",
+      "Energizza il corpo",
+      "Libera dalla paura"
+    ],
+    "tips": [
+      "Dedicati pienamente al suono",
+      "Permettiti di fare rumore",
+      "Utile prima delle situazioni impegnative"
+    ]
+  },
+  "cc01b3f3-c430-4c39-9111-489e81380749": {
+    "name": "Immersione del viso in acqua fredda",
+    "description": "Attiva il riflesso d’immersione per stimolare rapidamente il sistema nervoso parasimpatico.",
+    "history": "Antica pratica presente in molte culture, resa popolare da Wim Hof.",
+    "safety_warning": "Consulta il medico prima di provare questo esercizio se hai problemi cardiaci o pressione bassa. Non forzarti a trattenere il respiro.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Riempi una ciotola di acqua fredda. Aggiungi cubetti di ghiaccio per un effetto più intenso."
+      },
+      {
+        "step": 2,
+        "instruction": "Fai un respiro profondo e trattienilo."
+      },
+      {
+        "step": 3,
+        "instruction": "Piegati in avanti e immergi delicatamente il viso nell’acqua."
+      },
+      {
+        "step": 4,
+        "instruction": "Concentrati sulla zona intorno agli occhi e sulle guance."
+      },
+      {
+        "step": 5,
+        "instruction": "Mantieni il viso immerso per 15-30 secondi."
+      },
+      {
+        "step": 6,
+        "instruction": "Riemergi per respirare e ripeti 2-3 volte, finché ti è confortevole."
+      },
+      {
+        "step": 7,
+        "instruction": "Tampona delicatamente il viso e nota il cambiamento nel corpo."
+      }
+    ],
+    "benefits": [
+      "Attiva il nervo vago",
+      "Stimola le difese immunitarie",
+      "Aumenta la vigilanza"
+    ],
+    "tips": [
+      "Inizia con soli 15 secondi e aumenta gradualmente",
+      "Il freddo attiva il nervo vago",
+      "Respira lentamente per mantenere la calma"
+    ]
+  },
+  "c8f61252-9b1a-4b8b-b01d-760fe2e2730f": {
+    "name": "Riflesso d’immersione",
+    "description": "L’acqua fredda sul viso attiva il riflesso d’immersione dei mammiferi, calmandoti subito.",
+    "history": "Il riflesso d’immersione è innato in tutti i mammiferi e rallenta immediatamente il battito cardiaco.",
+    "safety_warning": "Evita in caso di problemi cardiaci. Non trattenere il respiro troppo a lungo.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Riempi una ciotola di acqua fredda oppure usa un asciugamano freddo e bagnato."
+      },
+      {
+        "step": 2,
+        "instruction": "Fai un respiro profondo e trattienilo."
+      },
+      {
+        "step": 3,
+        "instruction": "Immergi il viso nell’acqua fredda oppure applica l’asciugamano."
+      },
+      {
+        "step": 4,
+        "instruction": "Mantieni per 15-30 secondi."
+      },
+      {
+        "step": 5,
+        "instruction": "Riemergi e respira normalmente."
+      },
+      {
+        "step": 6,
+        "instruction": "Se necessario, ripeti 2-3 volte."
+      }
+    ],
+    "benefits": [
+      "Calma immediata",
+      "Rallenta il battito cardiaco",
+      "Riduce il panico",
+      "Attiva il sistema parasimpatico"
+    ],
+    "tips": [
+      "L’acqua deve essere fredda, ma non ghiacciata",
+      "Concentrati su fronte e guance",
+      "Utile per gli attacchi di panico"
+    ]
+  },
+  "69f9dcb4-d293-4230-8789-7dfa0c4044a0": {
+    "name": "Gargarismi",
+    "description": "Stimola il nervo vago attraverso i muscoli nella parte posteriore della gola.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Usa soltanto piccoli sorsi per ridurre il rischio di soffocamento. Evita se hai difficoltà a deglutire, sei sdraiato o sei a rischio di aspirazione. Interrompi in caso di tosse, soffocamento, stordimento o dolore alla gola.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Prendi un sorso d’acqua."
+      },
+      {
+        "step": 2,
+        "instruction": "Inclina leggermente la testa all’indietro."
+      },
+      {
+        "step": 3,
+        "instruction": "Fai gargarismi energici per 30-60 secondi."
+      },
+      {
+        "step": 4,
+        "instruction": "Sputa l’acqua."
+      },
+      {
+        "step": 5,
+        "instruction": "Ripeti 2-3 volte."
+      },
+      {
+        "step": 6,
+        "instruction": "Potresti sentire una lieve contrazione dei muscoli della gola."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "1e08356c-7779-421d-a4ed-94bbddd6ab46": {
+    "name": "Bere consapevolmente",
+    "description": "Combina il bere lentamente con la consapevolezza del respiro per una delicata attivazione vagale.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Bevi a piccoli sorsi ed evita se hai difficoltà a deglutire o sei a rischio di soffocamento o aspirazione. Interrompi in caso di tosse, soffocamento, vertigini o nausea.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Prepara un bicchiere di acqua a temperatura ambiente."
+      },
+      {
+        "step": 2,
+        "instruction": "Tieni il bicchiere in mano e prenditi un momento per sentirne peso e temperatura."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira lentamente."
+      },
+      {
+        "step": 4,
+        "instruction": "Prendi un piccolo sorso e trattieni l’acqua in bocca per un momento."
+      },
+      {
+        "step": 5,
+        "instruction": "Deglutisci lentamente e consapevolmente."
+      },
+      {
+        "step": 6,
+        "instruction": "Espira lentamente dopo aver deglutito."
+      },
+      {
+        "step": 7,
+        "instruction": "Ripeti fino a svuotare il bicchiere, mantenendo la consapevolezza."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "3f9814dd-1f21-4b04-a151-e76e7a29cbfe": {
+    "name": "Scansione del corpo",
+    "description": "Tecnica di rilassamento progressivo per liberare la tensione e attivare la risposta di riposo.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Interrompi se avverti vertigini, panico o disagio. Se stare sdraiato peggiora reflusso, problemi respiratori o dolore, passa a una posizione seduta con sostegno. Consulta un medico se i sintomi persistono o sono gravi.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati comodamente sulla schiena."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi gli occhi e fai 3 respiri profondi."
+      },
+      {
+        "step": 3,
+        "instruction": "Porta l’attenzione ai piedi. Nota le sensazioni e poi rilassali."
+      },
+      {
+        "step": 4,
+        "instruction": "Sposta lentamente l’attenzione verso l’alto: polpacci, cosce, anche, addome e petto."
+      },
+      {
+        "step": 5,
+        "instruction": "Continua con spalle, braccia, mani, collo, viso e testa."
+      },
+      {
+        "step": 6,
+        "instruction": "Riposa per alcuni minuti nella consapevolezza dell’intero corpo."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "227ee00d-8201-4216-9c38-09de1cd8c5d6": {
+    "name": "Respiro della ginga di Capoeira",
+    "description": "Respirazione delle arti marziali brasiliane sincronizzata con il movimento fondamentale della ginga.",
+    "history": "La ginga è il movimento fondamentale della Capoeira, arte marziale afrobrasiliana mascherata da danza. La respirazione alimenta il movimento continuo.",
+    "safety_warning": "Muoviti senza dolore e su una superficie stabile e antiscivolo. Interrompi in caso di vertigini, mancanza di fiato o dolore articolare. Se hai problemi di equilibrio o un infortunio recente, valuta movimenti più piccoli o il sostegno di una sedia.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi con i piedi alla larghezza delle spalle."
+      },
+      {
+        "step": 2,
+        "instruction": "Porta il piede destro indietro in diagonale, piegando entrambe le ginocchia."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira mentre fai il passo indietro."
+      },
+      {
+        "step": 4,
+        "instruction": "Torna al centro e porta il piede sinistro indietro in diagonale."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira mentre porti indietro il piede sinistro."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua il ritmo fluido della ginga per 10 minuti."
+      }
+    ],
+    "benefits": [
+      "Coordinazione di tutto il corpo",
+      "Meditazione ritmica",
+      "Forza del centro del corpo",
+      "Movimento giocoso"
+    ],
+    "tips": [
+      "Mantieni il movimento continuo",
+      "Lascia oscillare il corpo naturalmente",
+      "Aggiungi musica per un’atmosfera autentica"
+    ]
+  },
+  "278d1121-8e6a-40f5-804b-c906eb19089e": {
+    "name": "Yoga degli occhi",
+    "description": "Movimenti delicati degli occhi che stimolano il nervo vago e riducono l’affaticamento visivo.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Mantieni i movimenti delicati e senza dolore. Interrompi in caso di vertigini, nausea, mal di testa o dolore agli occhi. Se hai subito un intervento agli occhi di recente, hai problemi alla retina o vertigini gravi, consulta un medico prima degli esercizi oculari.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente e rilassa le spalle."
+      },
+      {
+        "step": 2,
+        "instruction": "Senza muovere la testa, guarda in alto finché ti è confortevole, poi in basso. Ripeti 5 volte."
+      },
+      {
+        "step": 3,
+        "instruction": "Guarda a sinistra, poi a destra. Ripeti 5 volte."
+      },
+      {
+        "step": 4,
+        "instruction": "Guarda in diagonale: dall’alto a sinistra al basso a destra, poi dall’alto a destra al basso a sinistra. 5 volte per ciascuna direzione."
+      },
+      {
+        "step": 5,
+        "instruction": "Ruota lentamente gli occhi in senso orario 5 volte, poi in senso antiorario."
+      },
+      {
+        "step": 6,
+        "instruction": "Chiudi gli occhi e riposa per 30 secondi."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "999ecb46-c3c1-46a2-8d8c-bbb922ca8097": {
+    "name": "Cinque riti tibetani",
+    "description": "Antica sequenza di 5 movimenti sincronizzati con il respiro per la vitalità.",
+    "history": "Attribuita ai monaci tibetani e resa popolare dal libro del 1939 «The Eye of Revelation».",
+    "safety_warning": "Inizia con poche ripetizioni. Non adatta in gravidanza o in caso di gravi problemi alla schiena.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Rito 1: gira in senso orario con le braccia aperte, 21 volte."
+      },
+      {
+        "step": 2,
+        "instruction": "Rito 2: da sdraiato, solleva insieme gambe e testa, 21 volte."
+      },
+      {
+        "step": 3,
+        "instruction": "Rito 3: in ginocchio, inarca la schiena e poi flettiti in avanti, 21 volte."
+      },
+      {
+        "step": 4,
+        "instruction": "Rito 4: da seduto, solleva il corpo nella posizione del tavolo, 21 volte."
+      },
+      {
+        "step": 5,
+        "instruction": "Rito 5: passa fluidamente dal cane a testa in giù al cane a testa in su, 21 volte."
+      },
+      {
+        "step": 6,
+        "instruction": "Inizia con 3-7 ripetizioni per ciascun rito e arriva a 21 nel corso delle settimane."
+      }
+    ],
+    "benefits": [
+      "Aumenta l’energia",
+      "Equilibra i chakra",
+      "Migliora la flessibilità",
+      "Effetto anti-invecchiamento"
+    ],
+    "tips": [
+      "Aumenta lentamente fino a 21 ripetizioni",
+      "Pratica ogni mattina",
+      "Respira con ogni movimento"
+    ]
+  },
+  "f90760e8-b8e7-43f5-bf9b-3813aad36262": {
+    "name": "Gambe al muro",
+    "description": "Posizione yoga rigenerante che attiva il sistema nervoso parasimpatico.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Evita in caso di glaucoma, pressione alta o mestruazioni abbondanti.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Trova uno spazio libero vicino a una parete e siediti di lato accanto ad essa."
+      },
+      {
+        "step": 2,
+        "instruction": "Porta le gambe sulla parete mentre abbassi la schiena verso il pavimento."
+      },
+      {
+        "step": 3,
+        "instruction": "Avvicina le anche alla parete finché ti è confortevole."
+      },
+      {
+        "step": 4,
+        "instruction": "Lascia le braccia lungo i fianchi, con i palmi rivolti verso l’alto."
+      },
+      {
+        "step": 5,
+        "instruction": "Chiudi gli occhi e respira naturalmente."
+      },
+      {
+        "step": 6,
+        "instruction": "Resta in questa posizione per tutta la durata, lasciando lavorare la gravità."
+      },
+      {
+        "step": 7,
+        "instruction": "Per uscire, piega le ginocchia e rotola su un fianco prima di sederti."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "bf25afa0-572f-4933-9e41-516573a05a1b": {
+    "name": "Sollevare il cielo",
+    "description": "Semplice esercizio di Qigong per aprire il petto, migliorare la postura e far circolare il Qi in tutto il corpo.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Evita di forzare l’allungamento o bloccare i gomiti. Interrompi in caso di dolore a spalle o collo, vertigini o formicolii. Se hai pressione alta non controllata, glaucoma o un infortunio alla spalla, tieni le braccia più basse e muoviti delicatamente.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi con i piedi alla larghezza delle spalle."
+      },
+      {
+        "step": 2,
+        "instruction": "Intreccia le dita davanti a te, con i palmi rivolti verso il basso."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira e solleva le braccia sopra la testa, con i palmi rivolti verso l’alto."
+      },
+      {
+        "step": 4,
+        "instruction": "Spingi delicatamente i palmi verso il cielo, allungandoti verso l’alto."
+      },
+      {
+        "step": 5,
+        "instruction": "Espira e abbassa lentamente le braccia ai lati."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti 8-10 volte con respiri lenti."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "112d4de0-357d-4876-9c28-4c37ce25df21": {
+    "name": "Rilascio del collo",
+    "description": "Rapido rilascio della tensione di collo e spalle, ideale per chi lavora alla scrivania.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Interrompi se avverti dolore o vertigini.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Abbassa il mento verso il petto e mantieni per 10 secondi."
+      },
+      {
+        "step": 2,
+        "instruction": "Ruota lentamente la testa verso la spalla destra."
+      },
+      {
+        "step": 3,
+        "instruction": "Mantieni per 10 secondi, sentendo l’allungamento."
+      },
+      {
+        "step": 4,
+        "instruction": "Ruota verso la spalla sinistra e mantieni per 10 secondi."
+      },
+      {
+        "step": 5,
+        "instruction": "Torna al centro. Ripeti se il tempo lo consente."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "d81c97b5-3754-43a0-bdb7-7c819076b8b0": {
+    "name": "Allungamenti del collo",
+    "description": "Allungamenti delicati per liberare la tensione e stimolare il nervo vago nella zona del collo.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Muoviti lentamente e non forzare mai il collo in posizioni scomode.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti o stai in piedi con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Inclina lentamente la testa a destra, avvicinando l’orecchio alla spalla."
+      },
+      {
+        "step": 3,
+        "instruction": "Mantieni per 30 secondi, respirando profondamente."
+      },
+      {
+        "step": 4,
+        "instruction": "Torna al centro e ripeti sul lato sinistro."
+      },
+      {
+        "step": 5,
+        "instruction": "Ruota delicatamente la testa in cerchio, 5 volte per ogni direzione."
+      },
+      {
+        "step": 6,
+        "instruction": "Concludi avvicinando il mento al petto e mantenendo la posizione per 30 secondi."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "def29a93-7f64-459d-af03-4f57e460d30a": {
+    "name": "Qigong dello scuotimento",
+    "description": "Pratica di vibrazione per liberare tensione, muovere l’energia stagnante e attivare il riequilibrio del sistema nervoso.",
+    "history": "Pratica fondamentale del Qigong, focalizzata sul centro energetico sotto l’ombelico.",
+    "safety_warning": "Interrompi se avverti vertigini. Non consigliata in caso di problemi articolari.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi con i piedi alla larghezza delle spalle e le ginocchia leggermente piegate."
+      },
+      {
+        "step": 2,
+        "instruction": "Inizia a molleggiare delicatamente sui talloni."
+      },
+      {
+        "step": 3,
+        "instruction": "Lascia che la vibrazione attraversi tutto il corpo."
+      },
+      {
+        "step": 4,
+        "instruction": "Rilassa spalle e mandibola e lascia scuotere le braccia liberamente."
+      },
+      {
+        "step": 5,
+        "instruction": "Continua per 2 minuti, respirando naturalmente."
+      },
+      {
+        "step": 6,
+        "instruction": "Fermati e resta immobile, percependo il flusso di energia."
+      }
+    ],
+    "benefits": [
+      "Centra l’energia",
+      "Radica la mente",
+      "Sviluppa il chi"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "21c565f5-a70d-41ba-b825-aac9602a6a38": {
+    "name": "Respiro del saluto al sole",
+    "description": "Respirazione sincronizzata con il saluto al sole. In onore di Tonatiuh, il dio azteco del sole.",
+    "history": "Combina le tradizioni azteche di culto del sole con movimenti fluidi. Il sole era considerato la fonte di tutta la vita e l’energia.",
+    "safety_warning": "Muoviti lentamente e adatta la pratica secondo necessità: piega le ginocchia nelle flessioni in avanti e appoggia le mani sulle cosce per sostenerti. Interrompi in caso di vertigini, stordimento o dolore acuto. Evita di guardare direttamente il sole; all’aperto, mantieni lo sguardo morbido o gli occhi chiusi mentre ti allunghi verso l’alto.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Rivolgiti verso il sole, oppure a est al mattino."
+      },
+      {
+        "step": 2,
+        "instruction": "Stai in piedi con le mani davanti al cuore in posizione di preghiera."
+      },
+      {
+        "step": 3,
+        "instruction": "Inspira, sollevando le braccia sopra la testa e guardando verso l’alto."
+      },
+      {
+        "step": 4,
+        "instruction": "Espira, piegandoti in avanti con le mani verso la terra."
+      },
+      {
+        "step": 5,
+        "instruction": "Inspira e sollevati a metà, con la schiena piatta."
+      },
+      {
+        "step": 6,
+        "instruction": "Espira e piegati. Inspira e torna in piedi. Ripeti."
+      }
+    ],
+    "benefits": [
+      "Energizzante",
+      "Allungamento di tutto il corpo",
+      "Connette con la natura",
+      "Rituale del mattino"
+    ],
+    "tips": [
+      "Da praticare preferibilmente all’alba",
+      "Rivolgiti verso il sole reale",
+      "Muoviti con il respiro, senza anticiparlo"
+    ]
+  },
+  "5ed7d346-d542-4437-8f63-0962e6171781": {
+    "name": "Tai Chi in piedi",
+    "description": "Zhan Zhuang: stare in piedi come un albero. Pratica meditativa per radicamento e quiete interiore.",
+    "history": "Zhan Zhuang, stare in piedi come un albero: antica pratica taoista.",
+    "safety_warning": "Inizia con 2-3 minuti e aumenta gradualmente. Interrompi se le gambe tremano eccessivamente.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi con i piedi alla larghezza delle spalle e le punte leggermente rivolte all’interno."
+      },
+      {
+        "step": 2,
+        "instruction": "Piega leggermente le ginocchia, come se fossi seduto su uno sgabello alto."
+      },
+      {
+        "step": 3,
+        "instruction": "Solleva le braccia come per abbracciare un grande albero davanti a te."
+      },
+      {
+        "step": 4,
+        "instruction": "Rilassa le spalle, lasciandole scendere lontano dalle orecchie."
+      },
+      {
+        "step": 5,
+        "instruction": "Respira naturalmente, sentendo i piedi radicati a terra."
+      },
+      {
+        "step": 6,
+        "instruction": "Mantieni la posizione, lasciando che le sensazioni emergano e passino."
+      }
+    ],
+    "benefits": [
+      "Sviluppa la forza",
+      "Migliora l’equilibrio",
+      "Coltiva la quiete"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "9b5b173f-34c2-48ab-aa8c-c76c7d8c9f24": {
+    "name": "Massaggio vagale",
+    "description": "Tecnica di automassaggio per stimolare il nervo vago.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Usa soltanto una pressione leggera ed evita di premere sulla parte anteriore o laterale del collo dove senti un forte battito, in corrispondenza dell’arteria carotide. Interrompi in caso di vertigini, sensazione di svenimento, nausea o dolore. Evita se hai una patologia nota delle carotidi, un ictus o TIA recente oppure un dispositivo medico impiantato, salvo autorizzazione medica.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Appoggia due dita dietro i lobi delle orecchie."
+      },
+      {
+        "step": 2,
+        "instruction": "Massaggia delicatamente con movimenti circolari."
+      },
+      {
+        "step": 3,
+        "instruction": "Scendi lentamente lungo il collo."
+      },
+      {
+        "step": 4,
+        "instruction": "Continua per tutta la durata con una pressione delicata."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "ffed1322-8f15-484b-aeff-de1d12b41a4c": {
+    "name": "Meditazione camminata",
+    "description": "Camminata consapevole sincronizzata con il respiro per meditare in movimento.",
+    "history": "Pratica buddhista presente nelle tradizioni Zen e Theravada per la consapevolezza attiva.",
+    "safety_warning": "Scegli un percorso sicuro, pianeggiante e senza ostacoli; evita di praticare mentre attraversi strade o in luoghi affollati. Interrompi se avverti vertigini o instabilità e usa un sostegno se necessario. Se hai problemi di equilibrio, valuta di praticare vicino a una parete o con un accompagnatore.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Trova un percorso in cui camminare lentamente per 10-20 passi."
+      },
+      {
+        "step": 2,
+        "instruction": "Resta fermo e fai 3 respiri profondi."
+      },
+      {
+        "step": 3,
+        "instruction": "Inizia a camminare molto lentamente, sentendo ogni passo."
+      },
+      {
+        "step": 4,
+        "instruction": "Coordina il ritmo: inspira per 2-3 passi ed espira per 2-3 passi."
+      },
+      {
+        "step": 5,
+        "instruction": "Alla fine, girati lentamente e torna indietro."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua per 10-15 minuti."
+      }
+    ],
+    "benefits": [
+      "Radica l’energia",
+      "Calma la mente agitata",
+      "Connette corpo e mente"
+    ],
+    "tips": [
+      "Cammina più lentamente del solito",
+      "Puoi contare i passi insieme al respiro",
+      "È piacevole a piedi nudi"
+    ]
+  },
+  "3c3d2624-7dbf-498f-8633-e3ab31606f6d": {
+    "name": "Respiro rotante",
+    "description": "Respirazione dei dervisci sufi sincronizzata con la rotazione. Pratica semplificata senza girare completamente su se stessi.",
+    "history": "Dall’ordine sufi Mevlevi fondato da Rumi. La rotazione è una forma di meditazione attiva che cerca l’unione con il divino.",
+    "safety_warning": "Inizia molto lentamente. Interrompi se avverti vertigini. Mantieni un piede relativamente fermo come perno.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Stai in piedi con le braccia incrociate sul petto e gli occhi chiusi."
+      },
+      {
+        "step": 2,
+        "instruction": "Fai 3 respiri profondi, ritrovando il tuo centro."
+      },
+      {
+        "step": 3,
+        "instruction": "Apri bene le braccia, con il palmo destro verso l’alto e il sinistro verso il basso."
+      },
+      {
+        "step": 4,
+        "instruction": "Inizia a girare lentamente su te stesso in senso antiorario."
+      },
+      {
+        "step": 5,
+        "instruction": "Respira naturalmente, lasciando andare il senso di sé."
+      },
+      {
+        "step": 6,
+        "instruction": "Dopo 3-5 minuti, rallenta e siediti in quiete."
+      }
+    ],
+    "benefits": [
+      "Stati trascendenti",
+      "Dissoluzione dell’ego",
+      "Gioia ed estasi",
+      "Apertura del cuore"
+    ],
+    "tips": [
+      "Inizia con un solo minuto",
+      "Concentrati sul cuore, non sulla testa",
+      "La rotazione è la preghiera"
+    ]
+  },
+  "91a7b45d-f867-4289-b046-42add7a10f05": {
+    "name": "Meditazione della scansione del corpo",
+    "description": "Attenzione sistematica alle sensazioni corporee combinata con la consapevolezza del respiro.",
+    "history": "Pratica fondamentale del programma MBSR, riduzione dello stress basata sulla consapevolezza, sviluppato da Jon Kabat-Zinn.",
+    "safety_warning": "Se avverti vertigini, panico o un sovraccarico emotivo, apri gli occhi, riporta l’attenzione alla stanza e interrompi. Evita di stare completamente sdraiato se questo peggiora reflusso, problemi respiratori o mal di schiena; scegli invece una posizione sostenuta.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati comodamente sulla schiena."
+      },
+      {
+        "step": 2,
+        "instruction": "Chiudi gli occhi e fai 3 respiri profondi."
+      },
+      {
+        "step": 3,
+        "instruction": "Porta l’attenzione ai piedi. Nota le sensazioni."
+      },
+      {
+        "step": 4,
+        "instruction": "Sposta lentamente l’attenzione verso l’alto: gambe, anche, addome e petto."
+      },
+      {
+        "step": 5,
+        "instruction": "Continua con braccia, mani, collo, viso e testa."
+      },
+      {
+        "step": 6,
+        "instruction": "Se trovi tensione, dirigi il respiro verso quella zona."
+      }
+    ],
+    "benefits": [
+      "Riduce la tensione",
+      "Aumenta la consapevolezza corporea",
+      "Favorisce il rilassamento",
+      "Favorisce il sonno"
+    ],
+    "tips": [
+      "Non cercare di cambiare nulla: limitati a osservare",
+      "Va bene anche addormentarsi",
+      "Pratica prima di andare a letto"
+    ]
+  },
+  "e6c3b5ce-95d9-4954-bf51-dc174bb1e11b": {
+    "name": "Esposizione al freddo",
+    "description": "Una breve esposizione al freddo attiva il nervo vago e sviluppa resistenza allo stress.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Evita in caso di problemi cardiaci, malattia di Raynaud o gravidanza. Inizia gradualmente e non forzarti mai.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Al termine della doccia abituale, preparati mentalmente all’acqua fredda."
+      },
+      {
+        "step": 2,
+        "instruction": "Fai un respiro profondo e regola l’acqua sul freddo."
+      },
+      {
+        "step": 3,
+        "instruction": "Inizia con 30 secondi di acqua fredda sul corpo."
+      },
+      {
+        "step": 4,
+        "instruction": "Concentrati su una respirazione lenta e controllata."
+      },
+      {
+        "step": 5,
+        "instruction": "Aumenta gradualmente la durata nei giorni o nelle settimane, fino a 2-3 minuti."
+      },
+      {
+        "step": 6,
+        "instruction": "Concludi con l’acqua fredda ed esci sentendoti rinvigorito."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "ee6af612-17cd-46e9-a2d8-b309215690cb": {
+    "name": "Massaggio delle orecchie",
+    "description": "Stimola i rami del nervo vago nell’orecchio attraverso un massaggio delicato.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Usa soltanto una pressione leggera. Interrompi in caso di dolore, vertigini, fischi nelle orecchie o nausea. Evita di massaggiare zone con infezioni, lesioni cutanee, piercing recenti o recenti interventi all’orecchio; in caso di dubbi, consulta un medico.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente e fai alcuni respiri profondi."
+      },
+      {
+        "step": 2,
+        "instruction": "Massaggia delicatamente i lobi delle orecchie tra pollice e indice."
+      },
+      {
+        "step": 3,
+        "instruction": "Risali lungo il bordo esterno dell’orecchio, massaggiando delicatamente."
+      },
+      {
+        "step": 4,
+        "instruction": "Premi delicatamente nell’incavo dietro il lobo."
+      },
+      {
+        "step": 5,
+        "instruction": "Massaggia le pieghe interne dell’orecchio con una pressione leggera."
+      },
+      {
+        "step": 6,
+        "instruction": "Concludi tirando delicatamente i lobi verso il basso per 3 volte."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "d635f032-4e3b-4982-9377-38a0412d5825": {
+    "name": "Esercizio dei movimenti oculari",
+    "description": "Movimenti delicati degli occhi che stimolano il nervo vago e riducono lo stress.",
+    "history": "Basato sul lavoro di Stanley Rosenberg sul nervo vago e sui nervi cranici.",
+    "safety_warning": "Interrompi in caso di vertigini, nausea, mal di testa o dolore agli occhi. Evita se hai avuto di recente una commozione cerebrale, un intervento agli occhi o una condizione i cui sintomi peggiorano con lo sforzo visivo, salvo autorizzazione medica.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati comodamente sulla schiena."
+      },
+      {
+        "step": 2,
+        "instruction": "Intreccia le dita dietro la testa."
+      },
+      {
+        "step": 3,
+        "instruction": "Senza muovere la testa, guarda a destra."
+      },
+      {
+        "step": 4,
+        "instruction": "Mantieni per 30-60 secondi, finché sospiri o sbadigli."
+      },
+      {
+        "step": 5,
+        "instruction": "Torna al centro e poi guarda a sinistra."
+      },
+      {
+        "step": 6,
+        "instruction": "Mantieni di nuovo finché sospiri, deglutisci o sbadigli."
+      }
+    ],
+    "benefits": [
+      "Libera la tensione del collo",
+      "Calma il sistema nervoso",
+      "Riduce l’ansia"
+    ],
+    "tips": [
+      "Un sospiro o uno sbadiglio indica che sta funzionando",
+      "Mantieni la testa ferma",
+      "Puoi praticare anche da seduto"
+    ]
+  },
+  "f0c841dd-ea2f-4632-9122-317a486d4feb": {
+    "name": "Gargarismi",
+    "description": "I semplici gargarismi attivano muscoli collegati al nervo vago.",
+    "history": "I muscoli usati nei gargarismi sono innervati dal nervo vago.",
+    "safety_warning": "Non fare gargarismi se hai difficoltà a deglutire o sei a rischio di soffocamento. Usa piccoli sorsi e interrompi in caso di tosse, soffocamento o mancanza di fiato. Evita di inclinare molto la testa all’indietro se provoca vertigini o dolore al collo.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Riempi un bicchiere d’acqua."
+      },
+      {
+        "step": 2,
+        "instruction": "Prendi un sorso d’acqua."
+      },
+      {
+        "step": 3,
+        "instruction": "Inclina la testa all’indietro e fai gargarismi energici."
+      },
+      {
+        "step": 4,
+        "instruction": "Continua finché hai bisogno di respirare."
+      },
+      {
+        "step": 5,
+        "instruction": "Sputa e ripeti."
+      },
+      {
+        "step": 6,
+        "instruction": "Pratica per 1-2 minuti ogni giorno."
+      }
+    ],
+    "benefits": [
+      "Tonifica il nervo vago",
+      "Pratica quotidiana semplice",
+      "Migliora il riflesso faringeo"
+    ],
+    "tips": [
+      "Pratica mentre ti lavi i denti",
+      "Fai gargarismi finché gli occhi lacrimano leggermente",
+      "L’ideale è due volte al giorno"
+    ]
+  },
+  "c79f126e-3bc7-4bca-ba54-6e1db67112fc": {
+    "name": "Momento di radicamento",
+    "description": "Rapido esercizio di consapevolezza sensoriale per tornare al presente.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Se i respiri profondi provocano stordimento, torna alla respirazione normale e svolgi soltanto i passaggi sensoriali. Se non ti senti al sicuro o ti senti sopraffatto, fai una pausa e cerca sostegno.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Nota 5 cose che puoi vedere."
+      },
+      {
+        "step": 2,
+        "instruction": "Nota 4 cose che puoi toccare."
+      },
+      {
+        "step": 3,
+        "instruction": "Nota 3 cose che puoi sentire."
+      },
+      {
+        "step": 4,
+        "instruction": "Fai 2 respiri profondi."
+      },
+      {
+        "step": 5,
+        "instruction": "Nomina 1 cosa per cui provi gratitudine."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "a03a582d-fc54-4a50-aac4-e2a996cf5ecc": {
+    "name": "Cuore 7 - Shen Men",
+    "description": "Digitopressione sul punto «Porta dello Spirito». Calma il cuore, riduce l’ansia e favorisce un sonno sereno.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Premi delicatamente, senza causare dolore, intorpidimento o formicolii. Evita la digitopressione su pelle lesa o irritata oppure su un polso infortunato di recente. Interrompi se avverti vertigini o malessere.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Trova la piega sul lato interno del polso."
+      },
+      {
+        "step": 2,
+        "instruction": "Individua il punto sul lato della piega vicino al mignolo."
+      },
+      {
+        "step": 3,
+        "instruction": "Premi delicatamente con il pollice e mantieni per 30 secondi."
+      },
+      {
+        "step": 4,
+        "instruction": "Respira profondamente mentre premi."
+      },
+      {
+        "step": 5,
+        "instruction": "Passa all’altro polso e ripeti."
+      },
+      {
+        "step": 6,
+        "instruction": "Esegui 3 cicli su ogni polso."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "842f8c97-9fea-4c98-9087-02461fe19e8d": {
+    "name": "Ronzio / canto OM",
+    "description": "Le vibrazioni del ronzio stimolano il nervo vago attraverso la laringe.",
+    "history": "Bhramari pranayama, il respiro dell’ape della tradizione yoga.",
+    "safety_warning": "Mantieni il respiro confortevole: non sforzarti né forzare espirazioni lunghe. Interrompi in caso di stordimento, mancanza di fiato o fastidio alla gola. Se hai asma, BPCO o problemi vocali, mantieni la pratica delicata e consulta un medico se i sintomi peggiorano.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Inspira profondamente dal naso."
+      },
+      {
+        "step": 3,
+        "instruction": "Mentre espiri, emetti un ronzio, come «mmmmm», oppure canta OM."
+      },
+      {
+        "step": 4,
+        "instruction": "Senti la vibrazione nella gola, nel petto e nella testa."
+      },
+      {
+        "step": 5,
+        "instruction": "Continua per tutta la durata, respirando naturalmente tra un ronzio e l’altro."
+      },
+      {
+        "step": 6,
+        "instruction": "Prova altezze diverse per trovare quella che senti più risonante."
+      }
+    ],
+    "benefits": [
+      "Stimola il nervo vago",
+      "Riduce l’ansia",
+      "Migliora il sonno"
+    ],
+    "tips": [
+      "La vibrazione stimola direttamente il nervo vago",
+      "I suoni più gravi producono vibrazioni più forti",
+      "Utile per l’ansia e prima di dormire"
+    ]
+  },
+  "b32a11e9-db86-425e-bc4c-6b00bcd9e241": {
+    "name": "Respirazione Khoomei",
+    "description": "Tecnica respiratoria del canto di gola mongolo per vibrazioni profonde e meditazione.",
+    "history": "Il Khoomei, canto di gola, è praticato da secoli dai nomadi mongoli. La sola tecnica respiratoria è profondamente meditativa e curativa.",
+    "safety_warning": "Inizia delicatamente per evitare di sforzare la gola.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti comodamente con la schiena dritta."
+      },
+      {
+        "step": 2,
+        "instruction": "Fai un respiro profondo, riempiendo completamente l’addome."
+      },
+      {
+        "step": 3,
+        "instruction": "Inizia a produrre un suono basso e continuo dal profondo della gola."
+      },
+      {
+        "step": 4,
+        "instruction": "Modella la bocca per creare diversi armonici."
+      },
+      {
+        "step": 5,
+        "instruction": "Senti le vibrazioni nel petto, nella gola e nella testa."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua per 10-15 minuti, sperimentando i suoni."
+      }
+    ],
+    "benefits": [
+      "Terapia di vibrazione profonda",
+      "Rafforzamento della voce",
+      "Meditazione particolare",
+      "Stimolazione del nervo vago"
+    ],
+    "tips": [
+      "Inizia con un semplice ronzio",
+      "Bevi acqua prima e dopo",
+      "La vibrazione conta più del suono"
+    ]
+  },
+  "9b7fa428-6353-4346-b80c-0a4644fc3cf9": {
+    "name": "Metodo militare per dormire",
+    "description": "Tecnica usata dai militari per addormentarsi in 2 minuti o meno.",
+    "history": "Sviluppata dalla US Navy Pre-Flight School per aiutare i piloti a dormire in qualsiasi condizione.",
+    "safety_warning": "Se avverti ansia, panico o disagio da sdraiato, passa a una posizione sostenuta oppure interrompi. Non usare questa tecnica mentre guidi o quando devi rimanere vigile.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati e rilassa tutto il viso, comprese lingua e mandibola."
+      },
+      {
+        "step": 2,
+        "instruction": "Abbassa le spalle e lascia le braccia rilassate."
+      },
+      {
+        "step": 3,
+        "instruction": "Espira e rilassa il petto."
+      },
+      {
+        "step": 4,
+        "instruction": "Rilassa le gambe dalle cosce fino ai piedi."
+      },
+      {
+        "step": 5,
+        "instruction": "Svuota la mente per 10 secondi. Pensa «non pensare»."
+      },
+      {
+        "step": 6,
+        "instruction": "Immaginati in un luogo calmo oppure ripeti «non pensare»."
+      }
+    ],
+    "benefits": [
+      "Addormentamento rapido",
+      "Funziona ovunque",
+      "Riduce l’insonnia"
+    ],
+    "tips": [
+      "Servono 6 settimane di pratica per padroneggiare la tecnica",
+      "Rilassa prima completamente il viso",
+      "Con la pratica funziona nel 96% dei casi"
+    ]
+  },
+  "ed1ca56a-024b-4e43-a9a5-04f718d90474": {
+    "name": "Pericardio 6 - Nei Guan",
+    "description": "Il punto «Porta Interna» allevia nausea e ansia e calma il cuore. Usato anche per il mal d’auto.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "In gravidanza, evita senza aver consultato un professionista.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Posiziona 3 dita sopra la piega del polso, sul lato interno del braccio."
+      },
+      {
+        "step": 2,
+        "instruction": "Trova il punto tra i due tendini."
+      },
+      {
+        "step": 3,
+        "instruction": "Premi con il pollice in modo deciso ma delicato."
+      },
+      {
+        "step": 4,
+        "instruction": "Mantieni per 1 minuto, respirando lentamente."
+      },
+      {
+        "step": 5,
+        "instruction": "Rilascia e ripeti sull’altro braccio."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "e9cdee6b-70a3-44b7-8e58-e798dc86ab44": {
+    "name": "Rilassamento muscolare progressivo",
+    "description": "Contrai e rilassa sistematicamente i gruppi muscolari per liberare la tensione fisica.",
+    "history": "Sviluppato da Edmund Jacobson negli anni Venti per alleviare ansia e tensione.",
+    "safety_warning": "Interrompi in caso di dolore, crampi, formicolii o vertigini. Evita contrazioni forti nelle zone lesionate o operate di recente; mantieni le contrazioni delicate e respira normalmente.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati comodamente. Fai 3 respiri profondi."
+      },
+      {
+        "step": 2,
+        "instruction": "Contrai forte i piedi per 5 secondi, poi rilascia."
+      },
+      {
+        "step": 3,
+        "instruction": "Passa ai polpacci: contrai per 5 secondi e rilascia."
+      },
+      {
+        "step": 4,
+        "instruction": "Continua verso l’alto: cosce, glutei, addome, petto, mani e braccia."
+      },
+      {
+        "step": 5,
+        "instruction": "Contrai i muscoli del viso, poi rilassali completamente."
+      },
+      {
+        "step": 6,
+        "instruction": "Infine contrai tutto il corpo insieme e poi lascia andare."
+      }
+    ],
+    "benefits": [
+      "Libera la tensione muscolare",
+      "Riduce l’ansia",
+      "Migliora il sonno",
+      "Consapevolezza corporea"
+    ],
+    "tips": [
+      "Contrai al 70% dell’intensità, non al massimo",
+      "Nota il contrasto dopo il rilascio",
+      "Utile prima di andare a letto"
+    ]
+  },
+  "5a59ad55-e2cf-414c-82dd-24e1d7e02b9c": {
+    "name": "Toning vocale",
+    "description": "Usa la voce per creare vibrazioni che stimolano il nervo vago.",
+    "history": "Le vibrazioni vocali sono usate in diverse culture per indurre calma e connessione.",
+    "safety_warning": "Mantieni un volume confortevole e non sforzare la voce. Interrompi in caso di stordimento, dolore alla gola o mancanza di fiato; chi ha problemi alla voce o alla gola dovrebbe usare un ronzio delicato oppure consultare un medico.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti o stai in piedi comodamente."
+      },
+      {
+        "step": 2,
+        "instruction": "Fai un respiro profondo."
+      },
+      {
+        "step": 3,
+        "instruction": "Mentre espiri, emetti un lungo suono «OOOOMMM» oppure «AAAHHH»."
+      },
+      {
+        "step": 4,
+        "instruction": "Senti la vibrazione nel petto e nella gola."
+      },
+      {
+        "step": 5,
+        "instruction": "Prova diverse altezze del suono."
+      },
+      {
+        "step": 6,
+        "instruction": "Continua per 3-5 minuti."
+      }
+    ],
+    "benefits": [
+      "Stimola il nervo vago",
+      "Riduce lo stress",
+      "Apre la gola",
+      "Radica l’energia"
+    ],
+    "tips": [
+      "I suoni più gravi producono vibrazioni più forti nel petto",
+      "Non sforzare la voce",
+      "Se preferisci, emetti un ronzio"
+    ]
+  },
+  "736aba09-ed5d-45d3-b4b9-e42e08a0e1e5": {
+    "name": "Sbadiglio volontario",
+    "description": "Sbadigliare attiva il nervo vago e libera la tensione di mandibola e viso.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Interrompi in caso di vertigini, stordimento o dolore alla mandibola. Evita di forzare l’apertura della bocca se hai sintomi dell’articolazione temporo-mandibolare; mantieni il movimento delicato.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Siediti o sdraiati comodamente."
+      },
+      {
+        "step": 2,
+        "instruction": "Apri bene la bocca come per iniziare uno sbadiglio."
+      },
+      {
+        "step": 3,
+        "instruction": "Anche se non senti il bisogno di sbadigliare, imita il movimento."
+      },
+      {
+        "step": 4,
+        "instruction": "Spesso uno sbadiglio vero seguirà quello simulato."
+      },
+      {
+        "step": 5,
+        "instruction": "Lascia che il corpo sbadigli naturalmente e completamente."
+      },
+      {
+        "step": 6,
+        "instruction": "Ripeti diverse volte, lasciando emergere suoni o allungamenti spontanei."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "090e16d9-5ebc-40e4-816e-8372845c3614": {
+    "name": "Yin Tang - Terzo occhio",
+    "description": "Premere questo punto tra le sopracciglia calma la mente e allevia mal di testa e stress.",
+    "history": "Una tecnica di respirazione consolidata nel tempo per il benessere.",
+    "safety_warning": "Usa soltanto una pressione leggera ed evita di premere su pelle irritata o lesioni recenti del viso. Interrompi in caso di dolore, vertigini o peggioramento del mal di testa.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Trova il punto tra le sopracciglia."
+      },
+      {
+        "step": 2,
+        "instruction": "Usa l’indice o il pollice per applicare una pressione delicata."
+      },
+      {
+        "step": 3,
+        "instruction": "Chiudi gli occhi e respira lentamente."
+      },
+      {
+        "step": 4,
+        "instruction": "Mantieni per 1-2 minuti."
+      },
+      {
+        "step": 5,
+        "instruction": "Rilascia lentamente e nota la calma."
+      }
+    ],
+    "benefits": [
+      "Riduce lo stress",
+      "Migliora la concentrazione",
+      "Migliora il benessere"
+    ],
+    "tips": [
+      "Trova un luogo tranquillo e confortevole",
+      "Pratica regolarmente per ottenere risultati migliori",
+      "Interrompi se avverti vertigini o disagio"
+    ]
+  },
+  "706c38f1-ea62-4ce4-9644-8ecd9b1dc456": {
+    "name": "Yoga Nidra",
+    "description": "Sonno yogico: pratica guidata tra veglia e sonno.",
+    "history": "Antica pratica tantrica sistematizzata da Swami Satyananda Saraswati negli anni Sessanta.",
+    "safety_warning": "Pratica in un luogo sicuro dove puoi rilassarti completamente, mai mentre guidi o usi macchinari. Se avverti vertigini, ansia o disagio, apri gli occhi, fai alcuni respiri normali e interrompi.",
+    "instructions": [
+      {
+        "step": 1,
+        "instruction": "Sdraiati in Savasana, la posizione del cadavere, con gli occhi chiusi."
+      },
+      {
+        "step": 2,
+        "instruction": "Formula un Sankalpa, un’intenzione o proposito positivo."
+      },
+      {
+        "step": 3,
+        "instruction": "Sposta sistematicamente la consapevolezza attraverso le parti del corpo."
+      },
+      {
+        "step": 4,
+        "instruction": "Osserva il respiro senza modificarlo."
+      },
+      {
+        "step": 5,
+        "instruction": "Visualizza immagini o scene serene."
+      },
+      {
+        "step": 6,
+        "instruction": "Torna al Sankalpa, poi risvegliati lentamente."
+      }
+    ],
+    "benefits": [
+      "Riposo profondo",
+      "Riduce l’ansia",
+      "Migliora il sonno",
+      "Accede al subconscio"
+    ],
+    "tips": [
+      "Un’ora equivale a 4 ore di sonno",
+      "Resta sveglio ma profondamente rilassato",
+      "Usa un audio guidato"
+    ]
+  }
+}

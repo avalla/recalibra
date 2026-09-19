@@ -1,7 +1,7 @@
+import { initializeLanguage } from '../i18n/runtime';
 import { initDb } from '../db';
-import { initializeRevenueCat } from '../lib/revenuecat';
 
 export async function initializeApp() {
   await initDb();
-  await initializeRevenueCat();
+  await initializeLanguage();
 }

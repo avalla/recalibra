@@ -1,3 +1,5 @@
+import { useLanguage } from '../../../i18n/LanguageProvider';
+import { tr } from '../../../i18n/core';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,6 +22,7 @@ interface WeeklyGoalsCardProps {
 }
 
 export const WeeklyGoalsCard: React.FC<WeeklyGoalsCardProps> = ({ goals, weekProgress, fadeStyle }) => {
+  useLanguage();
   const Gradient = LinearGradient as unknown as React.ComponentType<any>;
 
   return (
@@ -27,7 +30,7 @@ export const WeeklyGoalsCard: React.FC<WeeklyGoalsCardProps> = ({ goals, weekPro
       <View style={styles.goalsCard}>
         <Animated.View style={[styles.goalRow, fadeStyle as any]}>
           <View style={styles.goalInfo}>
-            <Text style={styles.goalLabel}>Sessions</Text>
+            <Text style={styles.goalLabel}>{tr("Sessions")}</Text>
             <Text style={styles.goalProgress}>
               {weekProgress.sessionsCompleted}/{goals.sessionGoal}
             </Text>
@@ -59,7 +62,7 @@ export const WeeklyGoalsCard: React.FC<WeeklyGoalsCardProps> = ({ goals, weekPro
 
         <Animated.View style={[styles.goalRow, fadeStyle as any]}>
           <View style={styles.goalInfo}>
-            <Text style={styles.goalLabel}>Minutes</Text>
+            <Text style={styles.goalLabel}>{tr("Minutes")}</Text>
             <Text style={styles.goalProgress}>
               {weekProgress.minutesCompleted}/{goals.minutesGoal}
             </Text>

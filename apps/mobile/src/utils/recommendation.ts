@@ -22,8 +22,6 @@ export interface Feeling {
   /** Accent used only for the small state icon, not the surface. */
   color: string;
   objective: ExerciseObjective;
-  /** Pre-session stress this feeling implies (1..10), captured once at entry. */
-  seedStress: number;
 }
 
 export const FEELINGS: Feeling[] = [
@@ -34,7 +32,6 @@ export const FEELINGS: Feeling[] = [
     icon: 'pulse-outline',
     color: '#4ECDC4',
     objective: 'relax',
-    seedStress: 8,
   },
   {
     id: 'unsettled',
@@ -43,7 +40,6 @@ export const FEELINGS: Feeling[] = [
     icon: 'cloudy-night-outline',
     color: '#A78BFA',
     objective: 'relax',
-    seedStress: 7,
   },
   {
     id: 'foggy',
@@ -52,7 +48,6 @@ export const FEELINGS: Feeling[] = [
     icon: 'cloud-outline',
     color: '#60A5FA',
     objective: 'focus',
-    seedStress: 5,
   },
   {
     id: 'drained',
@@ -61,7 +56,6 @@ export const FEELINGS: Feeling[] = [
     icon: 'battery-half-outline',
     color: '#F59E0B',
     objective: 'energy',
-    seedStress: 4,
   },
 ];
 
@@ -135,7 +129,6 @@ function scoreExercise(exercise: ExerciseWithFavorite, input: RecommendationInpu
   }
 
   if (exercise.is_favorite) score += 2;
-  if (exercise.is_premium) score -= 1;
   if (input.excludeIds?.includes(exercise.id)) score -= 8;
 
   return score;
@@ -157,18 +150,17 @@ export interface RecommendationSet {
 
 /**
  * Commit to one practice plus up to `alternateCount` diverse alternates.
- * The hero is the best *accessible* pick (free users never hit a paywall on
- * the primary action); alternates favor a different modality and a shorter
- * option so the swaps feel meaningfully different.
+ * Alternates favor a different modality and a shorter option so the swaps
+ * feel meaningfully different.
  */
 export function buildRecommendationSet(
   ranked: ExerciseWithFavorite[],
-  options: { canAccess: (exercise: ExerciseWithFavorite) => boolean; alternateCount?: number }
+  options: { alternateCount?: number } = {}
 ): RecommendationSet | null {
   if (ranked.length === 0) return null;
   const alternateCount = options.alternateCount ?? 2;
 
-  const hero = ranked.find((e) => options.canAccess(e)) ?? ranked[0];
+  const hero = ranked[0];
 
   const alternates: ExerciseWithFavorite[] = [];
   const rest = ranked.filter((e) => e.id !== hero.id);

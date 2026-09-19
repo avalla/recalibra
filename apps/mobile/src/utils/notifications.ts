@@ -1,3 +1,4 @@
+import { tr } from '../i18n/core';
 import * as Notifications from 'expo-notifications';
 import { logger } from './logger';
 import { Platform } from 'react-native';
@@ -182,8 +183,8 @@ export class NotificationManager {
     
     return this.scheduleNotification({
       id: customId,
-      title: 'Time for your exercise',
-      body: `It's time to practice ${exerciseName}`,
+      title: tr("Time for your exercise"),
+      body: tr("It’s time to practice {{name}}", { name: exerciseName }),
       trigger,
     });
   }

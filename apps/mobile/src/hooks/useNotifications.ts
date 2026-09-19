@@ -1,6 +1,7 @@
+import { tr } from '../i18n/core';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { syncReminders } from '../utils/reminders';
 import { logger } from '../utils/logger';
 import { permissionManager } from '../utils/permissions';
 import { getReminders as getRemindersFromDb, setReminders as setRemindersInDb } from '../db';
@@ -45,20 +46,9 @@ export const useNotifications = () => {
         return null;
       }
       
-      const token = await Notifications.getExpoPushTokenAsync({
-        projectId: '61c87648-19f0-4e46-ae78-ea29d91e9841',
-      });
-      
-      if (Platform.OS === 'android') {
-        Notifications.setNotificationChannelAsync('reminders', {
-          name: 'Daily Reminders',
-          importance: Notifications.AndroidImportance.HIGH,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#4ECDC4',
-        });
-      }
-      
-      return token.data;
+      // These are local reminders; no remote push token or network request is needed.
+      await syncReminders();
+      return null;
     } catch (error) {
       logger.error('Error requesting notification permissions', error as Error, 'useNotifications');
       return null;
@@ -86,61 +76,21 @@ export const useNotifications = () => {
       await setRemindersInDb(newSettings);
 
       // Reschedule notifications
-      await scheduleReminders(newSettings);
+      await syncReminders();
     } catch (err) {
       logger.error('Error saving settings', err as Error, 'useNotifications');
     }
   };
 
-  // Schedule daily reminders
-  const scheduleReminders = async (settings: ReminderSettings) => {
-    // Cancel all existing notifications
-    await Notifications.cancelAllScheduledNotificationsAsync();
-
-    if (!settings.enabled) return;
-
-    const [hours = 0, minutes = 0] = settings.time.split(':').map(Number);
-
-    // Schedule for each selected day
-    for (const day of settings.days) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: 'Time for your practice 🧘',
-          body: getRandomMotivation(),
-          sound: true,
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
-          weekday: day + 1, // Expo uses 1-7, Sunday = 1
-          hour: hours,
-          minute: minutes,
-        },
-      });
-    }
-
-    logger.info(`Scheduled reminders for days: ${settings.days.join(',')}`, 'useNotifications');
-  };
-
-  // Random motivational messages
-  const getRandomMotivation = () => {
-    const messages = [
-      'Just 2 minutes can change your day.',
-      'Your calm is waiting for you.',
-      'Take a breath, reset your mind.',
-      'A moment of peace awaits.',
-      'Ready to activate your vagus nerve?',
-      'Your daily dose of calm is here.',
-      'Breathe in, stress out.',
-    ];
-    return messages[Math.floor(Math.random() * messages.length)];
-  };
+  // The DB remains the single source of truth for both settings and language changes.
+  const scheduleReminders = syncReminders;
 
   // Send immediate test notification
   const sendTestNotification = async () => {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Recalibra 🧘',
-        body: 'Your reminders are working!',
+        title: tr("Recalibra 🧘"),
+        body: tr("Your reminders are working!"),
         sound: true,
       },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds: 2 },

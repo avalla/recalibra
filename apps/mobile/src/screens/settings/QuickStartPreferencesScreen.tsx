@@ -1,3 +1,7 @@
+import { enumLabel } from '../../i18n/labels';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
+import { localizedExerciseName } from '../../i18n/exercises';
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -27,6 +31,7 @@ import {
 type QuickStartRouteProps = RouteProp<RootStackParamList, 'QuickStartPreferences'>;
 
 export const QuickStartPreferencesScreen: React.FC = () => {
+  useLanguage();
   const navigation = useNavigation<any>();
   const route = useRoute<QuickStartRouteProps>();
   const { exercises } = useExercises();
@@ -58,7 +63,7 @@ export const QuickStartPreferencesScreen: React.FC = () => {
 
   const handleSave = async () => {
     if (!canSave) {
-      Alert.alert('Choose a favorite', 'Select your favorite exercise to use for Quick Start.');
+      Alert.alert(tr("Choose a favorite"), tr("Select your favorite exercise to use for Quick Start."));
       return;
     }
 
@@ -79,13 +84,7 @@ export const QuickStartPreferencesScreen: React.FC = () => {
         return;
       }
 
-      navigation.navigate('Main', {
-        screen: 'ExercisesTab',
-        params: {
-          screen: 'ExerciseSession',
-          params: toExerciseSessionParams(exercise),
-        },
-      });
+      navigation.navigate('ExerciseSession', toExerciseSessionParams(exercise));
       return;
     }
 
@@ -122,10 +121,10 @@ export const QuickStartPreferencesScreen: React.FC = () => {
             </View>
             <View style={styles.optionText}>
               <Text style={[styles.optionTitle, isSelected && styles.optionTitleSelected]}>
-                {title}
+                {tr(title)}
               </Text>
               <Text style={[styles.optionDescription, isSelected && styles.optionDescriptionSelected]}>
-                {description}
+                {tr(description)}
               </Text>
             </View>
             {isSelected ? (
@@ -144,14 +143,13 @@ export const QuickStartPreferencesScreen: React.FC = () => {
 
     return (
       <View style={styles.favoriteSection}>
-        <Text style={styles.sectionLabel}>Your favorite</Text>
+        <Text style={styles.sectionLabel}>{tr("Your favorite")}</Text>
 
         {favorites.length === 0 ? (
           <Card variant="soft" style={styles.favoriteEmpty}>
-            <Text style={styles.favoriteEmptyText}>You don't have any favorites yet.</Text>
+            <Text style={styles.favoriteEmptyText}>{tr("You don't have any favorites yet.")}</Text>
             <Text style={styles.favoriteEmptyTextSecondary}>
-              Add a favorite from the Exercises tab, then come back here.
-            </Text>
+              {tr("Add a favorite from the Exercises tab, then come back here.")}</Text>
           </Card>
         ) : (
           <View style={styles.favoriteList}>
@@ -172,9 +170,9 @@ export const QuickStartPreferencesScreen: React.FC = () => {
                   >
                     <View style={styles.favoriteItemRow}>
                       <View style={styles.favoriteItemText}>
-                        <Text style={styles.favoriteItemTitle}>{exercise.name}</Text>
+                        <Text style={styles.favoriteItemTitle}>{localizedExerciseName(exercise.id, exercise.name)}</Text>
                         <Text style={styles.favoriteItemMeta}>
-                          {exercise.duration_minutes} min • {exercise.category}
+                          {exercise.duration_minutes} {tr("min •")} {' '}{enumLabel(exercise.category)}
                         </Text>
                       </View>
                       <Ionicons
@@ -191,7 +189,7 @@ export const QuickStartPreferencesScreen: React.FC = () => {
         )}
 
         {selectedFavorite ? (
-          <Text style={styles.favoriteSelectedHint}>Selected: {selectedFavorite.name}</Text>
+          <Text style={styles.favoriteSelectedHint}>{tr("Selected:")} {' '}{localizedExerciseName(selectedFavorite.id, selectedFavorite.name)}</Text>
         ) : null}
       </View>
     );
@@ -203,15 +201,14 @@ export const QuickStartPreferencesScreen: React.FC = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} activeOpacity={0.8}>
           <Ionicons name="close" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Quick Start</Text>
+        <Text style={styles.headerTitle}>{tr("Quick Start")}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Choose your default Quick Start</Text>
+        <Text style={styles.title}>{tr("Choose your default Quick Start")}</Text>
         <Text style={styles.subtitle}>
-          You can change this anytime from Settings.
-        </Text>
+          {tr("You can change this anytime from Settings.")}</Text>
 
         {renderModeOption(
           'standard_2min',
@@ -243,7 +240,7 @@ export const QuickStartPreferencesScreen: React.FC = () => {
           style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
         >
           <Text style={styles.saveButtonText}>
-            {route.params?.from === 'home' ? 'Save & Start' : 'Save'}
+            {route.params?.from === 'home' ? tr("Save & Start") : tr("Save")}
           </Text>
         </TouchableOpacity>
 

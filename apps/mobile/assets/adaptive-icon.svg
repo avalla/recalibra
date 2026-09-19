@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <!-- Android adaptive foreground: mark stays inside the 66% safe zone. -->
+  <path d="M330 690C364 476 508 330 708 320C697 523 558 666 330 690Z" fill="#2DD4BF"/>
+  <path d="M378 644C463 560 542 475 662 362" stroke="#0B1816" stroke-width="42" stroke-linecap="round"/>
+</svg>

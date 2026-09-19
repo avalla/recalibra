@@ -1,3 +1,5 @@
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
 import React, { useState } from 'react';
 import {
   View,
@@ -26,6 +28,7 @@ const experienceOptions: ExperienceOption[] = [
 ];
 
 export const ScreeningExperienceScreen: React.FC = () => {
+  useLanguage();
   const navigation = useNavigation<any>();
   const { updateScreeningData } = useScreening();
   const [selectedLevel, setSelectedLevel] = useState<MeditationExperience | null>(null);
@@ -60,8 +63,7 @@ export const ScreeningExperienceScreen: React.FC = () => {
       {/* Question */}
       <View style={styles.questionContainer}>
         <Text style={styles.questionTitle}>
-          What's your experience with breathing & meditation?
-        </Text>
+          {tr("What's your experience with breathing & meditation?")}</Text>
       </View>
 
       {/* Options */}
@@ -84,7 +86,7 @@ export const ScreeningExperienceScreen: React.FC = () => {
                 selectedLevel === option.id && styles.optionTextSelected,
               ]}
             >
-              {option.label}
+              {tr(option.label)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -93,7 +95,7 @@ export const ScreeningExperienceScreen: React.FC = () => {
       {/* Footer */}
       <View style={styles.footer}>
         <Button
-          label="Next"
+          label={tr("Next")}
           onPress={handleNext}
           disabled={!selectedLevel}
         />

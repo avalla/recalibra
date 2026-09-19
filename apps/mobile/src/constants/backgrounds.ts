@@ -1,3 +1,4 @@
+import { tr } from '../i18n/core';
 export interface ExerciseBackground {
   gradient: string[];
   country: string;
@@ -125,7 +126,7 @@ export const getExerciseBackground = (category?: string): ExerciseBackground => 
     EXERCISE_BACKGROUNDS.default ?? {
       gradient: ['#30CFD0', '#330867'],
       country: 'Universal',
-      description: 'Timeless wellness practices from around the world',
+      description: tr("Timeless wellness practices from around the world"),
     };
 
   if (!category) return fallback;

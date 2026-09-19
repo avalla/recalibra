@@ -1,3 +1,6 @@
+import { enumLabel } from '../../i18n/labels';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -5,7 +8,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
+  useWindowDimensions,
   TextInput,
   FlatList,
 } from 'react-native';
@@ -15,7 +18,8 @@ import { useNavigation } from '@react-navigation/native';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
 import { Card, ExerciseIllustration } from '../../components';
 import { OriginIcon } from '../../components/OriginIcon';
-import { useExercises, useSessions, useSubscription } from '../../hooks';
+import { useExercises, useSessions } from '../../hooks';
+import { EMPTY_CATALOG_FILTERS, filterCatalog, type CatalogFilters } from '../../utils/catalog-filters';
 import type { ExerciseWithFavorite, ExerciseCategory } from '../../types';
 
 const CATEGORIES: { id: ExerciseCategory; label: string; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
@@ -31,21 +35,24 @@ const CATEGORY_TABS: { id: ExerciseCategory | 'all'; label: string }[] = [
 ];
 
 export const ExerciseCatalogScreen: React.FC = () => {
+  useLanguage();
   const navigation = useNavigation<any>();
-  const { exercises, isLoading, toggleFavorite } = useExercises();
+  const { localizedExercises: exercises, isLoading, toggleFavorite } = useExercises();
   const { sessions } = useSessions();
-  const { canAccessExercise, presentPaywall } = useSubscription();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ExerciseCategory | 'all'>('all');
-  const [selectedDuration, setSelectedDuration] = useState<'all' | 'short' | 'medium' | 'long'>('all');
-  const [selectedLevel, setSelectedLevel] = useState<'all' | 'beginner' | 'intermediate' | 'advanced'>('all');
+  const [filters, setFilters] = useState<CatalogFilters>(EMPTY_CATALOG_FILTERS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const { width, fontScale } = useWindowDimensions();
+  const columns = width < 390 || fontScale > 1.15 ? 1 : 2;
+  const { query: searchQuery, category: selectedCategory, duration: selectedDuration, level: selectedLevel } = filters;
+  const setFilter = <K extends keyof CatalogFilters>(key: K, value: CatalogFilters[K]) =>
+    setFilters((previous) => ({ ...previous, [key]: value }));
+  const clearFilters = () => setFilters({ ...EMPTY_CATALOG_FILTERS });
+  const hasFilters = searchQuery.trim() !== '' || selectedCategory !== 'all' || selectedDuration !== 'all' || selectedLevel !== 'all';
 
   const renderShelfItem = ({ item }: { item: ExerciseWithFavorite }) => {
-    const isLocked = !canAccessExercise(item.slug, item.is_premium);
-
     return (
       <Card
-        style={isLocked ? { ...styles.shelfCard, ...styles.exerciseCardLocked } : styles.shelfCard}
+        style={{ ...styles.shelfCard, width: Math.min(width - Spacing.lg * 2, 320) }}
         onPress={() => handleExercisePress(item)}
       >
         <View style={styles.cardThumbnailWrap}>
@@ -53,26 +60,19 @@ export const ExerciseCatalogScreen: React.FC = () => {
         </View>
         <View style={styles.shelfTopRow}>
           <View style={styles.tag}>
-            <Text style={styles.tagText}>{item.duration_minutes} min</Text>
+            <Text style={styles.tagText}>{item.duration_minutes} {tr("min")}</Text>
           </View>
-          {isLocked ? (
-            <View style={styles.premiumBadge}>
-              <Ionicons name="lock-closed" size={12} color={Colors.warning} />
-              <Text style={styles.premiumText}>PRO</Text>
-            </View>
-          ) : (
-            <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
-              <Ionicons
-                name={item.is_favorite ? 'heart' : 'heart-outline'}
-                size={18}
-                color={item.is_favorite ? Colors.primary : Colors.textMuted}
-              />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={item.is_favorite ? tr("Remove {{name}} from favorites", { name: item.name }) : tr("Add {{name}} to favorites", { name: item.name })} style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
+            <Ionicons
+              name={item.is_favorite ? 'heart' : 'heart-outline'}
+              size={18}
+              color={item.is_favorite ? Colors.primary : Colors.textMuted}
+            />
+          </TouchableOpacity>
         </View>
         <Text
-          style={[styles.shelfTitle, isLocked && styles.exerciseNameLocked]}
-          numberOfLines={1}
+          style={styles.shelfTitle}
+          numberOfLines={2}
           ellipsizeMode="tail"
         >
           {item.name}
@@ -80,12 +80,12 @@ export const ExerciseCatalogScreen: React.FC = () => {
         {item.origin ? (
           <View style={styles.originRow}>
             <OriginIcon origin={item.origin} size={14} color={Colors.textSecondary} />
-            <Text style={styles.originText} numberOfLines={1} ellipsizeMode="tail">
+            <Text style={styles.originText} numberOfLines={2} ellipsizeMode="tail">
               {formatOrigin(item.origin)}
             </Text>
           </View>
         ) : null}
-        <Text style={styles.shelfSubtitle} numberOfLines={1} ellipsizeMode="tail">
+        <Text style={styles.shelfSubtitle} numberOfLines={2} ellipsizeMode="tail">
           {item.description}
         </Text>
       </Card>
@@ -93,12 +93,10 @@ export const ExerciseCatalogScreen: React.FC = () => {
   };
 
   const renderGridItem = ({ item }: { item: ExerciseWithFavorite }) => {
-    const isLocked = !canAccessExercise(item.slug, item.is_premium);
-
     return (
       <View style={styles.gridItemWrapper}>
         <Card
-          style={isLocked ? { ...styles.gridCard, ...styles.exerciseCardLocked } : styles.gridCard}
+          style={styles.gridCard}
           onPress={() => handleExercisePress(item)}
         >
           <View style={styles.cardThumbnailWrapGrid}>
@@ -106,26 +104,19 @@ export const ExerciseCatalogScreen: React.FC = () => {
           </View>
           <View style={styles.gridTopRow}>
             <View style={styles.tag}>
-              <Text style={styles.tagText}>{item.duration_minutes} min</Text>
+              <Text style={styles.tagText}>{item.duration_minutes} {tr("min")}</Text>
             </View>
-            {isLocked ? (
-              <View style={styles.premiumBadge}>
-                <Ionicons name="lock-closed" size={12} color={Colors.warning} />
-                <Text style={styles.premiumText}>PRO</Text>
-              </View>
-            ) : (
-              <TouchableOpacity style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
-                <Ionicons
-                  name={item.is_favorite ? 'heart' : 'heart-outline'}
-                  size={18}
-                  color={item.is_favorite ? Colors.primary : Colors.textMuted}
-                />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={item.is_favorite ? tr("Remove {{name}} from favorites", { name: item.name }) : tr("Add {{name}} to favorites", { name: item.name })} style={styles.favoriteButton} onPress={() => toggleFavorite(item.id)}>
+              <Ionicons
+                name={item.is_favorite ? 'heart' : 'heart-outline'}
+                size={18}
+                color={item.is_favorite ? Colors.primary : Colors.textMuted}
+              />
+            </TouchableOpacity>
           </View>
           <Text
-            style={[styles.gridTitle, isLocked && styles.exerciseNameLocked]}
-            numberOfLines={1}
+            style={styles.gridTitle}
+            numberOfLines={2}
             ellipsizeMode="tail"
           >
             {item.name}
@@ -136,7 +127,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
               <Text style={styles.originText}>{formatOrigin(item.origin)}</Text>
             </View>
           ) : null}
-          <Text style={styles.gridSubtitle} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={styles.gridSubtitle} numberOfLines={columns === 1 ? 3 : 2} ellipsizeMode="tail">
             {item.description}
           </Text>
         </Card>
@@ -144,38 +135,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
     );
   };
 
-  // Filter exercises based on search query
-  const filteredExercises = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    return exercises.filter((e) => {
-      if (normalizedQuery) {
-        const matchesQuery =
-          e.name.toLowerCase().includes(normalizedQuery) ||
-          (e.description ? e.description.toLowerCase().includes(normalizedQuery) : false);
-        if (!matchesQuery) return false;
-      }
-
-      if (selectedCategory !== 'all' && e.category !== selectedCategory) return false;
-
-      if (selectedLevel !== 'all' && e.level !== selectedLevel) return false;
-
-      if (selectedDuration !== 'all') {
-        const minutes = e.duration_minutes;
-        if (selectedDuration === 'short' && minutes > 3) return false;
-        if (selectedDuration === 'medium' && (minutes < 4 || minutes > 7)) return false;
-        if (selectedDuration === 'long' && minutes < 8) return false;
-      }
-
-      return true;
-    });
-  }, [
-    exercises,
-    searchQuery,
-    selectedCategory,
-    selectedDuration,
-    selectedLevel,
-  ]);
+  const filteredExercises = useMemo(() => filterCatalog(exercises, filters), [exercises, filters]);
 
   const recentExercises = useMemo(() => {
     const seen = new Set<string>();
@@ -199,29 +159,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
     return exercises.filter((e) => e.is_favorite).slice(0, 12);
   }, [exercises]);
 
-  const categoryCounts = useMemo(() => {
-    const counts: Record<ExerciseCategory, number> = {
-      breathing: 0,
-      water: 0,
-      movement: 0,
-      sensory: 0,
-    };
-
-    for (const e of exercises) {
-      counts[e.category] += 1;
-    }
-
-    return counts;
-  }, [exercises]);
-
-  const handleExercisePress = async (exercise: ExerciseWithFavorite) => {
-    // Check if user can access this exercise
-    if (!canAccessExercise(exercise.slug, exercise.is_premium)) {
-      const didPurchase = await presentPaywall();
-      if (!didPurchase) navigation.navigate('Paywall');
-      return;
-    }
-
+  const handleExercisePress = (exercise: ExerciseWithFavorite) => {
     navigation.navigate('ExerciseDetail', {
       exerciseId: exercise.id,
     });
@@ -232,7 +170,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.catalogContent}>
           <View style={styles.topBar}>
-            <Text style={styles.pageTitle}>Explore Exercises</Text>
+            <Text style={styles.pageTitle}>{tr("Explore Exercises")}</Text>
           </View>
           <View style={styles.skeletonGrid}>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -250,7 +188,8 @@ export const ExerciseCatalogScreen: React.FC = () => {
         data={filteredExercises}
         keyExtractor={(item) => item.id}
         renderItem={renderGridItem}
-        numColumns={2}
+        key={`catalog-${columns}`}
+        numColumns={columns}
         initialNumToRender={10}
         maxToRenderPerBatch={12}
         windowSize={7}
@@ -261,7 +200,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
         ListHeaderComponent={
           <View>
             <View style={styles.topBar}>
-              <Text style={styles.pageTitle}>Explore Exercises</Text>
+              <Text style={styles.pageTitle}>{tr("Explore Exercises")}</Text>
             </View>
 
             <ScrollView
@@ -275,10 +214,12 @@ export const ExerciseCatalogScreen: React.FC = () => {
                   <TouchableOpacity
                     key={c.id}
                     style={styles.categoryTab}
-                    onPress={() => setSelectedCategory(c.id)}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: isActive }}
+                    onPress={() => setFilter('category', c.id)}
                     activeOpacity={0.85}
                   >
-                    <Text style={isActive ? styles.categoryTabTextActive : styles.categoryTabText}>{c.label}</Text>
+                    <Text style={isActive ? styles.categoryTabTextActive : styles.categoryTabText}>{tr(c.label)}</Text>
                     <View style={isActive ? styles.categoryTabUnderlineActive : styles.categoryTabUnderline} />
                   </TouchableOpacity>
                 );
@@ -286,91 +227,57 @@ export const ExerciseCatalogScreen: React.FC = () => {
             </ScrollView>
 
             <View style={styles.filterPillsRow}>
-              <TouchableOpacity
-                style={[styles.filterPill, selectedDuration !== 'all' && styles.filterPillActive]}
-                onPress={() =>
-                  setSelectedDuration((prev) => {
-                    const order = ['all', 'short', 'medium', 'long'] as const;
-                    return order[(order.indexOf(prev) + 1) % order.length];
-                  })
-                }
-                activeOpacity={0.85}
-              >
-                <Text style={[styles.filterPillText, selectedDuration !== 'all' && styles.filterPillTextActive]}>
-                  {selectedDuration === 'all' ? 'Any length' : DURATION_LABELS[selectedDuration]}
-                </Text>
-                <Ionicons
-                  name="swap-vertical"
-                  size={14}
-                  color={selectedDuration !== 'all' ? Colors.primary : Colors.textSecondary}
-                />
+              <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: filtersOpen }}
+                style={styles.filterPill} onPress={() => setFiltersOpen(!filtersOpen)}>
+                <Text style={styles.filterPillText}>{tr("Filters")}</Text>
+                <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={18} color={Colors.textPrimary} />
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.filterPill, selectedLevel !== 'all' && styles.filterPillActive]}
-                onPress={() =>
-                  setSelectedLevel((prev) => {
-                    const order = ['all', 'beginner', 'intermediate', 'advanced'] as const;
-                    return order[(order.indexOf(prev) + 1) % order.length];
-                  })
-                }
-                activeOpacity={0.85}
-              >
-                <Text style={[styles.filterPillText, selectedLevel !== 'all' && styles.filterPillTextActive]}>
-                  {selectedLevel === 'all' ? 'Any level' : formatLevel(selectedLevel)}
-                </Text>
-                <Ionicons
-                  name="swap-vertical"
-                  size={14}
-                  color={selectedLevel !== 'all' ? Colors.primary : Colors.textSecondary}
-                />
-              </TouchableOpacity>
+              {hasFilters && <TouchableOpacity accessibilityRole="button" onPress={clearFilters} style={styles.filterPill}>
+                <Text style={styles.filterPillText}>{tr("Clear all")}</Text>
+              </TouchableOpacity>}
             </View>
+            {!filtersOpen && (selectedDuration !== 'all' || selectedLevel !== 'all') &&
+              <Text style={styles.filterSummary}>{tr(DURATION_LABELS[selectedDuration])} · {formatLevel(selectedLevel)}</Text>}
+            {filtersOpen && <View style={styles.filterOptions}>
+              <Text style={styles.filterLabel}>{tr("Duration")}</Text>
+              <View style={styles.optionRow}>
+                {(Object.keys(DURATION_LABELS) as CatalogFilters['duration'][]).map((duration) => (
+                  <TouchableOpacity key={duration} accessibilityRole="radio" accessibilityState={{ checked: selectedDuration === duration }}
+                    onPress={() => setFilter('duration', duration)} style={[styles.filterPill, selectedDuration === duration && styles.filterPillActive]}>
+                    <Text style={styles.filterPillText}>{tr(DURATION_LABELS[duration])}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              <Text style={styles.filterLabel}>{tr("Level")}</Text>
+              <View style={styles.optionRow}>
+                {(['all', 'beginner', 'intermediate', 'advanced'] as const).map((level) => (
+                  <TouchableOpacity key={level} accessibilityRole="radio" accessibilityState={{ checked: selectedLevel === level }}
+                    onPress={() => setFilter('level', level)} style={[styles.filterPill, selectedLevel === level && styles.filterPillActive]}>
+                    <Text style={styles.filterPillText}>{formatLevel(level)}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>}
 
             <View style={styles.searchContainer}>
               <View style={styles.searchBar}>
                 <Ionicons name="search" size={18} color={Colors.textMuted} style={styles.searchIcon} />
                 <TextInput
                   style={styles.searchInput}
-                  placeholder="Search exercises..."
+                  placeholder={tr("Search exercises...")}
                   placeholderTextColor={Colors.textMuted}
                   value={searchQuery}
-                  onChangeText={setSearchQuery}
+                  onChangeText={(query) => setFilter('query', query)}
+                  accessibilityLabel={tr("Search exercises")}
                   clearButtonMode="while-editing"
                   returnKeyType="search"
                 />
               </View>
             </View>
 
-            <View style={styles.categoryBrowseSection}>
-              <Text style={styles.shelfSectionTitle}>Browse by category</Text>
-              <View style={styles.categoryGrid}>
-                {CATEGORIES.map((c) => {
-                  const isActive = selectedCategory === c.id;
-                  return (
-                    <TouchableOpacity
-                      key={c.id}
-                      style={isActive ? [styles.categoryTile, styles.categoryTileActive] : styles.categoryTile}
-                      onPress={() => setSelectedCategory((prev) => (prev === c.id ? 'all' : c.id))}
-                      activeOpacity={0.9}
-                    >
-                      <View style={[styles.categoryTileIcon, { backgroundColor: `${c.color}22` }]}>
-                        <Ionicons name={c.icon} size={22} color={c.color} />
-                      </View>
-                      <View style={styles.categoryTileInfo}>
-                        <Text style={styles.categoryTileTitle}>{c.label}</Text>
-                        <Text style={styles.categoryTileCount}>{categoryCounts[c.id]} exercises</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={18} color={Colors.textMuted} />
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            {recentExercises.length > 0 ? (
+            {!hasFilters && recentExercises.length > 0 ? (
               <View style={styles.shelfSection}>
-                <Text style={styles.shelfSectionTitle}>Recently</Text>
+                <Text style={styles.shelfSectionTitle}>{tr("Recently")}</Text>
                 <FlatList
                   data={recentExercises}
                   keyExtractor={(item) => item.id}
@@ -382,9 +289,9 @@ export const ExerciseCatalogScreen: React.FC = () => {
               </View>
             ) : null}
 
-            {favoriteExercises.length > 0 ? (
+            {!hasFilters && favoriteExercises.length > 0 ? (
               <View style={styles.shelfSection}>
-                <Text style={styles.shelfSectionTitle}>Favorites</Text>
+                <Text style={styles.shelfSectionTitle}>{tr("Favorites")}</Text>
                 <FlatList
                   data={favoriteExercises}
                   keyExtractor={(item) => item.id}
@@ -397,24 +304,21 @@ export const ExerciseCatalogScreen: React.FC = () => {
             ) : null}
 
             <View style={styles.allHeader}>
-              <Text style={styles.shelfSectionTitle}>All exercises</Text>
+              <Text style={styles.shelfSectionTitle}>{hasFilters ? tr("Matching exercises") : tr("All exercises")}</Text>
               <Text style={styles.allCount}>{filteredExercises.length}</Text>
             </View>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No exercises found</Text>
-            <Text style={styles.emptySubtitle}>Try a different search or clear filters.</Text>
+            <Text style={styles.emptyTitle}>{tr("No exercises found")}</Text>
+            <Text style={styles.emptySubtitle}>{tr("Try a different search or clear filters.")}</Text>
             <TouchableOpacity
               style={styles.clearFiltersButton}
-              onPress={() => {
-                setSearchQuery('');
-                setSelectedCategory('all');
-                setSelectedDuration('all');
-              }}
+              accessibilityRole="button"
+              onPress={clearFilters}
             >
-              <Text style={styles.clearFiltersText}>Clear filters</Text>
+              <Text style={styles.clearFiltersText}>{tr("Clear filters")}</Text>
             </TouchableOpacity>
           </View>
         }
@@ -424,20 +328,17 @@ export const ExerciseCatalogScreen: React.FC = () => {
 };
 
 const formatOrigin = (origin: string): string => {
-  return origin
-    .replaceAll('_', ' ')
-    .split(' ')
-    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
-    .join(' ');
+  return enumLabel(origin);
 };
 
-const DURATION_LABELS: Record<'short' | 'medium' | 'long', string> = {
-  short: 'Under 3 min',
+const DURATION_LABELS: Record<CatalogFilters['duration'], string> = {
+  all: 'Any length',
+  short: '3 min or less',
   medium: '4 to 7 min',
   long: '8+ min',
 };
 
-const formatLevel = (level: string): string => (level ? level[0].toUpperCase() + level.slice(1) : level);
+const formatLevel = (level: string): string => (level === 'all' ? tr("Any level") : enumLabel(level));
 
 const styles = StyleSheet.create({
   container: {
@@ -476,6 +377,8 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
   },
   categoryTab: {
+    minHeight: 44,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   categoryTabText: {
@@ -502,7 +405,12 @@ const styles = StyleSheet.create({
     marginTop: Spacing.sm,
     backgroundColor: Colors.primary,
   },
+  filterSummary: { color: Colors.textSecondary, paddingHorizontal: Spacing.lg, paddingBottom: Spacing.sm },
+  filterOptions: { paddingHorizontal: Spacing.lg, gap: Spacing.sm, paddingBottom: Spacing.md },
+  filterLabel: { color: Colors.textPrimary, fontWeight: FontWeight.semibold, marginTop: Spacing.sm },
+  optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
   filterPillsRow: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
@@ -582,47 +490,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.heading,
     marginBottom: Spacing.sm,
   },
-  categoryBrowseSection: {
-    paddingTop: Spacing.md,
-  },
-  categoryGrid: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.md,
-  },
-  categoryTile: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    gap: Spacing.md,
-  },
-  categoryTileActive: {
-    borderColor: Colors.primary,
-    backgroundColor: `${Colors.primary}10`,
-  },
-  categoryTileIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  categoryTileInfo: {
-    flex: 1,
-  },
-  categoryTileTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
-    marginBottom: 2,
-  },
-  categoryTileCount: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-  },
   shelfList: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.md,
@@ -649,6 +516,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   shelfTopRow: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
@@ -698,6 +566,7 @@ const styles = StyleSheet.create({
     minHeight: 184,
   },
   gridTopRow: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
@@ -776,27 +645,10 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.medium,
   },
   favoriteButton: {
-    marginLeft: 'auto',
-  },
-  exerciseCardLocked: {
-    opacity: 0.85,
-  },
-  exerciseNameLocked: {
-    color: Colors.textMuted,
-  },
-  premiumBadge: {
-    flexDirection: 'row',
+    minWidth: 44,
+    minHeight: 44,
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
     marginLeft: 'auto',
-    backgroundColor: Colors.warning + '20',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-  },
-  premiumText: {
-    color: Colors.warning,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.bold,
   },
 });

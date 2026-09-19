@@ -1,3 +1,4 @@
+import type { BreathingPattern } from './index';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
@@ -25,13 +26,12 @@ export type HomeStackParamList = {
 };
 
 // Exercise Stack
-export type BreathingPatternParam = {
-  inhale: number;
-  hold: number;
-  exhale: number;
-  rest: number;
-  special?: string;
-  cycles?: number;
+export type BreathingPatternParam = BreathingPattern;
+
+export type JourneySessionContext = {
+  journeyId: string;
+  journeyVersion: number;
+  stepId: string;
 };
 
 export type ExerciseFlowParamList = {
@@ -48,17 +48,16 @@ export type ExerciseFlowParamList = {
     benefits?: string[];
     tips?: string[];
     instructions?: { step: number; instruction: string }[];
-    preStressLevel?: number;
-    journeyId?: string;
-    journeyChapterIndex?: number;
+    safetyWarning?: string;
+    journeyContext?: JourneySessionContext;
   };
   PostSession: {
     sessionId: string;
+    exerciseId?: string;
     exerciseName: string;
     durationSeconds: number;
     preStressLevel: number;
-    journeyId?: string;
-    journeyChapterIndex?: number;
+    journeyContext?: JourneySessionContext;
   };
 };
 
@@ -87,10 +86,8 @@ export type RootStackParamList = {
   ExerciseDetail: ExerciseFlowParamList['ExerciseDetail'];
   ExerciseSession: ExerciseFlowParamList['ExerciseSession'];
   PostSession: ExerciseFlowParamList['PostSession'];
-  Paywall: undefined;
   QuickStartPreferences: { from?: 'home' | 'settings' } | undefined;
   JourneyDetail: { journeyId: string };
-  JourneyRunner: { journeyId: string; chapterIndex?: number; justCompleted?: boolean };
 };
 
 // Screen Props Types

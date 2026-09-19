@@ -1,10 +1,6 @@
 import { APP_CONSTANTS } from '../constants/app';
 
 export const AppConfig = {
-  // RevenueCat Configuration
-  REVENUECAT_IOS_KEY: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY || '',
-  REVENUECAT_ANDROID_KEY: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY || '',
-  
   // Audio Settings
   AUDIO_DEFAULT_VOLUME: 0.5,
   AUDIO_CROSSFADE_DURATION: APP_CONSTANTS.AUDIO_CROSSFADE_DURATION,

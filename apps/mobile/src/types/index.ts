@@ -1,5 +1,4 @@
 export * from './navigation';
-export * from './journey';
 
 // ============================================
 // Database Types
@@ -126,7 +125,11 @@ export interface Session {
   duration_seconds: number;
   pre_stress_level: number;
   post_stress_level?: number;
+  pre_stress_recorded?: boolean;
+  post_stress_recorded?: boolean;
   notes?: string;
+  journey_id?: string;
+  journey_step_id?: string;
   created_at: string;
 }
 
@@ -181,4 +184,47 @@ export interface WeeklyStats {
 // Exercise with favorite status (for catalog)
 export interface ExerciseWithFavorite extends Exercise {
   is_favorite: boolean;
+}
+
+// ============================================
+// Journey content and local progress
+// ============================================
+
+export type JourneyProgressStatus = 'not_started' | 'in_progress' | 'completed';
+
+export interface JourneyStep {
+  id: string;
+  exerciseId: string;
+  title: string;
+  description?: string;
+  order: number;
+}
+
+export interface Chapter {
+  id: string;
+  title: string;
+  description?: string;
+  order: number;
+  steps: readonly JourneyStep[];
+}
+
+export interface Journey {
+  id: string;
+  version: number;
+  slug: string;
+  title: string;
+  description: string;
+  chapters: readonly Chapter[];
+}
+
+export interface JourneyProgress {
+  journeyId: string;
+  journeyVersion: number;
+  status: JourneyProgressStatus;
+  currentChapterId?: string;
+  currentStepId?: string;
+  startedAt?: string;
+  completedAt?: string;
+  updatedAt: string;
+  completedStepIds: readonly string[];
 }

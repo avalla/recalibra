@@ -11,7 +11,7 @@ TECH STACK:
 - bun runtime
 - TypeScript first
 - Mobile via React Native (Expo SDK 54)
-- Subscriptions via RevenueCat (gated by entitlements)
+- Free access to the complete exercise and audio catalog; no subscription or payment runtime
 - LangChain is used ONLY in the dev-time MCP server `mcp-servers/llm-router`, not in the app
 
 PROJECT STATUS:
@@ -50,7 +50,7 @@ APP REQUIREMENTS:
 - exercise player with step-by-step guides
 - stress tracking pre/post session
 - HRV integration (Apple Health)
-- subscription paywall via RevenueCat
+- no paywall, purchase, restore, or subscription-management flow
 - user dashboard with historical trends
 - notifications (local + scheduled)
 - safety warnings for water/ice exercises

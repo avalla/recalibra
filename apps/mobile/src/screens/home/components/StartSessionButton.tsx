@@ -1,3 +1,5 @@
+import { useLanguage } from '../../../i18n/LanguageProvider';
+import { tr } from '../../../i18n/core';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,12 +13,13 @@ interface StartSessionButtonProps {
 }
 
 export const StartSessionButton: React.FC<StartSessionButtonProps> = ({ onPress, animatedStyle }) => {
+  useLanguage();
   return (
     <Animated.View style={[animatedStyle as any, styles.startButtonContainer]}>
       <TouchableOpacity style={styles.startButton} onPress={onPress} activeOpacity={0.8}>
         <View style={styles.startButtonContent}>
           <Ionicons name="play" size={24} color={Colors.background} style={styles.startIcon} />
-          <Text style={styles.startButtonText}>Start a Session</Text>
+          <Text style={styles.startButtonText}>{tr("Start a Session")}</Text>
         </View>
         <View style={styles.startButtonGradient} />
       </TouchableOpacity>

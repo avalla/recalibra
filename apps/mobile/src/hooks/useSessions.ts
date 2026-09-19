@@ -1,15 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import type { JourneyProgress, Session, SessionWithExercise } from '../types';
-import {
-  completeSession as completeDbSession,
-  completeSessionAndJourney as completeDbSessionAndJourney,
-  listSessions,
-  startSession as startDbSession,
-  updateSessionStatus as updateDbSessionStatus,
-} from '../db';
+import { tr } from '../i18n/core';
+import { useLanguage } from '../i18n/LanguageProvider';
+import { localizedExerciseName } from '../i18n/exercises';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { Session, SessionWithExercise } from '../types';
+import { listSessions, startSession as startDbSession, updateSessionStatus as updateDbSessionStatus, completeSession as completeDbSession } from '../db';
 import { logger } from '../utils/logger';
+import { summarizeSessionStress } from '../utils/stress-rating';
 
 export const useSessions = () => {
+  const { language } = useLanguage();
   const [sessions, setSessions] = useState<SessionWithExercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,12 +41,12 @@ export const useSessions = () => {
   ): Promise<{ data: Session | null; error: Error | null }> => {
     try {
       logger.debug(`startSession:start exerciseId=${exerciseId}`, 'useSessions');
-      const result = await startDbSession({ exerciseId, preStressLevel });
+      const result = await startDbSession({ exerciseId, preStressLevel, preStressRecorded: true });
       if (result.error) return { data: null, error: result.error };
       await fetchSessions();
       return { data: result.data, error: null };
     } catch (err) {
-      const error = err instanceof Error ? err : new Error(typeof err === 'string' ? err : 'Failed to start session');
+      const error = err instanceof Error ? err : new Error(typeof err === 'string' ? err : tr("Failed to start session"));
       logger.error('startSession:error', error, 'useSessions');
       return { data: null, error };
     }
@@ -75,7 +74,7 @@ export const useSessions = () => {
   const completeSession = async (
     sessionId: string,
     durationSeconds: number,
-    postStressLevel: number,
+    postStressLevel: number | null,
     notes?: string
   ): Promise<{ error: Error | null }> => {
     try {
@@ -92,33 +91,6 @@ export const useSessions = () => {
     }
   };
 
-  const completeSessionAndJourney = async (
-    sessionId: string,
-    durationSeconds: number,
-    postStressLevel: number,
-    notes: string | undefined,
-    journeyId: string,
-    chapterIndex: number
-  ): Promise<{ progress: JourneyProgress | null; error: Error | null }> => {
-    try {
-      const result = await completeDbSessionAndJourney({
-        sessionId,
-        durationSeconds,
-        postStressLevel,
-        notes,
-        journeyId,
-        chapterIndex,
-      });
-      if (result.error) return result;
-      await fetchSessions();
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to complete journey session');
-      logger.error('completeSessionAndJourney:error', error, 'useSessions');
-      return { progress: null, error };
-    }
-  };
-
   const getSessionStats = () => {
     const completedSessions = sessions.filter((s) => s.completed_at);
     const totalSessions = completedSessions.length;
@@ -126,38 +98,25 @@ export const useSessions = () => {
       completedSessions.reduce((acc, s) => acc + s.duration_seconds, 0) / 60
     );
     
-    // Average the real stress delta over every session that recorded a post
-    // value, not only the ones that improved (filtering to post < pre inflated
-    // the figure and disagreed with the Progress screen). typeof guards a valid
-    // post value of 0.
-    const sessionsWithStress = completedSessions.filter(
-      (s) => typeof s.post_stress_level === 'number'
-    );
-
-    const avgStressReduction =
-      sessionsWithStress.length > 0
-        ? sessionsWithStress.reduce(
-            (acc, s) => acc + (s.pre_stress_level - (s.post_stress_level ?? 0)),
-            0
-          ) / sessionsWithStress.length
-        : 0;
+    const { averageReduction } = summarizeSessionStress(completedSessions);
 
     return {
       totalSessions,
       totalMinutes,
-      avgStressReduction: Math.round(avgStressReduction * 10) / 10,
+      avgStressReduction: averageReduction,
     };
   };
 
+  const localizedSessions = useMemo(() => sessions.map(session => ({ ...session, exercise: { ...session.exercise, name: localizedExerciseName(session.exercise_id, session.exercise.name, language) } })), [sessions, language]);
   return {
     sessions,
+    localizedSessions,
     isLoading,
     error,
     refetch: fetchSessions,
     startSession,
     updateSessionStatus,
     completeSession,
-    completeSessionAndJourney,
     getSessionStats,
   };
 };

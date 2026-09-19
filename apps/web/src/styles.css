@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./mobile-theme.css";
 @plugin "@tailwindcss/typography";
 
 :root {
@@ -13,3 +14,25 @@ body {
 #root {
   min-height: 100%;
 }
+
+@font-face { font-family: Poppins; src: url('/fonts/Poppins-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: Poppins; src: url('/fonts/Poppins-Medium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
+@font-face { font-family: Poppins; src: url('/fonts/Poppins-SemiBold.ttf') format('truetype'); font-weight: 600; font-display: swap; }
+@font-face { font-family: Poppins; src: url('/fonts/Poppins-Bold.ttf') format('truetype'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'DM Serif Display'; src: url('/fonts/DMSerifDisplay-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+
+@theme inline {
+  --font-sans: Poppins, sans-serif;
+  --color-slate-950: var(--recalibra-background);
+  --color-slate-50: var(--recalibra-text);
+  --color-slate-200: var(--recalibra-secondary);
+  --color-slate-300: var(--recalibra-secondary);
+  --color-slate-400: var(--recalibra-muted);
+  --color-teal-300: var(--recalibra-primary);
+  --color-teal-200: var(--recalibra-primary-light);
+}
+
+body { font-family: Poppins, sans-serif; background: var(--recalibra-background); }
+h1, h2 { font-family: 'DM Serif Display', serif; font-weight: 400; }
+a:focus-visible { outline: 2px solid var(--recalibra-primary); outline-offset: 4px; }
+html { scroll-padding-top: 6rem; }

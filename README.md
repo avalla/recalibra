@@ -84,7 +84,7 @@ bun run --cwd apps/mobile android
 * Stress perception tracking (1 to 10)
 * Dashboard with session history
 * “Vagal break” notifications
-* RevenueCat → Freemium/Premium subscription
+* Full exercise and audio catalog available for free
 * (Optional) HRV from smartwatch via Apple Health/Google Fit
 
 ---
@@ -96,7 +96,6 @@ bun run --cwd apps/mobile android
 | Mobile | React Native + Expo (TypeScript) |
 | Web | Vite + React (Bun runtime) |
 | Data | Local SQLite (user-owned) |
-| Billing | RevenueCat (gated by entitlements) |
 | AI tooling | LangChain (dev-only, via MCP server `mcp-servers/llm-router`) |
 | Backend | None — local-first, no remote backend |
 
@@ -144,13 +143,10 @@ Font: Julius Sans One / Inter / Source Sans Pro
 
 ---
 
-## 9️⃣ **Monetization**
+## 9️⃣ **Access model**
 
-* Freemium → breathing + basic tracking
-* Premium → advanced protocols + water / movement
-* AI Coaching + weekly reports
-* Packages → “30 days to activate your vagus nerve”
-* Therapist dashboard (B2B)
+Recalibra is free. All exercise protocols, audio options, tracking, and personalization features
+included in the app are available without subscriptions or in-app purchases.
 
 ---
 
@@ -158,4 +154,3 @@ Font: Julius Sans One / Inter / Source Sans Pro
 👉 I can also generate an **exercise protocol.json**. Or Windsurf rules for the monorepo.
 
 Tell me what you want to build first!
-

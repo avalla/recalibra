@@ -1,3 +1,5 @@
+import { useLanguage } from '../../../i18n/LanguageProvider';
+import { tr } from '../../../i18n/core';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,6 +19,7 @@ interface StressTrendChartProps {
 }
 
 export const StressTrendChart: React.FC<StressTrendChartProps> = ({ stressTrend, avgStressReduction }) => {
+  useLanguage();
   const Gradient = LinearGradient as unknown as React.ComponentType<any>;
 
   return (
@@ -24,8 +27,8 @@ export const StressTrendChart: React.FC<StressTrendChartProps> = ({ stressTrend,
       <View style={styles.chartCard}>
         <View style={styles.chartHeader}>
           <Ionicons name="trending-down-outline" size={20} color={Colors.primary} />
-          <Text style={styles.chartTitle}>Last 7 days</Text>
-          <Text style={styles.chartValue}>{avgStressReduction > 0 ? `-${avgStressReduction}%` : 'No data'}</Text>
+          <Text style={styles.chartTitle}>{tr("Last 7 days")}</Text>
+          <Text style={styles.chartValue}>{avgStressReduction > 0 ? `-${avgStressReduction}%` : tr("No data")}</Text>
         </View>
         <View style={styles.chartContainer}>
           <Svg width="100%" height={120}>

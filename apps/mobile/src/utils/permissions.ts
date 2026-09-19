@@ -1,3 +1,4 @@
+import { tr } from '../i18n/core';
 import { PermissionsAndroid, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { logger } from './logger';
@@ -58,10 +59,10 @@ export class PermissionManager {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         {
-          title: 'Storage Permission',
-          message: 'App needs access to your storage to save files',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
+          title: tr("Storage Permission"),
+          message: tr("App needs access to your storage to save files"),
+          buttonNeutral: tr('Ask Me Later'),
+          buttonNegative: tr("Cancel"),
           buttonPositive: 'OK',
         },
       );
@@ -88,10 +89,10 @@ export class PermissionManager {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
           {
-            title: 'Camera Permission',
-            message: 'App needs access to your camera',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
+            title: tr("Camera Permission"),
+            message: tr("App needs access to your camera"),
+            buttonNeutral: tr('Ask Me Later'),
+            buttonNegative: tr("Cancel"),
             buttonPositive: 'OK',
           },
         );

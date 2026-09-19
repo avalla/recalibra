@@ -1,3 +1,6 @@
+import { enumLabel } from '../i18n/labels';
+import { useLanguage } from '../i18n/LanguageProvider';
+import { tr } from '../i18n/core';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -31,6 +34,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   onClose,
   onStart,
 }) => {
+  useLanguage();
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(height));
 
@@ -84,7 +88,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         <Animated.View style={[styles.content, { transform: [{ translateY: slideAnim }] }]}>
           {/* Skip button */}
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={styles.skipText}>{tr("Skip")}</Text>
           </TouchableOpacity>
 
           {/* Tutorial content */}
@@ -93,41 +97,38 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               <Ionicons name="leaf" size={60} color={Colors.primary} />
             </View>
             
-            <Text style={styles.title}>Welcome to {exerciseName}</Text>
+            <Text style={styles.title}>{tr("Welcome to {{name}}", { name: exerciseName })}</Text>
             <Text style={styles.subtitle}>
-              {origin ? `Origin: ${origin}` : 'A timeless wellness practice'}
+              {origin ? tr("Origin: {{origin}}", { origin: enumLabel(origin) }) : tr("A timeless wellness practice")}
             </Text>
             
             <View style={styles.instructions}>
-              <Text style={styles.instructionTitle}>How it works:</Text>
+              <Text style={styles.instructionTitle}>{tr("How it works:")}</Text>
               <View style={styles.instructionItem}>
                 <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
                 <Text style={styles.instructionText}>
-                  Follow the breathing circle animation
+                  {exerciseCategory === 'breathing' ? tr("Follow the guide provided for this exercise") : tr("Follow the written steps at your own pace")}
                 </Text>
               </View>
               <View style={styles.instructionItem}>
                 <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
                 <Text style={styles.instructionText}>
-                  Inhale when the circle expands
-                </Text>
+                  {tr("Choose your stress rating before starting")}</Text>
               </View>
               <View style={styles.instructionItem}>
                 <Ionicons name="checkmark-circle" size={20} color={Colors.success} />
                 <Text style={styles.instructionText}>
-                  Exhale when the circle contracts
-                </Text>
+                  {tr("Pause any time to read the full instructions")}</Text>
               </View>
             </View>
 
             <Text style={styles.tip}>
-              💡 Tip: Find a comfortable position and focus on your breath
-            </Text>
+              {tr("Read the specific warnings and instructions before you begin.")}</Text>
           </View>
 
           {/* Start button */}
           <TouchableOpacity style={styles.startButton} onPress={handleStart}>
-            <Text style={styles.startButtonText}>Start Exercise</Text>
+            <Text style={styles.startButtonText}>{tr("Start Exercise")}</Text>
             <Ionicons name="arrow-forward" size={20} color={Colors.background} />
           </TouchableOpacity>
         </Animated.View>

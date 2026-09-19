@@ -6,7 +6,7 @@ import { Container } from "@/components/Container";
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-950/70 backdrop-blur">
-      <Container className="flex h-16 items-center justify-between">
+      <Container className="flex min-h-16 flex-wrap items-center justify-between gap-3 py-3">
         <Link href="/" className="flex items-center gap-3">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 shadow-sm">
             <img
@@ -23,7 +23,7 @@ export function SiteHeader() {
           </div>
         </Link>
 
-        <nav className="flex items-center gap-4 text-sm text-slate-200">
+        <nav className="flex items-center gap-2 text-sm text-slate-200">
           <a
             className="hidden rounded-lg px-3 py-2 text-slate-200 hover:bg-white/5 md:inline"
             href="#features">

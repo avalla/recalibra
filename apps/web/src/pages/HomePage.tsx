@@ -67,7 +67,7 @@ export function HomePage() {
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="text-sm font-semibold text-slate-50">A typical session</div>
+                    <h2 className="text-xl text-slate-50">A typical session</h2>
                     <div className="mt-1 text-sm text-slate-300">8–12 minutes</div>
                   </div>
                   <div className="rounded-xl bg-teal-300/10 px-3 py-1 text-xs font-medium text-teal-200">
@@ -75,7 +75,7 @@ export function HomePage() {
                   </div>
                 </div>
 
-                <div className="mt-6 space-y-4">
+                <ol className="mt-6 divide-y divide-white/10">
                   {[
                     {
                       title: "Check-in",
@@ -93,23 +93,23 @@ export function HomePage() {
                       badge: "1–2 min",
                     },
                   ].map((step) => (
-                    <div
+                    <li
                       key={step.title}
-                      className="flex items-start justify-between gap-4 rounded-xl border border-white/10 bg-slate-950/30 p-4">
+                      className="flex items-start justify-between gap-4 py-4">
                       <div>
                         <div className="text-sm font-semibold text-slate-50">
                           {step.title}
                         </div>
                         <div className="mt-1 text-sm text-slate-300">{step.desc}</div>
                       </div>
-                      <div className="shrink-0 rounded-lg bg-white/5 px-2 py-1 text-xs text-slate-300">
+                      <div className="shrink-0 pt-1 text-xs text-slate-300">
                         {step.badge}
                       </div>
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ol>
 
-                <div className="mt-6 rounded-xl border border-white/10 bg-indigo-500/10 p-4">
+                <div className="mt-6 border-t border-white/10 pt-4">
                   <div className="text-sm font-semibold text-slate-50">HRV integration</div>
                   <div className="mt-1 text-sm text-slate-200">
                     Apple Health / Google Fit (with explicit consent).
@@ -181,22 +181,22 @@ export function HomePage() {
               Inside Recalibra.
             </h2>
             <p className="mt-3 text-slate-200">
-              A few screenshots from the current build (UI is evolving).
+              Earlier development previews. The app’s appearance has since changed.
             </p>
           </div>
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                title: "Exercise library",
+                title: "Exercise discovery — earlier preview",
                 src: "/screenshots/exercise-catalog.png",
               },
               {
-                title: "Exercise details",
+                title: "Exercise details — earlier preview",
                 src: "/screenshots/exercise-detail.png",
               },
               {
-                title: "Session player",
+                title: "Session preparation — earlier preview",
                 src: "/screenshots/exercise-player-session.png",
               },
             ].map((shot) => (
@@ -207,7 +207,7 @@ export function HomePage() {
                   <img
                     src={shot.src}
                     alt={shot.title}
-                    className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                    className="h-full w-full object-contain"
                     loading="lazy"
                     decoding="async"
                   />
@@ -263,9 +263,9 @@ export function HomePage() {
 
             <div className="lg:col-span-5">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <div className="text-sm font-semibold text-slate-50">FAQ</div>
+                <h2 className="text-xl text-slate-50">FAQ</h2>
 
-                <div className="mt-4 space-y-4">
+                <dl className="mt-4 divide-y divide-white/10">
                   {[
                     {
                       q: "When is it coming out?",
@@ -280,12 +280,12 @@ export function HomePage() {
                       a: "Only what's necessary for the experience. See the Privacy Policy.",
                     },
                   ].map((faq) => (
-                    <div key={faq.q} className="rounded-xl bg-slate-950/30 p-4">
-                      <div className="text-sm font-semibold text-slate-50">{faq.q}</div>
-                      <div className="mt-2 text-sm text-slate-200">{faq.a}</div>
+                    <div key={faq.q} className="py-4">
+                      <dt className="text-sm font-semibold text-slate-50">{faq.q}</dt>
+                      <dd className="mt-2 text-sm text-slate-200">{faq.a}</dd>
                     </div>
                   ))}
-                </div>
+                </dl>
 
                 <div className="mt-6 flex flex-col gap-3">
                   <Link

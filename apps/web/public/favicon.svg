@@ -1,4 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#0B1220"/>
-  <path d="M18 34c5 0 5-14 14-14s9 28 14 28 5-10 10-10" stroke="#5EEAD4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Hallmark · pre-emit critique: P5 H5 E5 S4 R5 V4 -->
+  <rect width="64" height="64" rx="14" fill="#0B1816"/>
+  <path d="M14.5 48C17.2 30.8 28.9 19 45 18.2C44.1 34.6 32.9 46.1 14.5 48Z" fill="#2DD4BF"/>
+  <path d="M18.4 44.2C25.3 37.4 31.7 30.5 41.3 21.4" stroke="#0B1816" stroke-width="3.25" stroke-linecap="round"/>
 </svg>

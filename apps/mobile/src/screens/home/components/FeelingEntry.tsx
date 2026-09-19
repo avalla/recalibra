@@ -1,3 +1,7 @@
+import { enumLabel } from '../../../i18n/labels';
+import { useLanguage } from '../../../i18n/LanguageProvider';
+import { tr } from '../../../i18n/core';
+import { localizedExerciseName } from '../../../i18n/exercises';
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, TouchableOpacity } from 'react-native';
 import Animated, {
@@ -28,14 +32,14 @@ interface FeelingEntryProps {
   lastStress?: number;
   excludeIds?: string[];
   loading?: boolean;
-  canAccess: (exercise: ExerciseWithFavorite) => boolean;
-  onBegin: (exercise: ExerciseWithFavorite, preStress: number) => void;
+  onBegin: (exercise: ExerciseWithFavorite) => void;
   onBrowse: () => void;
 }
 
-const capitalize = (value: string): string => value.charAt(0).toUpperCase() + value.slice(1);
+const capitalize = enumLabel;
 
 const SkeletonHero: React.FC = () => {
+  useLanguage();
   const pulse = useSharedValue(0.5);
   useEffect(() => {
     pulse.value = withRepeat(withTiming(1, { duration: 800 }), -1, true);
@@ -43,7 +47,7 @@ const SkeletonHero: React.FC = () => {
   const pulseStyle = useAnimatedStyle(() => ({ opacity: pulse.value }));
 
   return (
-    <View style={styles.heroCard} accessibilityLabel="Finding your practice">
+    <View style={styles.heroCard} accessibilityLabel={tr("Finding your practice")}>
       <Animated.View style={[styles.skelBar, styles.skelEyebrow, pulseStyle]} />
       <Animated.View style={[styles.skelBar, styles.skelTitle, pulseStyle]} />
       <Animated.View style={[styles.skelBar, styles.skelBody, pulseStyle]} />
@@ -57,10 +61,10 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
   lastStress,
   excludeIds,
   loading,
-  canAccess,
   onBegin,
   onBrowse,
 }) => {
+  useLanguage();
   const { selection, medium } = useHaptics();
   const [feeling, setFeeling] = useState<Feeling | null>(null);
   const [minutes, setMinutes] = useState<TimeOption>(5);
@@ -75,8 +79,8 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
       lastStress,
       excludeIds,
     });
-    return buildRecommendationSet(ranked, { canAccess });
-  }, [feeling, minutes, exercises, lastStress, excludeIds, canAccess]);
+    return buildRecommendationSet(ranked);
+  }, [feeling, minutes, exercises, lastStress, excludeIds]);
 
   const handleSelectFeeling = (next: Feeling) => {
     selection();
@@ -85,12 +89,12 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
 
   const handleBegin = (exercise: ExerciseWithFavorite) => {
     medium();
-    onBegin(exercise, feeling?.seedStress ?? 5);
+    onBegin(exercise);
   };
 
   return (
     <View>
-      <Text style={styles.prompt}>How do you feel right now?</Text>
+      <Text style={styles.prompt}>{tr("How do you feel right now?")}</Text>
 
       <View style={styles.feelingList}>
         {FEELINGS.map((item) => {
@@ -111,8 +115,8 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
                 <Ionicons name={item.icon} size={20} color={item.color} />
               </View>
               <View style={styles.feelingText}>
-                <Text style={styles.feelingLabel}>{item.label}</Text>
-                <Text style={styles.feelingCaption}>{item.caption}</Text>
+                <Text style={styles.feelingLabel}>{tr(item.label)}</Text>
+                <Text style={styles.feelingCaption}>{tr(item.caption)}</Text>
               </View>
               <Ionicons
                 name={isSelected ? 'chevron-down' : 'chevron-forward'}
@@ -127,7 +131,7 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
       {feeling ? (
         <Animated.View entering={FadeIn.duration(220)} style={styles.reveal}>
           <View style={styles.timeRow}>
-            <Text style={styles.timeLabel}>I have</Text>
+            <Text style={styles.timeLabel}>{tr("I have")}</Text>
             {TIME_OPTIONS.map((option) => {
               const isActive = minutes === option;
               return (
@@ -141,8 +145,7 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
                   activeOpacity={0.85}
                 >
                   <Text style={[styles.timeChipText, isActive && styles.timeChipTextActive]}>
-                    {option} min
-                  </Text>
+                    {option} {tr("min")}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -151,22 +154,16 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
           {recommendation ? (
             <>
               <View style={styles.heroCard}>
-                <Text style={styles.heroEyebrow}>For you, right now</Text>
-                <Text style={styles.heroTitle}>{recommendation.hero.name}</Text>
-                <Text style={styles.heroWhy}>{whyLineForObjective(feeling.objective)}</Text>
+                <Text style={styles.heroEyebrow}>{tr("For you, right now")}</Text>
+                <Text style={styles.heroTitle}>{localizedExerciseName(recommendation.hero.id, recommendation.hero.name)}</Text>
+                <Text style={styles.heroWhy}>{tr(whyLineForObjective(feeling.objective))}</Text>
                 <View style={styles.heroMetaRow}>
                   <View style={styles.heroMetaItem}>
                     <Ionicons name="time-outline" size={14} color={Colors.textSecondary} />
-                    <Text style={styles.heroMetaText}>{recommendation.hero.duration_minutes} min</Text>
+                    <Text style={styles.heroMetaText}>{recommendation.hero.duration_minutes} {tr("min")}</Text>
                   </View>
                   <View style={styles.metaDot} />
                   <Text style={styles.heroMetaText}>{capitalize(recommendation.hero.category)}</Text>
-                  {recommendation.hero.is_premium && !canAccess(recommendation.hero) ? (
-                    <View style={styles.proBadge}>
-                      <Ionicons name="lock-closed" size={11} color={Colors.warning} />
-                      <Text style={styles.proText}>PRO</Text>
-                    </View>
-                  ) : null}
                 </View>
 
                 <TouchableOpacity
@@ -175,15 +172,14 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
                   activeOpacity={0.9}
                 >
                   <Ionicons name="play" size={18} color={Colors.background} />
-                  <Text style={styles.beginText}>Begin</Text>
+                  <Text style={styles.beginText}>{tr("Begin")}</Text>
                 </TouchableOpacity>
               </View>
 
               {recommendation.alternates.length > 0 ? (
                 <View style={styles.alternates}>
-                  <Text style={styles.alternatesLabel}>Or try</Text>
+                  <Text style={styles.alternatesLabel}>{tr("Or try")}</Text>
                   {recommendation.alternates.map((item) => {
-                    const locked = item.is_premium && !canAccess(item);
                     return (
                       <TouchableOpacity
                         key={item.id}
@@ -193,17 +189,13 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
                       >
                         <View style={styles.alternateInfo}>
                           <Text style={styles.alternateTitle} numberOfLines={1}>
-                            {item.name}
+                            {localizedExerciseName(item.id, item.name)}
                           </Text>
                           <Text style={styles.alternateMeta}>
-                            {item.duration_minutes} min · {capitalize(item.category)}
+                            {item.duration_minutes} {tr("min ·")} {' '}{capitalize(item.category)}
                           </Text>
                         </View>
-                        {locked ? (
-                          <Ionicons name="lock-closed" size={14} color={Colors.warning} />
-                        ) : (
-                          <Ionicons name="play-circle-outline" size={22} color={Colors.primary} />
-                        )}
+                        <Ionicons name="play-circle-outline" size={22} color={Colors.primary} />
                       </TouchableOpacity>
                     );
                   })}
@@ -214,12 +206,12 @@ export const FeelingEntry: React.FC<FeelingEntryProps> = ({
             <SkeletonHero />
           ) : (
             <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>Nothing fits that time right now.</Text>
+              <Text style={styles.emptyText}>{tr("Nothing fits that time right now.")}</Text>
             </View>
           )}
 
           <TouchableOpacity style={styles.browseLink} onPress={onBrowse} activeOpacity={0.7}>
-            <Text style={styles.browseText}>Browse all exercises</Text>
+            <Text style={styles.browseText}>{tr("Browse all exercises")}</Text>
           </TouchableOpacity>
         </Animated.View>
       ) : null}
@@ -356,21 +348,6 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 999,
     backgroundColor: Colors.textMuted,
-  },
-  proBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginLeft: 'auto',
-    backgroundColor: `${Colors.warning}20`,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
-    borderRadius: BorderRadius.full,
-  },
-  proText: {
-    color: Colors.warning,
-    fontSize: FontSize.xs,
-    fontWeight: FontWeight.bold,
   },
   beginButton: {
     flexDirection: 'row',

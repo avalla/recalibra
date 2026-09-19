@@ -1,7 +1,7 @@
 # Privacy Policy - Recalibra
 
 **Effective Date**: January 2026
-**Last Updated**: January 6, 2026
+**Last Updated**: September 16, 2026
 
 ## Introduction
 
@@ -13,7 +13,7 @@ collect, use, and protect your information when you use the Recalibra mobile app
 ### 1. Personal Information
 
 - **Account Information**: Recalibra does not require creating an account.
-- **Payment Information**: Processed through Apple App Store / Google Play Store (we do not store credit card details)
+- **Payment Information**: Recalibra does not offer subscriptions or in-app purchases and does not collect payment information.
 
 ### 2. Health and Wellness Data
 
@@ -46,9 +46,7 @@ collect, use, and protect your information when you use the Recalibra mobile app
 
 We do not sell, rent, or trade your personal information. We may share your data only in the following circumstances:
 
-1. **Service Providers**: With trusted third-party services that help us operate the app:
-    - Apple / Google (for payment processing and, if you enable it, health data integration)
-    - RevenueCat (subscription management)
+1. **Service Providers**: With Apple or Google only when needed for app distribution and, if you enable it, health data integration.
 
 2. **Legal Requirements**: When required by law or to protect our rights
 
@@ -58,7 +56,7 @@ We do not sell, rent, or trade your personal information. We may share your data
 
 We implement appropriate security measures including:
 
-- Encryption in transit where applicable (e.g., communications with Apple/Google/RevenueCat)
+- Encryption in transit where applicable (for example, communications with Apple or Google)
 - Limiting access to data and following best practices to keep your information secure
 - Regular security audits
 - Compliance with GDPR and other applicable regulations

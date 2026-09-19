@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import type { Exercise, ExerciseWithFavorite, AudioPreset } from '../types';
+import type { ExerciseWithFavorite, RootStackParamList } from '../types';
 
 export type QuickStartMode = 'standard_2min' | 'favorite' | 'smart';
 
@@ -14,20 +14,7 @@ export interface QuickStartContext {
   lastStressLevel?: number;
 }
 
-export interface ExerciseSessionParams {
-  exerciseId: string;
-  exerciseName: string;
-  durationMinutes: number;
-  audioPreset: AudioPreset | string;
-  exerciseCategory?: 'breathing' | 'water' | 'movement' | 'sensory';
-  breathingPattern?: Exercise['breathing_pattern'];
-  origin?: Exercise['origin'];
-  history?: Exercise['history'];
-  benefits?: Exercise['benefits'];
-  tips?: Exercise['tips'];
-  instructions?: Exercise['instructions'];
-  preStressLevel?: number;
-}
+export type ExerciseSessionParams = RootStackParamList['ExerciseSession'];
 
 const QUICK_START_KEY = '@recalibra:quick_start_preference';
 
@@ -158,7 +145,6 @@ function scoreExerciseForSmartMode(exercise: ExerciseWithFavorite, context: Quic
   if (exercise.duration_minutes >= 15) score -= 2;
 
   if (exercise.is_favorite) score += 2;
-  if (exercise.is_premium) score -= 1;
 
   return score;
 }
@@ -205,5 +191,6 @@ export function toExerciseSessionParams(exercise: ExerciseWithFavorite): Exercis
     benefits: exercise.benefits,
     tips: exercise.tips,
     instructions: exercise.instructions,
+    safetyWarning: exercise.safety_warning,
   };
 }

@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS sessions (
   duration_seconds INTEGER NOT NULL,
   pre_stress_level INTEGER NOT NULL,
   post_stress_level INTEGER,
+  pre_stress_recorded INTEGER NOT NULL DEFAULT 0,
+  post_stress_recorded INTEGER NOT NULL DEFAULT 0,
   notes TEXT,
   created_at TEXT NOT NULL,
   FOREIGN KEY (exercise_id) REFERENCES exercises(id)
@@ -84,11 +86,23 @@ CREATE TABLE IF NOT EXISTS journeys (
 
 CREATE TABLE IF NOT EXISTS journey_progress (
   journey_id TEXT PRIMARY KEY NOT NULL,
-  current_chapter INTEGER NOT NULL DEFAULT 0,
-  completed_chapters_json TEXT NOT NULL DEFAULT '[]',
-  last_started_at TEXT,
+  journey_version INTEGER NOT NULL CHECK (journey_version > 0),
+  status TEXT NOT NULL CHECK (status IN ('not_started', 'in_progress', 'completed')),
+  current_chapter_id TEXT,
+  current_step_id TEXT,
+  started_at TEXT,
   completed_at TEXT,
   updated_at TEXT NOT NULL,
-  FOREIGN KEY (journey_id) REFERENCES journeys(id) ON DELETE CASCADE
+  completed_step_ids_json TEXT NOT NULL DEFAULT '[]'
+);
+
+CREATE TABLE IF NOT EXISTS journey_step_progress (
+  journey_id TEXT NOT NULL,
+  step_id TEXT NOT NULL,
+  session_id TEXT NOT NULL UNIQUE,
+  completed_at TEXT NOT NULL,
+  PRIMARY KEY (journey_id, step_id),
+  FOREIGN KEY (journey_id) REFERENCES journey_progress(journey_id) ON DELETE CASCADE,
+  FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
 );
 `;

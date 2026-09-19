@@ -1,7 +1,9 @@
+import { tr } from '../i18n/core';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import { createAudioPlayer, setAudioModeAsync } from 'expo-audio';
 import { logger } from '../utils/logger';
 import { AppConfig } from '../config';
+import { createLoopPlayback } from '../utils/audio-playback';
 
 // Audio generation types
 type NoiseType = 'pink' | 'brown' | 'white';
@@ -287,68 +289,68 @@ export const getAudioRecommendation = (
       high: {
         primary: 'nature_ocean',
         alternatives: ['binaural_delta', 'nature_rain', 'solfeggio_396'],
-        reason: 'Ocean waves help slow your breathing and calm high stress',
+        reason: tr("Ocean waves help slow your breathing and calm high stress"),
       },
       medium: {
         primary: 'binaural_alpha',
         alternatives: ['solfeggio_432', 'nature_rain', 'tibetan_bowl'],
-        reason: 'Alpha waves promote relaxed focus during breathing exercises',
+        reason: tr("Alpha waves promote relaxed focus during breathing exercises"),
       },
       low: {
         primary: 'binaural_theta',
         alternatives: ['om', 'solfeggio_528', 'silence'],
-        reason: 'Theta waves deepen meditation when you\'re already calm',
+        reason: tr("Theta waves deepen meditation when you're already calm"),
       },
     },
     water: {
       high: {
         primary: 'nature_rain',
         alternatives: ['nature_ocean', 'creek', 'binaural_delta'],
-        reason: 'Rain sounds mask stress and create a calming environment',
+        reason: tr("Rain sounds mask stress and create a calming environment"),
       },
       medium: {
         primary: 'creek',
         alternatives: ['nature_ocean', 'solfeggio_639', 'wind'],
-        reason: 'Flowing water sounds complement cold exposure therapy',
+        reason: tr("Flowing water sounds complement cold exposure therapy"),
       },
       low: {
         primary: 'nature_ocean',
         alternatives: ['silence', 'schumann', 'solfeggio_741'],
-        reason: 'Ocean rhythms sync with your relaxed state',
+        reason: tr("Ocean rhythms sync with your relaxed state"),
       },
     },
     movement: {
       high: {
         primary: 'solfeggio_396',
         alternatives: ['nature_forest', 'wind', 'binaural_alpha'],
-        reason: '396 Hz helps release physical tension during movement',
+        reason: tr("396 Hz helps release physical tension during movement"),
       },
       medium: {
         primary: 'nature_forest',
         alternatives: ['solfeggio_432', 'schumann', 'tibetan_bowl'],
-        reason: 'Forest ambience connects you with natural movement rhythms',
+        reason: tr("Forest ambience connects you with natural movement rhythms"),
       },
       low: {
         primary: 'solfeggio_528',
         alternatives: ['om', 'binaural_theta', 'silence'],
-        reason: '528 Hz enhances transformation during mindful movement',
+        reason: tr("528 Hz enhances transformation during mindful movement"),
       },
     },
     sensory: {
       high: {
         primary: 'tibetan_bowl',
         alternatives: ['solfeggio_396', 'nature_rain', 'binaural_delta'],
-        reason: 'Singing bowl tones ground and center when highly stressed',
+        reason: tr("Singing bowl tones ground and center when highly stressed"),
       },
       medium: {
         primary: 'om',
         alternatives: ['tibetan_bells', 'solfeggio_639', 'binaural_alpha'],
-        reason: 'OM frequency deepens sensory awareness',
+        reason: tr("OM frequency deepens sensory awareness"),
       },
       low: {
         primary: 'solfeggio_852',
         alternatives: ['binaural_theta', 'tibetan_bells', 'silence'],
-        reason: '852 Hz awakens spiritual awareness when relaxed',
+        reason: tr("852 Hz awakens spiritual awareness when relaxed"),
       },
     },
   };
@@ -569,39 +571,30 @@ export const useAudio = (options: UseAudioOptions = {}) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioUri, setAudioUri] = useState<string | null>(null);
   
-  // Dual player refs for seamless crossfade
-  const playerARef = useRef<AudioPlayer | null>(null);
-  const playerBRef = useRef<AudioPlayer | null>(null);
-  const activePlayerRef = useRef<'A' | 'B'>('A');
-  const isCrossfadingRef = useRef(false);
-  const positionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const volumeRef = useRef(volume);
+  const mountedRef = useRef(true);
+  const playbackRef = useRef<ReturnType<typeof createLoopPlayback> | null>(null);
+  if (!playbackRef.current) {
+    playbackRef.current = createLoopPlayback({
+      createPlayer: async (uri) => {
+        await setAudioModeAsync({ playsInSilentMode: true });
+        return createAudioPlayer(uri);
+      },
+      onError: (error) => {
+        logger.error('Audio playback failed', error as Error, 'useAudio');
+        if (mountedRef.current) setIsPlaying(false);
+      },
+      crossfadeStartMs: CROSSFADE_START_MS,
+      crossfadeDurationMs: CROSSFADE_DURATION_MS,
+      monitorIntervalMs: POSITION_CHECK_INTERVAL,
+    });
+  }
+  const playback = playbackRef.current;
 
-  // Update volume ref when prop changes
-  useEffect(() => {
-    volumeRef.current = volume;
-  }, [volume]);
+  useEffect(() => { playback.setVolume(volume); }, [playback, volume]);
 
-  // Generate audio source based on preset
   useEffect(() => {
-    // Stop and release old players when preset changes
-    try {
-      if (playerARef.current) {
-        playerARef.current.pause();
-        playerARef.current.release();
-        playerARef.current = null;
-      }
-      if (playerBRef.current) {
-        playerBRef.current.pause();
-        playerBRef.current.release();
-        playerBRef.current = null;
-      }
-    } catch (e) {
-      logger.error('Error cleaning up old players', e as Error, 'useAudio');
-    }
+    playback.stop();
     setIsPlaying(false);
-    activePlayerRef.current = 'A';
-    
     const presetConfig = AUDIO_PRESETS[preset];
     
     if (!presetConfig || preset === 'silence') {
@@ -645,219 +638,29 @@ export const useAudio = (options: UseAudioOptions = {}) => {
     }
   }, [preset]);
 
-  // Create a new sound instance
-  const createSound = useCallback(async (uri: string): Promise<AudioPlayer | null> => {
-    try {
-      await setAudioModeAsync({
-        playsInSilentMode: true,
-      });
-      const player = createAudioPlayer(uri);
-      player.volume = volumeRef.current;
-      return player;
-    } catch (error) {
-      logger.error('Failed to create sound', error as Error, 'useAudio');
-      return null;
-    }
-  }, []);
-
-  // Crossfade from current player to next
-  const performCrossfade = useCallback(async () => {
-    if (isCrossfadingRef.current || !audioUri) return;
-    isCrossfadingRef.current = true;
-
-    try {
-      const currentPlayer = activePlayerRef.current === 'A' ? playerARef.current : playerBRef.current;
-      const nextPlayerRef = activePlayerRef.current === 'A' ? playerBRef : playerARef;
-      
-      // Verifica che il player corrente esista ancora
-      if (!currentPlayer) {
-        isCrossfadingRef.current = false;
-        return;
-      }
-
-      // Create new sound for next player
-      const newSound = await createSound(audioUri);
-      if (!newSound) {
-        isCrossfadingRef.current = false;
-        return;
-      }
-
-      // Release old next player if exists
-      if (nextPlayerRef.current) {
-        try {
-          nextPlayerRef.current.release();
-        } catch (e) {
-          logger.error('Error releasing player', e as Error, 'useAudio');
-        }
-      }
-      nextPlayerRef.current = newSound;
-
-      // Start next player at volume 0
-      newSound.volume = 0;
-      newSound.play();
-
-      // Gradual crossfade over CROSSFADE_DURATION_MS
-      const steps = 20;
-      const stepDuration = CROSSFADE_DURATION_MS / steps;
-      
-      for (let i = 1; i <= steps; i++) {
-        const progress = i / steps;
-        const fadeOutVol = volumeRef.current * (1 - progress);
-        const fadeInVol = volumeRef.current * progress;
-        
-        try {
-          if (currentPlayer) currentPlayer.volume = fadeOutVol;
-          newSound.volume = fadeInVol;
-        } catch (e) {
-          // Player potrebbe essere stato rilasciato
-          logger.warn('Player may have been released during crossfade', 'useAudio');
-          break;
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, stepDuration));
-      }
-
-      // Stop old player
-      try {
-        if (currentPlayer) {
-          currentPlayer.pause();
-        }
-      } catch (e) {
-        logger.error('Error stopping old player', e as Error, 'useAudio');
-      }
-
-      // Switch active player
-      activePlayerRef.current = activePlayerRef.current === 'A' ? 'B' : 'A';
-    } catch (error) {
-      logger.error('Crossfade error', error as Error, 'useAudio');
-    } finally {
-      isCrossfadingRef.current = false;
-    }
-  }, [audioUri, createSound]);
-
-  // Monitor position and trigger crossfade
-  const startPositionMonitor = useCallback(() => {
-    if (positionIntervalRef.current) return;
-
-    positionIntervalRef.current = setInterval(() => {
-      const activePlayer = activePlayerRef.current === 'A' ? playerARef.current : playerBRef.current;
-      if (!activePlayer || isCrossfadingRef.current) return;
-
-      try {
-        const positionMs = activePlayer.currentTime * 1000;
-        if (positionMs >= CROSSFADE_START_MS) {
-          performCrossfade();
-        }
-      } catch (e) {
-        // Player might be released
-      }
-    }, POSITION_CHECK_INTERVAL);
-  }, [performCrossfade]);
-
-  const stopPositionMonitor = useCallback(() => {
-    if (positionIntervalRef.current) {
-      clearInterval(positionIntervalRef.current);
-      positionIntervalRef.current = null;
-    }
-  }, []);
-
-  // Cleanup on unmount
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
-      stopPositionMonitor();
-      try {
-        playerARef.current?.release();
-      } catch (e) {
-        // ignore - native object might already be gone
-      } finally {
-        playerARef.current = null;
-      }
-
-      try {
-        playerBRef.current?.release();
-      } catch (e) {
-        // ignore - native object might already be gone
-      } finally {
-        playerBRef.current = null;
-      }
+      mountedRef.current = false;
+      playback.stop();
     };
-  }, [stopPositionMonitor]);
+  }, [playback]);
 
   const play = useCallback(async () => {
     if (!audioUri) return;
-
-    try {
-      // Create initial sound if needed
-      if (!playerARef.current) {
-        playerARef.current = await createSound(audioUri);
-      }
-
-      const player = activePlayerRef.current === 'A' ? playerARef.current : playerBRef.current;
-      if (player) {
-        player.volume = volumeRef.current;
-        player.play();
-        setIsPlaying(true);
-        startPositionMonitor();
-      }
-    } catch (error) {
-      logger.error('Error playing audio', error as Error, 'useAudio');
-      setIsPlaying(false);
-    }
-  }, [audioUri, createSound, startPositionMonitor]);
+    const started = await playback.play(audioUri);
+    if (mountedRef.current && started && playback.isPlaying()) setIsPlaying(true);
+  }, [audioUri, playback]);
 
   const pause = useCallback(() => {
-    stopPositionMonitor();
-    try {
-      const player = activePlayerRef.current === 'A' ? playerARef.current : playerBRef.current;
-      if (player) {
-        player.pause();
-      }
-    } catch (e) {
-      logger.error('Error pausing', e as Error, 'useAudio');
-    }
+    playback.pause();
     setIsPlaying(false);
-  }, [stopPositionMonitor]);
+  }, [playback]);
 
   const stop = useCallback(() => {
-    stopPositionMonitor();
-    isCrossfadingRef.current = false;
-    
-    try {
-      if (playerARef.current) {
-        playerARef.current.pause();
-        playerARef.current.seekTo(0);
-      }
-    } catch (e) {
-      // Player may not be in a valid state
-      logger.error('Error stopping player A', e as Error, 'useAudio');
-      playerARef.current = null;
-    }
-    
-    try {
-      if (playerBRef.current) {
-        playerBRef.current.pause();
-        playerBRef.current.release();
-        playerBRef.current = null;
-      }
-    } catch (e) {
-      // Player may not be in a valid state
-      logger.error('Error stopping player B', e as Error, 'useAudio');
-      playerBRef.current = null;
-    }
-    
-    activePlayerRef.current = 'A';
+    playback.stop();
     setIsPlaying(false);
-  }, [stopPositionMonitor]);
-
-  const setVolumeLevel = useCallback((newVolume: number) => {
-    const vol = Math.max(0, Math.min(1, newVolume));
-    volumeRef.current = vol;
-    
-    const player = activePlayerRef.current === 'A' ? playerARef.current : playerBRef.current;
-    if (player && !isCrossfadingRef.current) {
-      player.volume = vol;
-    }
-  }, []);
+  }, [playback]);
 
   return {
     isPlaying,
@@ -865,7 +668,7 @@ export const useAudio = (options: UseAudioOptions = {}) => {
     play,
     pause,
     stop,
-    setVolume: setVolumeLevel,
+    setVolume: playback.setVolume,
     presetInfo: AUDIO_PRESETS[preset],
   };
 };

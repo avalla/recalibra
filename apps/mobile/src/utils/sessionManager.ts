@@ -85,7 +85,7 @@ export class SessionManager {
       const result = await completeDbSession({
         sessionId: this.currentSession.id,
         durationSeconds,
-        postStressLevel: postStressLevel ?? this.currentSession.pre_stress_level,
+        postStressLevel: postStressLevel ?? null,
         notes,
       });
       if (result.error) throw result.error;

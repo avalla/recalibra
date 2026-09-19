@@ -1,12 +1,15 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, ScrollView, RefreshControl, Text } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { Colors, FontFamily, FontSize, FontWeight, Spacing } from '../../constants';
-import { Button, Card, Screen } from '../../components';
+import { Screen } from '../../components';
 import { useAuth } from '../../contexts';
-import { useSessions, useExercises, useSubscription } from '../../hooks';
+import { useSessions, useExercises } from '../../hooks';
+import { getJourneyProgress } from '../../db';
+import { journeys } from '../../data/journeys';
+import { getJourneyDurationMinutes } from '../../utils/journey-ui';
 import {
   getExerciseForQuickStart,
   loadQuickStartPreference,
@@ -14,19 +17,19 @@ import {
   type QuickStartPreference,
 } from '../../utils/quick-start';
 import type { ExerciseWithFavorite } from '../../types';
-import { returnToCenterJourney } from '../../data/journeys';
 import { GREETING_PHRASES } from './home-constants';
 import { getUserFirstName } from './home-helpers';
-import { FeelingEntry, GreetingCard, HomeHeader } from './components';
+import { FeelingEntry, GreetingCard, HomeHeader, JourneyCard } from './components';
 
 export const HomeScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const { userMetadata } = useAuth();
   const { sessions, refetch: refreshSessions } = useSessions();
   const { exercises, isLoading } = useExercises();
-  const { canAccessExercise } = useSubscription();
   const [refreshing, setRefreshing] = useState(false);
   const [quickStartPreference, setQuickStartPreference] = useState<QuickStartPreference | null>(null);
+  const [journeyProgress, setJourneyProgress] = useState<Awaited<ReturnType<typeof getJourneyProgress>>>(null);
+  const featuredJourney = journeys[0];
 
   const userName = getUserFirstName(userMetadata?.full_name);
 
@@ -49,10 +52,15 @@ export const HomeScreen: React.FC = () => {
       loadQuickStartPreference().then((pref) => {
         if (active) setQuickStartPreference(pref);
       });
+      if (featuredJourney) {
+        getJourneyProgress(featuredJourney.id).then((nextProgress) => {
+          if (active) setJourneyProgress(nextProgress);
+        });
+      }
       return () => {
         active = false;
       };
-    }, [])
+    }, [featuredJourney])
   );
 
   const onRefresh = async () => {
@@ -61,26 +69,23 @@ export const HomeScreen: React.FC = () => {
     setRefreshing(false);
   };
 
-  const beginSession = (exercise: ExerciseWithFavorite, preStress: number) => {
+  const beginSession = (exercise: ExerciseWithFavorite) => {
     // ExerciseSession lives on the root stack, not inside the Exercises tab.
     // navigate() bubbles up from the tab to find it (same as ExerciseDetailScreen).
     navigation.navigate('ExerciseSession', {
       ...toExerciseSessionParams(exercise),
-      preStressLevel: preStress,
     });
   };
-
-  // Stable identity so FeelingEntry's recommendation memo doesn't recompute every render.
-  const canAccess = useCallback(
-    (exercise: ExerciseWithFavorite) => canAccessExercise(exercise.slug, exercise.is_premium),
-    [canAccessExercise]
-  );
 
   const openCatalog = () => {
     navigation.navigate('Main', {
       screen: 'ExercisesTab',
       params: { screen: 'ExerciseCatalog' },
     });
+  };
+
+  const openJourney = () => {
+    if (featuredJourney) navigation.navigate('JourneyDetail', { journeyId: featuredJourney.id });
   };
 
   // Header quick-start button: repeat the user's preferred quick practice.
@@ -97,7 +102,7 @@ export const HomeScreen: React.FC = () => {
       navigation.navigate('QuickStartPreferences', { from: 'home' });
       return;
     }
-    beginSession(exercise, lastStress ?? 5);
+    beginSession(exercise);
   };
 
   return (
@@ -124,27 +129,23 @@ export const HomeScreen: React.FC = () => {
           <GreetingCard userName={userName} greetingPhrase={greetingPhrase} />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(220).duration(450)}>
-          <Card style={styles.journeyCard}>
-            <Text style={styles.journeyEyebrow}>PERCORSO GUIDATO</Text>
-            <Text style={styles.journeyTitle}>{returnToCenterJourney.title}</Text>
-            <Text style={styles.journeyDescription}>{returnToCenterJourney.description}</Text>
-            <Button
-              label="Apri il percorso"
-              size="sm"
-              variant="secondary"
-              onPress={() => navigation.navigate('JourneyDetail', { journeyId: returnToCenterJourney.id })}
+        {featuredJourney ? (
+          <Animated.View entering={FadeInDown.delay(200).duration(450)}>
+            <JourneyCard
+              journey={featuredJourney}
+              progress={journeyProgress}
+              durationMinutes={getJourneyDurationMinutes(featuredJourney, exercises)}
+              onPress={openJourney}
             />
-          </Card>
-        </Animated.View>
+          </Animated.View>
+        ) : null}
 
-        <Animated.View entering={FadeInDown.delay(280).duration(450)}>
+        <Animated.View entering={FadeInDown.delay(240).duration(450)}>
           <FeelingEntry
             exercises={exercises}
             lastStress={lastStress}
             excludeIds={excludeIds}
             loading={isLoading}
-            canAccess={canAccess}
             onBegin={beginSession}
             onBrowse={openCatalog}
           />

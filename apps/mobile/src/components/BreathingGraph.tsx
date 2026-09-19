@@ -1,15 +1,11 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Defs, LinearGradient, Path, Stop, Line, Circle } from 'react-native-svg';
 import { Colors } from '../constants';
 
-export type BreathingPhase = 'inhale' | 'inhale2' | 'hold' | 'exhale' | 'rest' | 'retention';
-
-export type CycleSegment = {
-  phase: BreathingPhase;
-  duration: number;
-};
+import type { BreathingPhase, CycleSegment } from '../utils/practice-timing';
+export type { BreathingPhase, CycleSegment } from '../utils/practice-timing';
 
 export type GraphCurvePreset = 'default' | 'relax' | 'energy';
 
@@ -76,7 +72,7 @@ function getPhaseTarget(phase: BreathingPhase, preset: GraphCurvePreset): number
     case 'inhale':
       return inhaleMax;
     case 'inhale2':
-      return inhaleMax;
+      return inhaleMax * 1.1;
     case 'hold':
       return inhaleMax;
     case 'exhale':
@@ -221,10 +217,6 @@ export function BreathingGraph({
 }: BreathingGraphProps): React.ReactElement {
   const normalizedProgress = clampNumber(cycleProgress, 0, 1);
 
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-  const prevPhaseColorRef = useRef(activePhaseColor);
-  const currentPhaseColorRef = useRef(activePhaseColor);
-
   const points = useMemo(
     () => buildWavePoints(segments, width, height, cycleTotalSeconds, curvePreset),
     [segments, width, height, cycleTotalSeconds, curvePreset]
@@ -267,20 +259,8 @@ export function BreathingGraph({
     [markers, normalizedProgress, width]
   );
 
-  useEffect(() => {
-    prevPhaseColorRef.current = currentPhaseColorRef.current;
-    currentPhaseColorRef.current = activePhaseColor;
-    fadeAnim.stopAnimation();
-    fadeAnim.setValue(0);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 380,
-      useNativeDriver: false,
-    }).start();
-  }, [activePhaseColor, fadeAnim]);
-
   return (
-    <View style={[styles.container, { width, height }]}>
+    <View style={[styles.container, { width, height }]} accessible={false} importantForAccessibility="no-hide-descendants">
       <View style={[styles.graphViewport, { width, height }]}>
         <View style={[styles.graphLayer, { transform: [{ translateX }] }]}>
           <Svg width={width * CYCLES_RENDERED} height={height}>
@@ -291,33 +271,7 @@ export function BreathingGraph({
               </LinearGradient>
             </Defs>
             <Path d={areaPath} fill="url(#breathGradient)" />
-            {(() => {
-              const AnimatedPath = Animated.createAnimatedComponent(Path);
-              return (
-                <>
-                  <AnimatedPath
-                    d={linePath}
-                    stroke={prevPhaseColorRef.current}
-                    strokeWidth={3.5}
-                    fill="none"
-                    opacity={fadeAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.9, 0],
-                    })}
-                  />
-                  <AnimatedPath
-                    d={linePath}
-                    stroke={activePhaseColor}
-                    strokeWidth={3.5}
-                    fill="none"
-                    opacity={fadeAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 1],
-                    })}
-                  />
-                </>
-              );
-            })()}
+            <Path d={linePath} stroke={activePhaseColor} strokeWidth={3.5} fill="none" />
             <Path
               d={linePath}
               stroke={strokeColor}
@@ -366,7 +320,7 @@ export function BreathingGraph({
             {markerPositions.map(({ marker, x }, index) => {
               const markerColor = getMarkerColor(marker.tone, activePhaseColor);
               return (
-                <Animated.View
+                <View
                   key={marker.id}
                   style={[
                     styles.markerBubble,
@@ -381,7 +335,7 @@ export function BreathingGraph({
                   <Text style={styles.markerLabel} numberOfLines={1}>
                     {marker.label}
                   </Text>
-                </Animated.View>
+                </View>
               );
             })}
           </View>

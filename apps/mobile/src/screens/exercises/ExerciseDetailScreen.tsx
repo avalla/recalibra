@@ -1,3 +1,8 @@
+import { formatMinutes } from '../../i18n/core';
+import { enumLabel } from '../../i18n/labels';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
+import { toExerciseSessionParams } from '../../utils/quick-start';
 import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
@@ -14,7 +19,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { Card, ExerciseAnimation, Screen } from '@/components';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '@/constants';
-import { useExercises, useSubscription } from '@/hooks';
+import { useExercises } from '@/hooks';
 import type { RootStackParamList } from '@/types';
 import type { RouteProp } from '@react-navigation/native';
 
@@ -23,11 +28,11 @@ type DetailRouteProps = RouteProp<RootStackParamList, 'ExerciseDetail'>;
 const HERO_ANIMATION_SIZE = 132;
 
 export const ExerciseDetailScreen: React.FC = () => {
+  useLanguage();
   const navigation = useNavigation<any>();
   const route = useRoute<DetailRouteProps>();
   const insets = useSafeAreaInsets();
-  const { exercises, isLoading, toggleFavorite } = useExercises();
-  const { canAccessExercise, presentPaywall } = useSubscription();
+  const { exercises: canonicalExercises, localizedExercises: exercises, isLoading, toggleFavorite } = useExercises();
 
   const footerHeight = 56 + Spacing.md + Spacing.sm + insets.bottom;
 
@@ -48,26 +53,7 @@ export const ExerciseDetailScreen: React.FC = () => {
   const handleStartSession = () => {
     if (!exercise) return;
 
-    if (!canAccessExercise(exercise.slug, exercise.is_premium)) {
-      presentPaywall().then((didPurchase) => {
-        if (!didPurchase) navigation.navigate('Paywall');
-      });
-      return;
-    }
-
-    navigation.navigate('ExerciseSession', {
-      exerciseId: exercise.id,
-      exerciseName: exercise.name,
-      durationMinutes: exercise.duration_minutes,
-      audioPreset: exercise.audio_preset || 'silence',
-      exerciseCategory: exercise.category,
-      breathingPattern: exercise.breathing_pattern,
-      origin: exercise.origin,
-      history: exercise.history,
-      benefits: exercise.benefits,
-      tips: exercise.tips,
-      instructions: exercise.instructions,
-    });
+    navigation.navigate('ExerciseSession', toExerciseSessionParams(canonicalExercises.find(item => item.id === exercise.id) ?? exercise));
   };
 
   if (isLoading || !exercise) {
@@ -86,7 +72,7 @@ export const ExerciseDetailScreen: React.FC = () => {
 
   const tags = [
     exercise.origin ? formatOrigin(exercise.origin) : null,
-    `${exercise.duration_minutes} Minutes`,
+    formatMinutes(exercise.duration_minutes),
     formatLevel(exercise.level),
   ].filter(Boolean) as string[];
 
@@ -126,7 +112,7 @@ export const ExerciseDetailScreen: React.FC = () => {
             <Card variant="soft" style={styles.howItWorksCard}>
               <View style={styles.cardTitleRow}>
                 <Ionicons name="sparkles" size={18} color={Colors.primary} />
-                <Text style={styles.cardTitle}>How it Works</Text>
+                <Text style={styles.cardTitle}>{tr("How it Works")}</Text>
               </View>
               <Text style={styles.cardBody}>{exercise.history}</Text>
             </Card>
@@ -137,14 +123,14 @@ export const ExerciseDetailScreen: React.FC = () => {
           <Card style={styles.safetyCard}>
             <View style={styles.safetyTitleRow}>
               <Ionicons name="warning" size={18} color={Colors.warning} />
-              <Text style={styles.safetyTitle}>Safety First</Text>
+              <Text style={styles.safetyTitle}>{tr("Safety First")}</Text>
             </View>
             <Text style={styles.safetyText}>{exercise.safety_warning}</Text>
           </Card>
         ) : null}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Instructions</Text>
+          <Text style={styles.sectionTitle}>{tr("Instructions")}</Text>
           <View style={styles.instructionsList}>
             {exercise.instructions.map((step) => (
               <View key={step.step} style={styles.instructionRow}>
@@ -161,7 +147,7 @@ export const ExerciseDetailScreen: React.FC = () => {
       <View style={styles.footerContainer}>
         <SafeAreaView style={styles.footerContent} edges={['bottom']}>
           <TouchableOpacity style={styles.primaryCta} onPress={handleStartSession} activeOpacity={0.9}>
-            <Text style={styles.primaryCtaText}>Start Session</Text>
+            <Text style={styles.primaryCtaText}>{tr("Start Session")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.favoriteCta} activeOpacity={0.85} onPress={handleToggleFavorite}>
             <Ionicons name={exercise.is_favorite ? 'heart' : 'heart-outline'} size={22} color={Colors.primary} />
@@ -173,18 +159,14 @@ export const ExerciseDetailScreen: React.FC = () => {
 };
 
 function formatLevel(level: string): string {
-  if (level === 'beginner') return 'Beginner';
-  if (level === 'intermediate') return 'Intermediate';
-  if (level === 'advanced') return 'Advanced';
+  if (level === 'beginner') return tr("Beginner");
+  if (level === 'intermediate') return tr("Intermediate");
+  if (level === 'advanced') return tr("Advanced");
   return level;
 }
 
 function formatOrigin(origin: string): string {
-  return origin
-    .replaceAll('_', ' ')
-    .split(' ')
-    .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
-    .join(' ');
+  return enumLabel(origin);
 }
 
 const styles = StyleSheet.create({

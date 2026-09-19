@@ -67,7 +67,6 @@ export const APP_CONSTANTS = {
     HEALTH_INTEGRATION_ENABLED: true,
     AUDIO_FEATURES_ENABLED: true,
     NOTIFICATIONS_ENABLED: true,
-    PREMIUM_FEATURES_ENABLED: true,
   },
   
   // Timeout Constants

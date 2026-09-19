@@ -1,3 +1,5 @@
+import { useLanguage } from '../../../i18n/LanguageProvider';
+import { tr } from '../../../i18n/core';
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,6 +12,7 @@ interface GreetingCardProps {
 }
 
 export const GreetingCard: React.FC<GreetingCardProps> = ({ userName, greetingPhrase }) => {
+  useLanguage();
   const Gradient = LinearGradient as unknown as React.ComponentType<any>;
 
   return (
@@ -20,8 +23,8 @@ export const GreetingCard: React.FC<GreetingCardProps> = ({ userName, greetingPh
       style={styles.greetingGradient}
     >
       <View style={styles.greeting}>
-        <Text style={styles.greetingTitle}>Hi {userName},</Text>
-        <Text style={styles.greetingSubtitle}>{greetingPhrase}</Text>
+        <Text style={styles.greetingTitle}>{userName ? tr("Hi {{name}},", { name: userName }) : tr("Hi")}</Text>
+        <Text style={styles.greetingSubtitle}>{tr(greetingPhrase)}</Text>
       </View>
     </Gradient>
   );

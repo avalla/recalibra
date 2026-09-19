@@ -1,3 +1,5 @@
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { tr } from '../../i18n/core';
 import React, { useState } from 'react';
 import {
   View,
@@ -28,6 +30,7 @@ const healthConditions: HealthCondition[] = [
 ];
 
 export const ScreeningHealthScreen: React.FC = () => {
+  useLanguage();
   const navigation = useNavigation<any>();
   const { updateScreeningData } = useScreening();
   const [selectedConditions, setSelectedConditions] = useState<Set<string>>(new Set());
@@ -83,10 +86,9 @@ export const ScreeningHealthScreen: React.FC = () => {
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Health & Safety Check</Text>
+        <Text style={styles.title}>{tr("Health & Safety Check")}</Text>
         <Text style={styles.subtitle}>
-          Please review the list below. Select any conditions that apply to you to ensure our program is safe for your use.
-        </Text>
+          {tr("Please review the list below. Select any conditions that apply to you to ensure our program is safe for your use.")}</Text>
 
         {/* Options */}
         <View style={styles.optionsContainer}>
@@ -109,7 +111,7 @@ export const ScreeningHealthScreen: React.FC = () => {
                   <Ionicons name="checkmark" size={16} color={Colors.background} />
                 )}
               </View>
-              <Text style={styles.optionText}>{condition.label}</Text>
+              <Text style={styles.optionText}>{tr(condition.label)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -118,19 +120,19 @@ export const ScreeningHealthScreen: React.FC = () => {
         <TouchableOpacity 
           style={styles.infoLink}
           onPress={() => Alert.alert(
-            'Why do we ask this?',
-            'Some vagal nerve stimulation exercises involve specific breathing patterns, cold exposure, or physical movements that may not be suitable for everyone.\n\nBy understanding your health conditions, we can:\n\n• Recommend safer exercises for you\n• Provide appropriate warnings\n• Customize your experience\n\nYour information is kept private and secure.',
-            [{ text: 'Got it', style: 'default' }]
+            tr("Why do we ask this?"),
+            tr("Some vagal nerve stimulation exercises involve specific breathing patterns, cold exposure, or physical movements that may not be suitable for everyone.\n\nBy understanding your health conditions, we can:\n\n• Recommend safer exercises for you\n• Provide appropriate warnings\n• Customize your experience\n\nYour information is kept private and secure."),
+            [{ text: tr("Got it"), style: 'default' }]
           )}
         >
-          <Text style={styles.infoLinkText}>Why do we ask this?</Text>
+          <Text style={styles.infoLinkText}>{tr("Why do we ask this?")}</Text>
         </TouchableOpacity>
       </ScrollView>
 
       {/* Footer */}
       <View style={styles.footer}>
         <Button
-          label="Next"
+          label={tr("Next")}
           onPress={handleNext}
           disabled={!hasSelection}
         />

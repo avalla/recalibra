@@ -1,0 +1,40 @@
+# Dependencies
+**/node_modules
+
+# Generated output and caches
+out
+dist
+coverage
+*.lcov
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+*.tgz
+*.tsbuildinfo
+.eslintcache
+.cache
+.expo
+
+# Local environment and credentials
+.env
+.env.*.local
+*.p8
+*-service-account.json
+vagoflow-service-account.json
+AuthKey_*.p8
+
+# Local editor and agent state
+.git
+.idea
+.DS_Store
+.agents
+.ai-office
+.claude
+.codex
+.cursor
+.impeccable
+.windsurf
+
+# Store listing source assets and internal documentation
+RecalibraScreenshots
+docs

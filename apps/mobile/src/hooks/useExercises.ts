@@ -1,4 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { tr } from '../i18n/core';
+import { useLanguage } from '../i18n/LanguageProvider';
+import { localizeExercise } from '../i18n/exercises';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ExerciseWithFavorite, ExerciseCategory } from '../types';
 import { getCache, setCache } from '../utils/cache';
 import { logger } from '../utils/logger';
@@ -7,6 +10,7 @@ import { getExercisesWithFavorites, toggleFavorite as toggleFavoriteInDb } from 
 const EXERCISES_CACHE_KEY = 'exercises_local_v1';
 
 export const useExercises = () => {
+  const { language } = useLanguage();
   const [exercises, setExercises] = useState<ExerciseWithFavorite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +36,7 @@ export const useExercises = () => {
       // Cache the results for 5 minutes
       await setCache(EXERCISES_CACHE_KEY, exercisesWithFavorites, 5 * 60 * 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch exercises');
+      setError(err instanceof Error ? err.message : tr("Failed to fetch exercises"));
       logger.error('Error fetching exercises', err as Error, 'useExercises');
     } finally {
       setIsLoading(false);
@@ -82,8 +86,10 @@ export const useExercises = () => {
     return exercises.filter((e) => e.is_favorite);
   };
 
+  const localizedExercises = useMemo(() => exercises.map(exercise => localizeExercise(exercise, language)), [exercises, language]);
   return {
     exercises,
+    localizedExercises,
     isLoading,
     error,
     refetch: fetchExercises,

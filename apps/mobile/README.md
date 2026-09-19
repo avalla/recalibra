@@ -41,7 +41,6 @@ src/
 │   └── ui/            # Base UI components (Button, Input, Card)
 ├── constants/         # Theme, colors, spacing
 ├── hooks/             # Custom React hooks
-├── lib/               # External libraries (RevenueCat)
 ├── navigation/        # React Navigation configuration
 │   ├── AuthNavigator.tsx
 │   ├── MainTabNavigator.tsx
@@ -80,15 +79,6 @@ src/
 
 ## 🔧 Configuration
 
-### Environment Variables
-
-Create a `.env` file based on `.env.example`:
-
-```bash
-EXPO_PUBLIC_REVENUECAT_IOS_KEY=appl_XXXXXXXXXXXXXXXXXXXXXXXXX
-EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=goog_XXXXXXXXXXXXXXXXXXXXXXXXX
-```
-
 ### TypeScript Path Aliases
 
 The project uses path aliases for cleaner imports:
@@ -112,13 +102,13 @@ import { HomeScreen } from '@/screens';
 - [x] Post-session check-in
 - [x] Progress & history tracking
 - [x] Profile & settings
+- [x] Full exercise and audio catalog available for free
 
 ### Planned Features
 
 - [ ] HRV integration via Apple Health/Google Fit
 - [ ] Push notifications for reminders
 - [ ] Offline support
-- [ ] Premium subscription UX improvements (RevenueCat)
 - [ ] AI-powered exercise recommendations
 
 ## 🧩 Exercise seed data

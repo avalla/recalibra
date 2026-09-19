@@ -1,4 +1,8 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { formatMinutes } from '../../i18n/core';
+import { tr } from '../../i18n/core';
+import { useLanguage } from '../../i18n/LanguageProvider';
+import { localizedExerciseName } from '../../i18n/exercises';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -12,120 +16,94 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
-import { Button, Card } from '../../components';
+import { Button } from '../../components';
 import { useSessions, useAppleHealth } from '../../hooks';
-import type { JourneyProgress, RootStackParamList } from '../../types';
+import { useExercises } from '../../hooks';
+import type { RootStackParamList } from '../../types';
 import { logger } from '../../utils/logger';
-import { journeyDefinitions } from '../../data/journeys';
-import { getNextJourneyChapter } from '../../features/journeys/state';
+import { getJourneyById } from '../../data/journeys';
+import { completeJourneyStep } from '../../db';
+import { toNextJourneySessionParams } from '../../utils/journey-runner';
 
-const STRESS_EMOJIS = ['😇', '🙂', '😌', '😟', '😰'];
+import { StressRating } from '../../components/StressRating';
+import { describeStressChange } from '../../utils/stress-rating';
 
 type PostSessionRouteProps = RouteProp<RootStackParamList, 'PostSession'>;
 
 export const PostSessionScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<PostSessionRouteProps>();
-  const {
-    sessionId,
-    exerciseName,
-    durationSeconds,
-    preStressLevel,
-    journeyId,
-    journeyChapterIndex,
-  } = route.params;
-  const { completeSession, completeSessionAndJourney } = useSessions();
+  const { language } = useLanguage();
+  const { sessionId, exerciseId, exerciseName: canonicalName, durationSeconds, preStressLevel, journeyContext } = route.params;
+  const exerciseName = localizedExerciseName(exerciseId ?? '', canonicalName, language);
+  const { completeSession } = useSessions();
+  const { exercises, isLoading: exercisesLoading } = useExercises();
   const { isAvailable: healthAvailable, isAuthorized: healthAuthorized, saveMindfulSession } = useAppleHealth();
 
-  const [postStressLevel, setPostStressLevel] = useState(5);
+  const [postStressLevel, setPostStressLevel] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [healthSaved, setHealthSaved] = useState<boolean | null>(null);
-  const saveInFlightRef = useRef(false);
+  const savingRef = useRef(false);
 
-  const stressReduction = preStressLevel - postStressLevel;
-  const durationLabel = `${Math.max(1, Math.round(durationSeconds / 60))} min`;
+  const feedback = describeStressChange(preStressLevel, postStressLevel);
+  const durationLabel = formatMinutes(Math.max(1, Math.round(durationSeconds / 60)));
 
-  const handleSave = async () => {
-    if (saveInFlightRef.current) return;
-    saveInFlightRef.current = true;
+  const handleSave = async (rating: number | null) => {
+    if (savingRef.current) return;
+    savingRef.current = true;
     setIsSaving(true);
-
+    let sessionSaved = false;
     try {
-      let journeyProgress: JourneyProgress | null = null;
-      let error: Error | null = null;
-
-      if (journeyId && typeof journeyChapterIndex === 'number') {
-        const result = await completeSessionAndJourney(
-          sessionId,
-          durationSeconds,
-          postStressLevel,
-          notes || undefined,
-          journeyId,
-          journeyChapterIndex
-        );
-        journeyProgress = result.progress;
-        error = result.error;
-      } else {
-        ({ error } = await completeSession(sessionId, durationSeconds, postStressLevel, notes || undefined));
-      }
-
+      const { error } = await completeSession(sessionId, durationSeconds, rating, notes || undefined);
       if (error) throw error;
+      sessionSaved = true;
 
       if (healthAvailable && healthAuthorized) {
+        // Health is optional: a failure must not undo the local session save.
         try {
           const endDate = new Date();
           const startDate = new Date(endDate.getTime() - durationSeconds * 1000);
-          const saved = await saveMindfulSession(startDate, endDate);
-          setHealthSaved(saved);
-          if (saved) logger.info('Mindful session saved to Apple Health', 'PostSession');
-        } catch (healthError) {
-          logger.error('Mindful session could not be saved to Apple Health', healthError as Error, 'PostSession');
-          setHealthSaved(false);
+          await saveMindfulSession(startDate, endDate);
+        } catch {
+          logger.warn('Optional Health save failed', 'PostSession');
         }
       }
 
-      if (journeyId && typeof journeyChapterIndex === 'number') {
-        const journey = journeyDefinitions.find((item) => item.id === journeyId);
-        if (!journey || !journeyProgress) throw new Error('Journey progress is unavailable');
-
-        const nextChapter = getNextJourneyChapter(journeyProgress, journey.chapters.length);
-        if (nextChapter === null) {
-          navigation.replace('JourneyDetail', { journeyId });
-        } else {
-          navigation.replace('JourneyRunner', {
-            journeyId,
-            chapterIndex: nextChapter,
-            justCompleted: true,
-          });
+      if (journeyContext) {
+        const journey = getJourneyById(journeyContext.journeyId);
+        if (!journey || journey.version !== journeyContext.journeyVersion) {
+          throw new Error('Journey content is unavailable or has changed.');
         }
-        return;
+        const progress = await completeJourneyStep({
+          journey,
+          stepId: journeyContext.stepId,
+          sessionId,
+        });
+        const nextSession = toNextJourneySessionParams(journey, progress, exercises);
+        if (nextSession) {
+          navigation.replace('ExerciseSession', nextSession);
+          return;
+        }
+        if (exercisesLoading) {
+          throw new Error('Exercise catalog is still loading.');
+        }
+        if (progress.status === 'in_progress') {
+          throw new Error('The next Journey exercise is unavailable.');
+        }
       }
 
-      navigation.navigate('ExerciseCatalog');
+      navigation.navigate('Main', { screen: 'ExercisesTab', params: { screen: 'ExerciseCatalog' } });
     } catch (error) {
-      logger.error('Session completion failed', error as Error, 'PostSession');
-      Alert.alert('Error', 'Failed to save session. Please try again.');
+      logger.error('Post-session save failed', error instanceof Error ? error : new Error(String(error)), 'PostSession');
+      if (sessionSaved && journeyContext) {
+        Alert.alert(tr("Practice saved"), tr("Your practice was saved, but the Journey could not continue. Try again to retry."));
+      } else {
+        Alert.alert(tr("Session not saved"), tr("Your practice could not be saved. Please try again."));
+      }
     } finally {
-      saveInFlightRef.current = false;
+      savingRef.current = false;
       setIsSaving(false);
     }
-  };
-
-  const handleSkip = () => {
-    if (journeyId && typeof journeyChapterIndex === 'number') {
-      navigation.replace('JourneyRunner', { journeyId, chapterIndex: journeyChapterIndex });
-      return;
-    }
-    navigation.navigate('ExerciseCatalog');
-  };
-
-  const getEmojiForLevel = (level: number): string => {
-    if (level <= 2) return '😇';
-    if (level <= 4) return '🙂';
-    if (level <= 6) return '😌';
-    if (level <= 8) return '😟';
-    return '😰';
   };
 
   return (
@@ -134,95 +112,47 @@ export const PostSessionScreen: React.FC = () => {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={() => handleSave(null)} disabled={isSaving} accessibilityRole="button" accessibilityLabel={tr("Save practice without a stress rating and close")} style={styles.closeButton}>
             <Ionicons name="close" size={28} color={Colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Reflect</Text>
+          <Text style={styles.headerTitle}>{tr("Reflect")}</Text>
           <View style={styles.headerSpacer} />
         </View>
 
         {/* Closing reassurance */}
         <View style={styles.celebrate}>
-          <Text style={styles.celebrateEyebrow}>Nicely done</Text>
           <Text style={styles.celebrateTitle}>{exerciseName}</Text>
-          <Text style={styles.celebrateMeta}>{durationLabel} of practice</Text>
+          <Text style={styles.celebrateMeta}>{durationLabel} {tr("of practice")}</Text>
         </View>
 
         {/* Main Question */}
         <View style={styles.questionSection}>
-          <Text style={styles.questionTitle}>How do you feel now?</Text>
+          <Text style={styles.questionTitle}>{tr("How stressed do you feel now?")}</Text>
         </View>
 
-        {/* Emoji Scale */}
-        <View style={styles.emojiRow}>
-          {STRESS_EMOJIS.map((emoji, index) => {
-            const level = (index + 1) * 2;
-            const isSelected = Math.ceil(postStressLevel / 2) === index + 1;
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[styles.emojiButton, isSelected && styles.emojiButtonSelected]}
-                onPress={() => setPostStressLevel(level)}
-              >
-                <Text style={styles.emoji}>{emoji}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <StressRating value={postStressLevel} onChange={setPostStressLevel} disabled={isSaving} />
 
-        {/* Slider */}
-        <View style={styles.sliderContainer}>
-          <View style={styles.sliderTrack}>
-            <View
-              style={[
-                styles.sliderFill,
-                { width: `${((postStressLevel - 1) / 9) * 100}%` },
-              ]}
-            />
-            <View
-              style={[
-                styles.sliderThumb,
-                { left: `${((postStressLevel - 1) / 9) * 100}%` },
-              ]}
-            />
-          </View>
-          <View style={styles.sliderLabels}>
-            <Text style={styles.sliderLabel}>High</Text>
-            <Text style={styles.sliderLabel}>Low</Text>
-          </View>
+        <View accessibilityLiveRegion="polite" style={styles.feedback}>
+          <Text style={styles.feedbackTitle}>{feedback.title}</Text>
+          <Text style={styles.feedbackText}>{feedback.message}</Text>
         </View>
-
-        {/* Stress Reduction Card */}
-        {stressReduction > 0 && (
-          <Card style={styles.reductionCard}>
-            <View style={styles.reductionContent}>
-              <View>
-                <Text style={styles.reductionValue}>-{stressReduction} points</Text>
-                <Text style={styles.reductionText}>
-                  Your stress level has decreased since the start of your session.
-                </Text>
-              </View>
-              <View style={styles.reductionIcon}>
-                <Ionicons name="trending-down" size={24} color={Colors.primary} />
-              </View>
-            </View>
-          </Card>
-        )}
 
         {/* Notes Section */}
         <View style={styles.notesSection}>
-          <Text style={styles.notesLabel}>What did you notice?</Text>
+          <Text style={styles.notesLabel}>{tr("What did you notice?")}</Text>
           <TextInput
             style={styles.notesInput}
-            placeholder="Add any observations during your session..."
+            placeholder={tr("Add any observations during your session...")}
             placeholderTextColor={Colors.textMuted}
             multiline
             numberOfLines={4}
             value={notes}
             onChangeText={setNotes}
+            editable={!isSaving}
             textAlignVertical="top"
           />
         </View>
@@ -230,9 +160,9 @@ export const PostSessionScreen: React.FC = () => {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <Button label="Done" onPress={handleSave} loading={isSaving} />
-        <TouchableOpacity style={styles.progressLink} onPress={handleSkip}>
-          <Text style={styles.progressLinkText}>Skip for now</Text>
+        <Button label={tr("Save practice")} onPress={() => handleSave(postStressLevel)} loading={isSaving} disabled={postStressLevel === null} />
+        <TouchableOpacity style={styles.progressLink} onPress={() => handleSave(null)} disabled={isSaving} accessibilityRole="button">
+          <Text style={styles.progressLinkText}>{tr("Save without a rating")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -262,19 +192,11 @@ const styles = StyleSheet.create({
     fontWeight: FontWeight.semibold,
   },
   headerSpacer: {
-    width: 28,
+    width: 48,
   },
   celebrate: {
     marginTop: Spacing.lg,
     marginBottom: Spacing.xl,
-  },
-  celebrateEyebrow: {
-    color: Colors.primary,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: Spacing.xs,
   },
   celebrateTitle: {
     color: Colors.textPrimary,
@@ -298,94 +220,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: Spacing.sm,
   },
-  questionSubtitle: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.md,
-    textAlign: 'center',
-  },
-  emojiRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: Spacing.lg,
-  },
-  emojiButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.backgroundCard,
-  },
-  emojiButtonSelected: {
-    backgroundColor: Colors.backgroundElevated,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-  },
-  emoji: {
-    fontSize: 24,
-  },
-  sliderContainer: {
-    marginBottom: Spacing.xl,
-  },
-  sliderTrack: {
-    height: 8,
-    backgroundColor: Colors.backgroundLight,
-    borderRadius: 4,
-    position: 'relative',
-  },
-  sliderFill: {
-    height: '100%',
-    backgroundColor: Colors.primary,
-    borderRadius: 4,
-  },
-  sliderThumb: {
-    position: 'absolute',
-    top: -6,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: Colors.textPrimary,
-    marginLeft: -10,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-  },
-  sliderLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: Spacing.sm,
-  },
-  sliderLabel: {
-    color: Colors.textMuted,
-    fontSize: FontSize.sm,
-  },
-  reductionCard: {
-    backgroundColor: Colors.backgroundElevated,
-    marginBottom: Spacing.xl,
-  },
-  reductionContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  reductionValue: {
-    color: Colors.primary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-    marginBottom: Spacing.xs,
-  },
-  reductionText: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    maxWidth: '80%',
-  },
-  reductionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.backgroundCard,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  closeButton: { minWidth: 48, minHeight: 48, alignItems: 'center', justifyContent: 'center' },
+  feedback: { marginBottom: Spacing.xl, gap: Spacing.sm },
+  feedbackTitle: { color: Colors.textPrimary, fontSize: FontSize.lg, fontWeight: FontWeight.semibold },
+  feedbackText: { color: Colors.textSecondary, fontSize: FontSize.md },
   notesSection: {
     marginBottom: Spacing.xl,
   },
@@ -411,7 +249,9 @@ const styles = StyleSheet.create({
   },
   progressLink: {
     alignItems: 'center',
-    marginTop: Spacing.lg,
+    minHeight: 48,
+    justifyContent: 'center',
+    marginTop: Spacing.sm,
   },
   progressLinkText: {
     color: Colors.primary,

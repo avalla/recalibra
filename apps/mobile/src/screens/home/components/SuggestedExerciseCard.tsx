@@ -1,3 +1,7 @@
+import { enumLabel } from '../../../i18n/labels';
+import { useLanguage } from '../../../i18n/LanguageProvider';
+import { tr } from '../../../i18n/core';
+import { localizedExerciseName } from '../../../i18n/exercises';
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +16,7 @@ interface SuggestedExerciseCardProps {
 }
 
 export const SuggestedExerciseCard: React.FC<SuggestedExerciseCardProps> = ({ exercise, onPress }) => {
+  useLanguage();
   return (
     <TouchableOpacity style={styles.suggestedCardWrapper} onPress={onPress}>
       <Card style={styles.suggestedCard}>
@@ -20,9 +25,9 @@ export const SuggestedExerciseCard: React.FC<SuggestedExerciseCardProps> = ({ ex
             <Ionicons name="body-outline" size={24} color={Colors.primary} />
           </View>
           <View style={styles.suggestedInfo}>
-            <Text style={styles.suggestedTitle}>{exercise.name}</Text>
-            <Text style={styles.suggestedDuration}>{exercise.duration_minutes} min</Text>
-            <Text style={styles.suggestedCategory}>{exercise.category}</Text>
+            <Text style={styles.suggestedTitle}>{localizedExerciseName(exercise.id, exercise.name)}</Text>
+            <Text style={styles.suggestedDuration}>{exercise.duration_minutes} {tr("min")}</Text>
+            <Text style={styles.suggestedCategory}>{enumLabel(exercise.category)}</Text>
           </View>
           <View style={styles.suggestedArrow}>
             <Ionicons name="chevron-forward" size={20} color={Colors.primary} />
