@@ -1,402 +1,157 @@
-import { formatMinutes } from '../../i18n/core';
 import { enumLabel } from '../../i18n/labels';
 import { useLanguage } from '../../i18n/LanguageProvider';
-import { tr } from '../../i18n/core';
-import { toExerciseSessionParams } from '../../utils/quick-start';
-import React, { useMemo } from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { formatMinutes, tr } from '../../i18n/core';
+import React, { useMemo, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { Card, ExerciseAnimation, Screen } from '@/components';
-import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '@/constants';
-import { useExercises } from '@/hooks';
-import type { RootStackParamList } from '@/types';
-import type { RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
+import { BorderRadius, Colors, FontFamily, FontSize, FontWeight, Spacing } from '../../constants';
+import { ExerciseAnimation, Screen } from '../../components';
+import { useExercises } from '../../hooks';
+import type { RootStackParamList } from '../../types';
 
 type DetailRouteProps = RouteProp<RootStackParamList, 'ExerciseDetail'>;
-
-const HERO_ANIMATION_SIZE = 132;
 
 export const ExerciseDetailScreen: React.FC = () => {
   useLanguage();
   const navigation = useNavigation<any>();
   const route = useRoute<DetailRouteProps>();
-  const insets = useSafeAreaInsets();
-  const { exercises: canonicalExercises, localizedExercises: exercises, isLoading, toggleFavorite } = useExercises();
+  const { localizedExercises: exercises, isLoading, toggleFavorite } = useExercises();
+  const [showInstructions, setShowInstructions] = useState(false);
 
-  const footerHeight = 56 + Spacing.md + Spacing.sm + insets.bottom;
-
-  const exercise = useMemo(() => {
-    return exercises.find((e) => e.id === route.params.exerciseId) ?? null;
-  }, [exercises, route.params.exerciseId]);
-
-
-  const handleBack = () => {
-    navigation.goBack();
-  };
-
-  const handleToggleFavorite = () => {
-    if (!exercise) return;
-    toggleFavorite(exercise.id);
-  };
-
-  const handleStartSession = () => {
-    if (!exercise) return;
-
-    navigation.navigate('ExerciseSession', toExerciseSessionParams(canonicalExercises.find(item => item.id === exercise.id) ?? exercise));
-  };
+  const exercise = useMemo(
+    () => exercises.find((item) => item.id === route.params.exerciseId) ?? null,
+    [exercises, route.params.exerciseId],
+  );
 
   if (isLoading || !exercise) {
     return (
-      <Screen style={styles.container} edges={['top']}>
-        <View style={styles.detailSkeleton}>
-          <View style={[styles.skeletonBlock, { height: 140, borderRadius: BorderRadius.xl }]} />
-          <View style={[styles.skeletonBlock, { height: 28, width: '70%', marginTop: Spacing.lg }]} />
-          <View style={[styles.skeletonBlock, { height: 16, width: '45%', marginTop: Spacing.sm }]} />
-          <View style={[styles.skeletonBlock, { height: 80, marginTop: Spacing.lg }]} />
-          <View style={[styles.skeletonBlock, { height: 80, marginTop: Spacing.md }]} />
+      <Screen style={styles.container} edges={['top', 'bottom']}>
+        <View style={styles.loading}>
+          <Text style={styles.loadingText}>{tr('Loading...')}</Text>
         </View>
       </Screen>
     );
   }
 
-  const tags = [
-    exercise.origin ? formatOrigin(exercise.origin) : null,
-    formatMinutes(exercise.duration_minutes),
-    formatLevel(exercise.level),
-  ].filter(Boolean) as string[];
+  const start = () => {
+    navigation.navigate(exercise.safety_warning ? 'ExerciseSafety' : 'ExercisePreparation', {
+      exerciseId: exercise.id,
+    });
+  };
 
   return (
-    <Screen style={styles.container} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: footerHeight + Spacing.lg },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.hero}>
-          <View style={styles.heroImageWrap}>
-            <ExerciseAnimation exercise={exercise} size={HERO_ANIMATION_SIZE} style={styles.heroIllustration} />
-          </View>
-        </View>
-
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            onPress={handleBack}
-            style={styles.backButton}
-            accessibilityRole="button"
-            accessibilityLabel={tr("Go back")}
-          >
+    <Screen style={styles.container} edges={['top', 'bottom']}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.topBar}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()} accessibilityRole="button" accessibilityLabel={tr('Go back')}>
             <Ionicons name="arrow-back" size={22} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => toggleFavorite(exercise.id)}
+            accessibilityRole="button"
+            accessibilityLabel={exercise.is_favorite ? tr('Remove from favorites') : tr('Add to favorites')}
+            accessibilityState={{ selected: exercise.is_favorite }}
+          >
+            <Ionicons name={exercise.is_favorite ? 'heart' : 'heart-outline'} size={22} color={exercise.is_favorite ? Colors.primary : Colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>{exercise.name}</Text>
-
-          <View style={styles.tagsRow}>
-            {tags.map((t) => (
-              <View key={t} style={styles.tagPill}>
-                <Text style={styles.tagText}>{t}</Text>
-              </View>
-            ))}
-          </View>
-
-          {exercise.history ? (
-            <Card variant="soft" style={styles.howItWorksCard}>
-              <View style={styles.cardTitleRow}>
-                <Ionicons name="sparkles" size={18} color={Colors.primary} />
-                <Text style={styles.cardTitle}>{tr("How it Works")}</Text>
-              </View>
-              <Text style={styles.cardBody}>{exercise.history}</Text>
-            </Card>
-          ) : null}
+        <View style={styles.hero}>
+          <ExerciseAnimation exercise={exercise} size={144} style={styles.heroIllustration} />
         </View>
 
-        {exercise.safety_warning ? (
-          <Card style={styles.safetyCard}>
-            <View style={styles.safetyTitleRow}>
-              <Ionicons name="warning" size={18} color={Colors.warning} />
-              <Text style={styles.safetyTitle}>{tr("Safety First")}</Text>
-            </View>
-            <Text style={styles.safetyText}>{exercise.safety_warning}</Text>
-          </Card>
-        ) : null}
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{tr("Instructions")}</Text>
-          <View style={styles.instructionsList}>
-            {exercise.instructions.map((step) => (
-              <View key={step.step} style={styles.instructionRow}>
-                <View style={styles.stepBadge}>
-                  <Text style={styles.stepBadgeText}>{step.step}</Text>
-                </View>
-                <Text style={styles.instructionText}>{step.instruction}</Text>
-              </View>
-            ))}
+        <View style={styles.body}>
+          <Text style={styles.eyebrow}>{enumLabel(exercise.category)}</Text>
+          <Text style={styles.title}>{exercise.name}</Text>
+          <View style={styles.metaRow}>
+            <Meta icon="time-outline" label={formatMinutes(exercise.duration_minutes)} />
+            <Meta icon="speedometer-outline" label={formatLevel(exercise.level)} />
           </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{tr('How it works')}</Text>
+            <Text style={styles.description}>{exercise.description}</Text>
+          </View>
+
+          {exercise.history ? <Text style={styles.metadata}>{exercise.history}</Text> : null}
+
+          <TouchableOpacity
+            style={styles.instructionsButton}
+            onPress={() => setShowInstructions((value) => !value)}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showInstructions }}
+          >
+            <View>
+              <Text style={styles.instructionsTitle}>{tr('See all steps')}</Text>
+              <Text style={styles.instructionsMeta}>{exercise.instructions.length} {tr('steps')}</Text>
+            </View>
+            <Ionicons name={showInstructions ? 'chevron-up' : 'chevron-down'} size={20} color={Colors.primary} />
+          </TouchableOpacity>
+
+          {showInstructions ? (
+            <View style={styles.instructionsList}>
+              {exercise.instructions.map((step) => (
+                <View style={styles.instructionRow} key={step.step}>
+                  <View style={styles.stepBadge}><Text style={styles.stepNumber}>{step.step}</Text></View>
+                  <Text style={styles.instructionText}>{step.instruction}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
         </View>
       </ScrollView>
 
-      <View style={styles.footerContainer}>
-        <SafeAreaView style={styles.footerContent} edges={['bottom']}>
-          <TouchableOpacity
-            style={styles.primaryCta}
-            onPress={handleStartSession}
-            activeOpacity={0.9}
-            accessibilityRole="button"
-            accessibilityLabel={tr("Start session")}
-          >
-            <Text style={styles.primaryCtaText}>{tr("Start Session")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.favoriteCta}
-            activeOpacity={0.85}
-            onPress={handleToggleFavorite}
-            accessibilityRole="button"
-            accessibilityLabel={exercise.is_favorite ? tr("Remove from favorites") : tr("Add to favorites")}
-            accessibilityState={{ selected: exercise.is_favorite }}
-          >
-            <Ionicons name={exercise.is_favorite ? 'heart' : 'heart-outline'} size={22} color={Colors.primary} />
-          </TouchableOpacity>
-        </SafeAreaView>
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.primaryButton} onPress={start} accessibilityRole="button" accessibilityLabel={tr('Start')}>
+          <Text style={styles.primaryButtonText}>{tr('Start')}</Text>
+          <Ionicons name="arrow-forward" size={20} color={Colors.background} />
+        </TouchableOpacity>
       </View>
     </Screen>
   );
 };
 
-function formatLevel(level: string): string {
-  if (level === 'beginner') return tr("Beginner");
-  if (level === 'intermediate') return tr("Intermediate");
-  if (level === 'advanced') return tr("Advanced");
-  return level;
+function Meta({ icon, label }: { icon: keyof typeof Ionicons.glyphMap; label: string }) {
+  return <View style={styles.metaItem}><Ionicons name={icon} size={17} color={Colors.primary} /><Text style={styles.metaText}>{label}</Text></View>;
 }
 
-function formatOrigin(origin: string): string {
-  return enumLabel(origin);
+function formatLevel(level: string): string {
+  if (level === 'beginner') return tr('Beginner');
+  if (level === 'intermediate') return tr('Intermediate');
+  if (level === 'advanced') return tr('Advanced');
+  return enumLabel(level);
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  detailSkeleton: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.lg,
-  },
-  skeletonBlock: {
-    backgroundColor: Colors.backgroundCard,
-    borderRadius: BorderRadius.lg,
-  },
-  loadingWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scrollContent: {
-    paddingBottom: 120,
-  },
-  hero: {
-    paddingTop: Spacing.lg,
-    paddingHorizontal: Spacing.lg,
-  },
-  heroImageWrap: {
-    borderRadius: BorderRadius.xl,
-    overflow: 'hidden',
-    height: 140,
-    backgroundColor: Colors.backgroundCard,
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  heroVideo: {
-    width: '100%',
-    height: '100%',
-  },
-  heroFallback: {
-    width: '100%',
-    height: '100%',
-  },
-  heroIllustration: {
-    width: '100%',
-    height: '100%',
-  },
-  headerRow: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-  },
-  backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.full,
-    backgroundColor: Colors.backgroundCard,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  titleSection: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-  },
-  title: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.xxl,
-    fontWeight: FontWeight.bold,
-    fontFamily: FontFamily.heading,
-    lineHeight: 34,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-    paddingTop: Spacing.md,
-  },
-  tagPill: {
-    backgroundColor: Colors.backgroundElevated,
-    borderRadius: BorderRadius.full,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  tagText: {
-    color: Colors.primary,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.medium,
-  },
-  howItWorksCard: {
-    marginTop: Spacing.lg,
-  },
-  cardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.sm,
-  },
-  cardTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
-  },
-  cardBody: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    lineHeight: 20,
-  },
-  section: {
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
-  },
-  sectionTitle: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-    marginBottom: Spacing.md,
-  },
-  instructionsList: {
-    gap: Spacing.md,
-  },
-  instructionRow: {
-    flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  stepBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: BorderRadius.full,
-    backgroundColor: 'rgba(45, 212, 191, 0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(45, 212, 191, 0.22)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 2,
-  },
-  stepBadgeText: {
-    color: Colors.primary,
-    fontSize: FontSize.sm,
-    fontWeight: FontWeight.semibold,
-  },
-  instructionText: {
-    flex: 1,
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    lineHeight: 20,
-  },
-  safetyCard: {
-    marginTop: Spacing.xl,
-    marginHorizontal: Spacing.lg,
-    backgroundColor: 'rgba(245, 158, 11, 0.08)',
-    borderColor: 'rgba(245, 158, 11, 0.22)',
-  },
-  safetyTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.sm,
-  },
-  safetyTitle: {
-    color: Colors.warning,
-    fontSize: FontSize.md,
-    fontWeight: FontWeight.semibold,
-  },
-  safetyText: {
-    color: 'rgba(255, 214, 102, 0.92)',
-    fontSize: FontSize.sm,
-    lineHeight: 20,
-  },
-  footerContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(15, 26, 25, 0.92)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(148, 163, 184, 0.12)',
-  },
-  footerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-  },
-  primaryCta: {
-    flex: 1,
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.full,
-    minHeight: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryCtaText: {
-    color: Colors.background,
-    fontSize: FontSize.lg,
-    fontWeight: FontWeight.bold,
-  },
-  favoriteCta: {
-    width: 56,
-    height: 56,
-    borderRadius: BorderRadius.full,
-    backgroundColor: Colors.backgroundCard,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  container: { flex: 1, backgroundColor: Colors.background },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  loadingText: { color: Colors.textSecondary, fontSize: FontSize.md },
+  scrollContent: { paddingBottom: Spacing.xl },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm, paddingBottom: Spacing.md },
+  iconButton: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: BorderRadius.full, backgroundColor: Colors.backgroundCard },
+  hero: { height: 190, marginHorizontal: Spacing.lg, borderRadius: BorderRadius.xl, overflow: 'hidden', backgroundColor: Colors.backgroundCard },
+  heroIllustration: { width: '100%', height: '100%' },
+  body: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl },
+  eyebrow: { color: Colors.primary, fontSize: FontSize.sm, fontWeight: FontWeight.semibold, textTransform: 'uppercase', letterSpacing: 0.7 },
+  title: { color: Colors.textPrimary, fontSize: FontSize.xxl, lineHeight: 38, fontFamily: FontFamily.heading, marginTop: Spacing.xs },
+  metaRow: { flexDirection: 'row', gap: Spacing.lg, marginTop: Spacing.md },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs },
+  metaText: { color: Colors.textSecondary, fontSize: FontSize.sm },
+  section: { marginTop: Spacing.xl },
+  sectionTitle: { color: Colors.textPrimary, fontSize: FontSize.lg, fontWeight: FontWeight.semibold, marginBottom: Spacing.sm },
+  description: { color: Colors.textSecondary, fontSize: FontSize.md, lineHeight: 25 },
+  metadata: { color: Colors.textMuted, fontSize: FontSize.sm, lineHeight: 20, marginTop: Spacing.lg },
+  instructionsButton: { minHeight: 64, marginTop: Spacing.xl, paddingVertical: Spacing.md, paddingHorizontal: Spacing.md, borderRadius: BorderRadius.lg, borderWidth: 1, borderColor: Colors.border, backgroundColor: Colors.backgroundCard, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  instructionsTitle: { color: Colors.textPrimary, fontSize: FontSize.md, fontWeight: FontWeight.semibold },
+  instructionsMeta: { color: Colors.textMuted, fontSize: FontSize.sm, marginTop: 2 },
+  instructionsList: { gap: Spacing.md, paddingTop: Spacing.md },
+  instructionRow: { flexDirection: 'row', gap: Spacing.md, alignItems: 'flex-start' },
+  stepBadge: { width: 28, height: 28, borderRadius: BorderRadius.full, backgroundColor: 'rgba(45, 212, 191, 0.18)', alignItems: 'center', justifyContent: 'center' },
+  stepNumber: { color: Colors.primary, fontSize: FontSize.sm, fontWeight: FontWeight.semibold },
+  instructionText: { flex: 1, color: Colors.textSecondary, fontSize: FontSize.sm, lineHeight: 21 },
+  footer: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm, backgroundColor: Colors.background, borderTopWidth: 1, borderTopColor: Colors.border },
+  primaryButton: { minHeight: 56, borderRadius: BorderRadius.full, backgroundColor: Colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.sm },
+  primaryButtonText: { color: Colors.background, fontSize: FontSize.lg, fontWeight: FontWeight.bold },
 });

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, ScrollView, RefreshControl, View } from 'react-native';
+import { StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import { Colors, FontFamily, FontSize, FontWeight, Spacing } from '../../constants';
@@ -12,7 +12,6 @@ import { getJourneyDurationMinutes } from '../../utils/journey-ui';
 import {
   getExerciseForQuickStart,
   loadQuickStartPreference,
-  toExerciseSessionParams,
   type QuickStartPreference,
 } from '../../utils/quick-start';
 import type { ExerciseWithFavorite } from '../../types';
@@ -69,10 +68,8 @@ export const HomeScreen: React.FC = () => {
   };
 
   const beginSession = (exercise: ExerciseWithFavorite) => {
-    // ExerciseSession lives on the root stack, not inside the Exercises tab.
-    // navigate() bubbles up from the tab to find it (same as ExerciseDetailScreen).
-    navigation.navigate('ExerciseSession', {
-      ...toExerciseSessionParams(exercise),
+    navigation.navigate(exercise.safety_warning ? 'ExerciseSafety' : 'ExercisePreparation', {
+      exerciseId: exercise.id,
     });
   };
 
@@ -120,35 +117,27 @@ export const HomeScreen: React.FC = () => {
           />
         }
       >
-        <View>
-          <HomeHeader onQuickStartPress={handleQuickStart} />
-        </View>
+        <HomeHeader onQuickStartPress={handleQuickStart} />
 
-        <View>
-          <GreetingCard userName={userName} greetingPhrase={greetingPhrase} />
-        </View>
+        <GreetingCard userName={userName} greetingPhrase={greetingPhrase} />
 
         {featuredJourney ? (
-          <View>
-            <JourneyCard
-              journey={featuredJourney}
-              progress={journeyProgress}
-              durationMinutes={getJourneyDurationMinutes(featuredJourney, exercises)}
-              onPress={openJourney}
-            />
-          </View>
+          <JourneyCard
+            journey={featuredJourney}
+            progress={journeyProgress}
+            durationMinutes={getJourneyDurationMinutes(featuredJourney, exercises)}
+            onPress={openJourney}
+          />
         ) : null}
 
-        <View>
-          <FeelingEntry
-            exercises={exercises}
-            lastStress={lastStress}
-            excludeIds={excludeIds}
-            loading={isLoading}
-            onBegin={beginSession}
-            onBrowse={openCatalog}
-          />
-        </View>
+        <FeelingEntry
+          exercises={exercises}
+          lastStress={lastStress}
+          excludeIds={excludeIds}
+          loading={isLoading}
+          onBegin={beginSession}
+          onBrowse={openCatalog}
+        />
       </ScrollView>
     </Screen>
   );
@@ -165,6 +154,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xl,
+    gap: Spacing.xl,
   },
   journeyCard: {
     marginTop: Spacing.xl,

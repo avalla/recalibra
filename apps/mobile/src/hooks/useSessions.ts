@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Session, SessionWithExercise } from '../types';
 import { listSessions, startSession as startDbSession, updateSessionStatus as updateDbSessionStatus, completeSession as completeDbSession } from '../db';
 import { logger } from '../utils/logger';
-import { summarizeSessionStress } from '../utils/stress-rating';
+import { isStressRating, summarizeSessionStress } from '../utils/stress-rating';
 
 export const useSessions = () => {
   const { language } = useLanguage();
@@ -34,23 +34,25 @@ export const useSessions = () => {
     fetchSessions();
   }, [fetchSessions]);
 
-  const startSession = async (
+  const startSession = useCallback(async (
     exerciseId: string,
-    preStressLevel: number,
+    preStressLevel: number | null,
     _exerciseMeta?: { name: string; category?: unknown; durationMinutes: number }
   ): Promise<{ data: Session | null; error: Error | null }> => {
     try {
       logger.debug(`startSession:start exerciseId=${exerciseId}`, 'useSessions');
-      const result = await startDbSession({ exerciseId, preStressLevel, preStressRecorded: true });
+      const result = await startDbSession({ exerciseId, preStressLevel, preStressRecorded: isStressRating(preStressLevel) });
       if (result.error) return { data: null, error: result.error };
-      await fetchSessions();
+      // The runner only needs the inserted session id. Refresh history in the background
+      // so a slow/failing list query cannot prevent the exercise from starting.
+      void fetchSessions();
       return { data: result.data, error: null };
     } catch (err) {
       const error = err instanceof Error ? err : new Error(typeof err === 'string' ? err : tr("Failed to start session"));
       logger.error('startSession:error', error, 'useSessions');
       return { data: null, error };
     }
-  };
+  }, [fetchSessions]);
 
   const updateSessionStatus = async (
     sessionId: string,

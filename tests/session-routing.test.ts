@@ -3,6 +3,7 @@ mock.module('@react-native-async-storage/async-storage', () => ({ default: {} })
 const { toExerciseSessionParams } = await import('../apps/mobile/src/utils/quick-start');
 import { seedExercises } from '../apps/mobile/src/data/exercises';
 import type { ExerciseWithFavorite } from '../apps/mobile/src/types';
+import { getExercisePlan } from '../apps/mobile/src/data/exercise-guidance';
 
 test('the common home, quick-start and detail payload preserves canonical warnings and every protocol field', () => {
   for (const exercise of seedExercises) {

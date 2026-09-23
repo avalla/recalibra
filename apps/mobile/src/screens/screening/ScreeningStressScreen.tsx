@@ -28,7 +28,12 @@ export const ScreeningStressScreen: React.FC = () => {
       return;
     }
 
-    // The RootNavigator will automatically redirect to Main since onboarding_completed is now true
+    // Reset the root stack explicitly so this CTA cannot leave the user stranded
+    // inside the nested screening navigator if the auth-state remount is delayed.
+    navigation.getParent()?.reset({
+      index: 0,
+      routes: [{ name: 'Main' }],
+    });
   };
 
   return (

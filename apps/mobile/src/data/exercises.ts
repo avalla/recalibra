@@ -53,6 +53,12 @@ function safeJsonParseOptional<T>(raw: string | null): T | undefined {
   }
 }
 
+export const EXERCISE_CONTENT_CORRECTIONS: Record<string, { history: string }> = {
+  '278d1121-8e6a-40f5-804b-c906eb19089e': {
+    history: 'A gentle eye-movement practice for visual comfort and mindful focus.',
+  },
+};
+
 const rawRows = loadRawRows();
 const slugsById = buildUniqueSlugs(rawRows.map((row) => ({ id: row.id, name: row.name })));
 
@@ -89,7 +95,7 @@ export const seedExercises: Exercise[] = rawRows.map((row): Exercise => {
     is_premium: row.is_premium,
     is_active: row.is_active,
     breathing_pattern: breathingPattern,
-    history: row.history ?? undefined,
+    history: EXERCISE_CONTENT_CORRECTIONS[row.id]?.history ?? row.history ?? undefined,
     benefits,
     tips,
     created_at: row.created_at,

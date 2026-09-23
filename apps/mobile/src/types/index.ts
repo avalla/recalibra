@@ -73,6 +73,31 @@ export interface ExerciseInstruction {
   instruction: string;
 }
 
+export type GuidanceMode = 'automatic' | 'manual';
+export type GuidanceSpeed = 'slow' | 'normal' | 'fast';
+
+export type GuidedAction =
+  | { type: 'speak'; text: string }
+  | { type: 'show'; text: string }
+  | { type: 'wait'; durationMs: number }
+  | { type: 'visual'; cue: string; durationMs?: number }
+  | { type: 'haptic'; pattern: 'light' | 'medium' }
+  | { type: 'repeat'; times: number; actions: readonly GuidedAction[] };
+
+export interface GuidedStep {
+  id: string;
+  instruction: string;
+  visualCue?: string;
+  actions: readonly GuidedAction[];
+}
+
+export interface GuidedPlan {
+  mode: GuidanceMode;
+  recommendedMode: GuidanceMode;
+  steps: readonly GuidedStep[];
+  supportsSpeed?: boolean;
+}
+
 export interface BreathingPattern {
   inhale: number;
   hold: number;
@@ -111,6 +136,7 @@ export interface Exercise {
   history?: string;
   benefits?: string[];
   tips?: string[];
+  guidedPlan?: GuidedPlan;
   created_at: string;
   updated_at: string;
 }
@@ -123,7 +149,7 @@ export interface Session {
   started_at: string;
   completed_at?: string;
   duration_seconds: number;
-  pre_stress_level: number;
+  pre_stress_level: number | null;
   post_stress_level?: number;
   pre_stress_recorded?: boolean;
   post_stress_recorded?: boolean;

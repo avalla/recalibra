@@ -81,7 +81,10 @@ export const PostSessionScreen: React.FC = () => {
         });
         const nextSession = toNextJourneySessionParams(journey, progress, exercises);
         if (nextSession) {
-          navigation.replace('ExerciseSession', nextSession);
+          navigation.replace(nextSession.safetyWarning ? 'ExerciseSafety' : 'ExercisePreparation', {
+            exerciseId: nextSession.exerciseId,
+            journeyContext: nextSession.journeyContext,
+          });
           return;
         }
         if (exercisesLoading) {

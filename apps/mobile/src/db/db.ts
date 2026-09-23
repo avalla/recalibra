@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import type { ExerciseCategory } from '../types';
 
-import { seedExercises } from '../data/exercises';
+import { EXERCISE_CONTENT_CORRECTIONS, seedExercises } from '../data/exercises';
 import { buildUniqueSlugs } from '../data/slug';
 import { inferObjective } from '../utils/infer-objective';
 import { logger } from '../utils/logger';
@@ -30,8 +30,8 @@ export async function initDb(): Promise<void> {
 
   await db.execAsync(SCHEMA_SQL);
   await db.execAsync(LANGUAGE_SCHEMA_SQL);
-  await ensureSessionStressColumns(db);
   await ensureJourneySchema(db);
+  await ensureSessionStressColumns(db);
 
   await ensureExercisesSlugColumn(db);
   await ensureExercisesObjectiveColumn(db);
@@ -39,6 +39,7 @@ export async function initDb(): Promise<void> {
   await ensureExercisesMediaColumn(db);
 
   await ensureSeededExercises(db);
+  await ensureExerciseContentBackfill(db);
   await ensureDefaults(db);
 
   if (__DEV__) {
@@ -173,6 +174,16 @@ async function ensureExercisesObjectiveBackfill(db: SQLite.SQLiteDatabase): Prom
       await db.runAsync('UPDATE exercises SET objective = ? WHERE id = ?', [inferred, r.id]);
     }
   });
+}
+
+async function ensureExerciseContentBackfill(db: SQLite.SQLiteDatabase): Promise<void> {
+  const staleHistory = 'A time-tested breathing technique for wellness.';
+  for (const [exerciseId, correction] of Object.entries(EXERCISE_CONTENT_CORRECTIONS)) {
+    await db.runAsync(
+      'UPDATE exercises SET history = ? WHERE id = ? AND history = ?',
+      [correction.history, exerciseId, staleHistory],
+    );
+  }
 }
 
 async function ensureDefaults(db: SQLite.SQLiteDatabase): Promise<void> {

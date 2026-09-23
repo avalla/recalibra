@@ -11,8 +11,10 @@ import {
   useWindowDimensions,
   TextInput,
   FlatList,
+  Modal,
+  Pressable,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, FontFamily, FontSize, FontWeight, Spacing, BorderRadius } from '../../constants';
@@ -42,7 +44,10 @@ export const ExerciseCatalogScreen: React.FC = () => {
   const [filters, setFilters] = useState<CatalogFilters>(EMPTY_CATALOG_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { width, fontScale } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const columns = width < 390 || fontScale > 1.15 ? 1 : 2;
+  const shelfCardWidth = Math.min(width - Spacing.lg * 2, 320);
+  const shelfSnapInterval = shelfCardWidth + Spacing.md;
   const { query: searchQuery, category: selectedCategory, duration: selectedDuration, level: selectedLevel } = filters;
   const setFilter = <K extends keyof CatalogFilters>(key: K, value: CatalogFilters[K]) =>
     setFilters((previous) => ({ ...previous, [key]: value }));
@@ -52,7 +57,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
   const renderShelfItem = ({ item }: { item: ExerciseWithFavorite }) => {
     return (
       <Card
-        style={{ ...styles.shelfCard, width: Math.min(width - Spacing.lg * 2, 320) }}
+        style={{ ...styles.shelfCard, width: shelfCardWidth }}
         onPress={() => handleExercisePress(item)}
         accessibilityLabel={tr("Open {{name}}", { name: item.name })}
         accessibilityHint={tr("Opens exercise details")}
@@ -131,7 +136,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
               <Text style={styles.originText}>{formatOrigin(item.origin)}</Text>
             </View>
           ) : null}
-          <Text style={styles.gridSubtitle} numberOfLines={columns === 1 ? 3 : 2} ellipsizeMode="tail">
+          <Text style={styles.gridSubtitle} numberOfLines={2} ellipsizeMode="tail">
             {item.description}
           </Text>
         </Card>
@@ -164,7 +169,10 @@ export const ExerciseCatalogScreen: React.FC = () => {
   }, [exercises]);
 
   const handleExercisePress = (exercise: ExerciseWithFavorite) => {
-    navigation.navigate('ExerciseDetail', {
+    // The catalog lives two navigators below Root, while the exercise flow
+    // screens are registered on RootNavigator.
+    const rootNavigation = navigation.getParent()?.getParent() ?? navigation;
+    rootNavigation.navigate('ExerciseDetail', {
       exerciseId: exercise.id,
     });
   };
@@ -202,7 +210,7 @@ export const ExerciseCatalogScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
-          <View>
+          <View style={styles.catalogHeader}>
             <View style={styles.topBar}>
               <Text style={styles.pageTitle}>{tr("Explore Exercises")}</Text>
             </View>
@@ -231,37 +239,18 @@ export const ExerciseCatalogScreen: React.FC = () => {
             </ScrollView>
 
             <View style={styles.filterPillsRow}>
-              <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: filtersOpen }}
-                style={styles.filterPill} onPress={() => setFiltersOpen(!filtersOpen)}>
-                <Text style={styles.filterPillText}>{tr("Filters")}</Text>
-                <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={18} color={Colors.textPrimary} />
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityState={{ expanded: filtersOpen }}
+                style={styles.filterPill}
+                onPress={() => setFiltersOpen(true)}
+              >
+                <Ionicons name="options-outline" size={17} color={Colors.textPrimary} />
+                <Text style={styles.filterPillText}>{tr('Filters')}</Text>
+                {hasFilters ? <View style={styles.filterCount}><Text style={styles.filterCountText}>{[selectedCategory !== 'all', selectedDuration !== 'all', selectedLevel !== 'all'].filter(Boolean).length}</Text></View> : null}
               </TouchableOpacity>
-              {hasFilters && <TouchableOpacity accessibilityRole="button" onPress={clearFilters} style={styles.filterPill}>
-                <Text style={styles.filterPillText}>{tr("Clear all")}</Text>
-              </TouchableOpacity>}
+              {hasFilters ? <TouchableOpacity accessibilityRole="button" onPress={clearFilters} style={styles.clearFilterButton}><Text style={styles.clearFilterText}>{tr('Clear all')}</Text></TouchableOpacity> : null}
             </View>
-            {!filtersOpen && (selectedDuration !== 'all' || selectedLevel !== 'all') &&
-              <Text style={styles.filterSummary}>{tr(DURATION_LABELS[selectedDuration])} · {formatLevel(selectedLevel)}</Text>}
-            {filtersOpen && <View style={styles.filterOptions}>
-              <Text style={styles.filterLabel}>{tr("Duration")}</Text>
-              <View style={styles.optionRow}>
-                {(Object.keys(DURATION_LABELS) as CatalogFilters['duration'][]).map((duration) => (
-                  <TouchableOpacity key={duration} accessibilityRole="radio" accessibilityState={{ checked: selectedDuration === duration }}
-                    onPress={() => setFilter('duration', duration)} style={[styles.filterPill, selectedDuration === duration && styles.filterPillActive]}>
-                    <Text style={styles.filterPillText}>{tr(DURATION_LABELS[duration])}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <Text style={styles.filterLabel}>{tr("Level")}</Text>
-              <View style={styles.optionRow}>
-                {(['all', 'beginner', 'intermediate', 'advanced'] as const).map((level) => (
-                  <TouchableOpacity key={level} accessibilityRole="radio" accessibilityState={{ checked: selectedLevel === level }}
-                    onPress={() => setFilter('level', level)} style={[styles.filterPill, selectedLevel === level && styles.filterPillActive]}>
-                    <Text style={styles.filterPillText}>{formatLevel(level)}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>}
 
             <View style={styles.searchContainer}>
               <View style={styles.searchBar}>
@@ -288,6 +277,10 @@ export const ExerciseCatalogScreen: React.FC = () => {
                   renderItem={renderShelfItem}
                   horizontal
                   showsHorizontalScrollIndicator={false}
+                  snapToInterval={shelfSnapInterval}
+                  snapToAlignment="start"
+                  decelerationRate="fast"
+                  disableIntervalMomentum
                   contentContainerStyle={styles.shelfList}
                 />
               </View>
@@ -302,6 +295,10 @@ export const ExerciseCatalogScreen: React.FC = () => {
                   renderItem={renderShelfItem}
                   horizontal
                   showsHorizontalScrollIndicator={false}
+                  snapToInterval={shelfSnapInterval}
+                  snapToAlignment="start"
+                  decelerationRate="fast"
+                  disableIntervalMomentum
                   contentContainerStyle={styles.shelfList}
                 />
               </View>
@@ -327,6 +324,45 @@ export const ExerciseCatalogScreen: React.FC = () => {
           </View>
         }
       />
+
+      <Modal visible={filtersOpen} transparent animationType="slide" onRequestClose={() => setFiltersOpen(false)}>
+        <Pressable style={styles.sheetOverlay} onPress={() => setFiltersOpen(false)} />
+        <View style={[styles.filterSheet, { paddingBottom: Spacing.xl + insets.bottom }]}>
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>{tr('Filters')}</Text>
+            <TouchableOpacity style={styles.sheetClose} onPress={() => setFiltersOpen(false)} accessibilityRole="button" accessibilityLabel={tr('Close filters')}>
+              <Ionicons name="close" size={20} color={Colors.textPrimary} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.filterLabel}>{tr('Category')}</Text>
+          <View style={styles.optionRow}>
+            {CATEGORY_TABS.map((category) => (
+              <TouchableOpacity key={category.id} accessibilityRole="radio" accessibilityState={{ checked: selectedCategory === category.id }} onPress={() => setFilter('category', category.id)} style={[styles.filterPill, selectedCategory === category.id && styles.filterPillActive]}>
+                <Text style={styles.filterPillText}>{tr(category.label)}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Text style={styles.filterLabel}>{tr('Duration')}</Text>
+          <View style={styles.optionRow}>
+            {(Object.keys(DURATION_LABELS) as CatalogFilters['duration'][]).map((duration) => (
+              <TouchableOpacity key={duration} accessibilityRole="radio" accessibilityState={{ checked: selectedDuration === duration }} onPress={() => setFilter('duration', duration)} style={[styles.filterPill, selectedDuration === duration && styles.filterPillActive]}>
+                <Text style={styles.filterPillText}>{tr(DURATION_LABELS[duration])}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Text style={styles.filterLabel}>{tr('Level')}</Text>
+          <View style={styles.optionRow}>
+            {(['all', 'beginner', 'intermediate', 'advanced'] as const).map((level) => (
+              <TouchableOpacity key={level} accessibilityRole="radio" accessibilityState={{ checked: selectedLevel === level }} onPress={() => setFilter('level', level)} style={[styles.filterPill, selectedLevel === level && styles.filterPillActive]}>
+                <Text style={styles.filterPillText}>{formatLevel(level)}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TouchableOpacity style={styles.sheetDone} onPress={() => setFiltersOpen(false)} accessibilityRole="button">
+            <Text style={styles.sheetDoneText}>{tr('Apply')}</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -349,6 +385,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  catalogHeader: {
+    gap: Spacing.md,
+  },
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -370,7 +409,6 @@ const styles = StyleSheet.create({
   pageTitle: {
     flex: 1,
     textAlign: 'left',
-    paddingHorizontal: Spacing.md,
     color: Colors.textPrimary,
     fontSize: FontSize.xl,
     fontWeight: FontWeight.bold,
@@ -426,7 +464,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     backgroundColor: 'rgba(30, 58, 52, 0.9)',
     borderRadius: BorderRadius.full,
     paddingHorizontal: Spacing.lg,
@@ -460,6 +498,17 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     fontWeight: FontWeight.medium,
   },
+  clearFilterButton: { minHeight: 44, justifyContent: 'center', paddingHorizontal: Spacing.sm },
+  clearFilterText: { color: Colors.primary, fontSize: FontSize.sm, fontWeight: FontWeight.semibold },
+  filterCount: { minWidth: 22, height: 22, paddingHorizontal: 5, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primary },
+  filterCountText: { color: Colors.background, fontSize: FontSize.xs, fontWeight: FontWeight.bold },
+  sheetOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.52)' },
+  filterSheet: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.md, paddingBottom: Spacing.xl, backgroundColor: Colors.backgroundElevated, borderTopLeftRadius: BorderRadius.xl, borderTopRightRadius: BorderRadius.xl, borderTopWidth: 1, borderColor: Colors.border, gap: Spacing.sm },
+  sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: Spacing.sm },
+  sheetTitle: { color: Colors.textPrimary, fontSize: FontSize.lg, fontWeight: FontWeight.semibold },
+  sheetClose: { width: 44, height: 44, borderRadius: BorderRadius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.backgroundCard },
+  sheetDone: { minHeight: 52, marginTop: Spacing.md, borderRadius: BorderRadius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primary },
+  sheetDoneText: { color: Colors.background, fontSize: FontSize.md, fontWeight: FontWeight.bold },
   searchContainer: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
@@ -484,7 +533,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
   },
   shelfSection: {
-    paddingTop: Spacing.md,
+    paddingTop: 0,
   },
   shelfSectionTitle: {
     paddingHorizontal: Spacing.lg,
@@ -501,7 +550,6 @@ const styles = StyleSheet.create({
   },
   shelfCard: {
     width: 260,
-    marginRight: Spacing.md,
   },
   cardThumbnailWrap: {
     height: 84,
@@ -531,14 +579,12 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     fontWeight: FontWeight.bold,
     fontFamily: FontFamily.heading,
-    marginTop: Spacing.sm,
     flexShrink: 1,
   },
   shelfSubtitle: {
     color: Colors.textMuted,
     fontSize: FontSize.sm,
     lineHeight: 18,
-    marginTop: 2,
     flexShrink: 1,
   },
   catalogContent: {
@@ -549,7 +595,7 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.sm,
+    paddingTop: 0,
     paddingBottom: Spacing.sm,
   },
   allCount: {
@@ -563,11 +609,8 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.md,
   },
   gridCard: {
+    height: 260,
     marginBottom: 0,
-    // Floor for visual consistency, but grow with content. A fixed height
-    // clipped the card background while the (overflow-visible) text rendered
-    // below it, so long names + the origin row spilled outside the card.
-    minHeight: 184,
   },
   gridTopRow: {
     flexWrap: 'wrap',
@@ -581,14 +624,12 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     fontWeight: FontWeight.bold,
     fontFamily: FontFamily.heading,
-    marginTop: Spacing.sm,
     flexShrink: 1,
   },
   gridSubtitle: {
     color: Colors.textMuted,
     fontSize: FontSize.sm,
     lineHeight: 18,
-    marginTop: 2,
     flexShrink: 1,
   },
   emptyState: {

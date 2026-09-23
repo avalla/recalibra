@@ -390,7 +390,7 @@ export const ProgressScreen: React.FC = () => {
                   {formatDate(session.created_at)} · {formatMinutes(Math.round(session.duration_seconds / 60))}</Text>
               </View>
               {hasRecordedStressPair(session) &&
-                renderStressChange(session.pre_stress_level, session.post_stress_level!)
+                renderStressChange(session.pre_stress_level!, session.post_stress_level!)
               }
             </Card>
           ))
@@ -482,7 +482,7 @@ const styles = StyleSheet.create({
   streakLabel: {
     color: Colors.textMuted,
     fontSize: FontSize.sm,
-    marginTop: 2,
+    marginTop: Spacing.xs,
   },
   chartCaption: {
     color: Colors.textMuted,
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
   sessionMeta: {
     color: Colors.textMuted,
     fontSize: FontSize.xs,
-    marginTop: 2,
+    marginTop: Spacing.xs,
   },
   stressChange: {
     flexDirection: 'row',

@@ -40,6 +40,6 @@ export function summarizeSessionStress(sessions: Session[]) {
   const round = (value: number) => Math.round(value * 10) / 10;
   return {
     averagePostStress: rated.length ? round(rated.reduce((sum, session) => sum + session.post_stress_level!, 0) / rated.length) : null,
-    averageReduction: paired.length ? round(paired.reduce((sum, session) => sum + session.pre_stress_level - session.post_stress_level!, 0) / paired.length) : null,
+    averageReduction: paired.length ? round(paired.reduce((sum, session) => sum + session.pre_stress_level! - session.post_stress_level!, 0) / paired.length) : null,
   };
 }

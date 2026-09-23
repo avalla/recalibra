@@ -1,4 +1,4 @@
-import type { BreathingPattern } from './index';
+import type { BreathingPattern, GuidanceMode, GuidanceSpeed, GuidedPlan } from './index';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { CompositeScreenProps, NavigatorScreenParams } from '@react-navigation/native';
@@ -36,6 +36,8 @@ export type JourneySessionContext = {
 
 export type ExerciseFlowParamList = {
   ExerciseDetail: { exerciseId: string };
+  ExerciseSafety: { exerciseId: string; journeyContext?: JourneySessionContext };
+  ExercisePreparation: { exerciseId: string; journeyContext?: JourneySessionContext };
   ExerciseSession: {
     exerciseId: string;
     exerciseName: string;
@@ -49,6 +51,11 @@ export type ExerciseFlowParamList = {
     tips?: string[];
     instructions?: { step: number; instruction: string }[];
     safetyWarning?: string;
+    guidedPlan?: GuidedPlan;
+    guidanceMode?: GuidanceMode;
+    guidanceSpeed?: GuidanceSpeed;
+    audioEnabled?: boolean;
+    preStressLevel?: number | null;
     journeyContext?: JourneySessionContext;
   };
   PostSession: {
@@ -56,7 +63,7 @@ export type ExerciseFlowParamList = {
     exerciseId?: string;
     exerciseName: string;
     durationSeconds: number;
-    preStressLevel: number;
+    preStressLevel: number | null;
     journeyContext?: JourneySessionContext;
   };
 };
@@ -84,6 +91,8 @@ export type RootStackParamList = {
   Screening: NavigatorScreenParams<ScreeningStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
   ExerciseDetail: ExerciseFlowParamList['ExerciseDetail'];
+  ExerciseSafety: ExerciseFlowParamList['ExerciseSafety'];
+  ExercisePreparation: ExerciseFlowParamList['ExercisePreparation'];
   ExerciseSession: ExerciseFlowParamList['ExerciseSession'];
   PostSession: ExerciseFlowParamList['PostSession'];
   QuickStartPreferences: { from?: 'home' | 'settings' } | undefined;

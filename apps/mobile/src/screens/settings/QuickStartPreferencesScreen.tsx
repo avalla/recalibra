@@ -23,7 +23,6 @@ import {
   getExerciseForQuickStart,
   loadQuickStartPreference,
   saveQuickStartPreference,
-  toExerciseSessionParams,
   type QuickStartMode,
   type QuickStartPreference,
 } from '@/utils/quick-start';
@@ -84,7 +83,9 @@ export const QuickStartPreferencesScreen: React.FC = () => {
         return;
       }
 
-      navigation.navigate('ExerciseSession', toExerciseSessionParams(exercise));
+      navigation.navigate(exercise.safety_warning ? 'ExerciseSafety' : 'ExercisePreparation', {
+        exerciseId: exercise.id,
+      });
       return;
     }
 
@@ -339,7 +340,7 @@ const styles = StyleSheet.create({
     color: Colors.background,
   },
   optionDescription: {
-    marginTop: 2,
+    marginTop: Spacing.xs,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
   },
@@ -348,7 +349,6 @@ const styles = StyleSheet.create({
   },
   favoriteSection: {
     marginBottom: Spacing.md,
-    marginTop: -Spacing.sm,
   },
   sectionLabel: {
     fontSize: FontSize.sm,
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
   favoriteItemMeta: {
-    marginTop: 2,
+    marginTop: Spacing.xs,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
   },

@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   started_at TEXT NOT NULL,
   completed_at TEXT,
   duration_seconds INTEGER NOT NULL,
-  pre_stress_level INTEGER NOT NULL,
+  pre_stress_level INTEGER,
   post_stress_level INTEGER,
   pre_stress_recorded INTEGER NOT NULL DEFAULT 0,
   post_stress_recorded INTEGER NOT NULL DEFAULT 0,

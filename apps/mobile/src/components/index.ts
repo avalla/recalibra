@@ -5,4 +5,5 @@ export * from './BreathingGraph';
 export * from './ErrorBoundary';
 export * from './ExerciseInstructions';
 export * from './ExerciseIllustration';
+export * from './GuidedCue';
 export * from './ExerciseAnimation';

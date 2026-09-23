@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { ExerciseWithFavorite, RootStackParamList } from '../types';
+import { getExercisePlan } from '../data/exercise-guidance';
 
 export type QuickStartMode = 'standard_2min' | 'favorite' | 'smart';
 
@@ -192,5 +193,6 @@ export function toExerciseSessionParams(exercise: ExerciseWithFavorite): Exercis
     tips: exercise.tips,
     instructions: exercise.instructions,
     safetyWarning: exercise.safety_warning,
+    guidedPlan: getExercisePlan(exercise),
   };
 }

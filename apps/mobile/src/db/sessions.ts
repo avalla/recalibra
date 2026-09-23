@@ -20,7 +20,7 @@ export async function listSessions(limit = 20): Promise<SessionWithExercise[]> {
     started_at: string;
     completed_at: string | null;
     duration_seconds: number;
-    pre_stress_level: number;
+    pre_stress_level: number | null;
     post_stress_level: number | null;
     pre_stress_recorded: number;
     post_stress_recorded: number;
@@ -65,7 +65,7 @@ export async function listSessions(limit = 20): Promise<SessionWithExercise[]> {
 
 export async function startSession(input: {
   exerciseId: string;
-  preStressLevel: number;
+  preStressLevel: number | null;
   preStressRecorded?: boolean;
 }): Promise<{ data: Session | null; error: Error | null }> {
   try {

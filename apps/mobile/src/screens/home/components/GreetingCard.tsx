@@ -22,7 +22,7 @@ export const GreetingCard: React.FC<GreetingCardProps> = ({ userName, greetingPh
       end={{ x: 1, y: 1 }}
       style={styles.greetingGradient}
     >
-      <View style={styles.greeting}>
+      <View>
         <Text style={styles.greetingTitle}>{userName ? tr("Hi {{name}},", { name: userName }) : tr("Hi")}</Text>
         <Text style={styles.greetingSubtitle}>{tr(greetingPhrase)}</Text>
       </View>
@@ -31,10 +31,6 @@ export const GreetingCard: React.FC<GreetingCardProps> = ({ userName, greetingPh
 };
 
 const styles = StyleSheet.create({
-  greeting: {
-    marginTop: Spacing.lg,
-    marginBottom: Spacing.xl,
-  },
   greetingGradient: {
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,

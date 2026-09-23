@@ -8,7 +8,7 @@ export interface SessionData {
   started_at: string;
   completed_at?: string;
   duration_seconds?: number;
-  pre_stress_level: number;
+  pre_stress_level: number | null;
   post_stress_level?: number;
   notes?: string;
 }
@@ -28,7 +28,7 @@ export class SessionManager {
   }
 
   // Start a new session
-  async startSession(exerciseId: string, preStressLevel: number): Promise<boolean> {
+  async startSession(exerciseId: string, preStressLevel: number | null): Promise<boolean> {
     try {
       const result = await startDbSession({ exerciseId, preStressLevel });
       if (result.error || !result.data) throw result.error;

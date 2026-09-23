@@ -5,7 +5,7 @@ import { MainTabNavigator } from './MainTabNavigator';
 import { ScreeningNavigator } from './ScreeningNavigator';
 import { OnboardingScreen } from '../screens/auth/OnboardingScreen';
 import { QuickStartPreferencesScreen } from '../screens/settings';
-import { ExerciseDetailScreen, ExerciseSessionScreen, PostSessionScreen } from '../screens';
+import { ExerciseDetailScreen, ExercisePreparationScreen, ExerciseSafetyScreen, ExerciseSessionScreen, PostSessionScreen } from '../screens';
 import { JourneyDetailScreen } from '../screens/journey';
 import { useAuth } from '../contexts';
 import { Colors } from '../constants';
@@ -39,6 +39,8 @@ export const RootNavigator: React.FC = () => {
       <Stack.Screen name="Main" component={MainTabNavigator} />
 
       <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
+      <Stack.Screen name="ExerciseSafety" component={ExerciseSafetyScreen} />
+      <Stack.Screen name="ExercisePreparation" component={ExercisePreparationScreen} />
       <Stack.Screen name="ExerciseSession" component={ExerciseSessionScreen} />
       <Stack.Screen name="PostSession" component={PostSessionScreen} />
       <Stack.Screen name="JourneyDetail" component={JourneyDetailScreen} />

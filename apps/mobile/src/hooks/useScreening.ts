@@ -31,15 +31,18 @@ export const useScreening = () => {
         initial_stress_level: dataToSave.initial_stress_level || 5,
       });
 
-      // Mark onboarding as completed in user metadata
-      await updateUserMetadata({ onboarding_completed: true });
+      // Mark onboarding as completed in user metadata and do not hide auth errors.
+      const { error } = await updateUserMetadata({ onboarding_completed: true });
+      if (error) {
+        return { error };
+      }
 
-      setIsLoading(false);
       return { error: null };
     } catch (error) {
-      setIsLoading(false);
       console.error('[useScreening] Error saving profile:', error);
       return { error };
+    } finally {
+      setIsLoading(false);
     }
   }, [screeningData, updateUserMetadata]);
 
