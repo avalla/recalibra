@@ -10,6 +10,11 @@ const wait = (durationMs: number): GuidedAction => ({ type: 'wait', durationMs }
 const visual = (cue: string, durationMs: number): GuidedAction => ({ type: 'visual', cue, durationMs });
 const pulse: GuidedAction = { type: 'haptic', pattern: 'light' };
 
+const breathingPhase = (cue: string, text: string, durationSeconds: number): GuidedAction[] => [
+  speak(text),
+  ...(durationSeconds > 0 ? [visual(cue, durationSeconds * 1000)] : []),
+];
+
 function createEyeYogaPlan(language: GuidanceLanguage): GuidedPlan {
   const copy = (italian: string, english: string) => localized(language, italian, english);
   return {
@@ -74,11 +79,11 @@ function createBreathingPlan(exercise: Exercise, language: GuidanceLanguage): Gu
   const cycleSeconds = pattern.inhale + pattern.hold + pattern.exhale + pattern.rest;
   const cycles = pattern.cycles ?? Math.max(1, Math.floor((exercise.duration_minutes * 60) / cycleSeconds));
   const actions: GuidedAction[] = [
-    speak(copy('Inspira lentamente.', 'Breathe in slowly.')), wait(pattern.inhale * 1000),
+    ...breathingPhase('breathing-in', copy('Inspira lentamente.', 'Breathe in slowly.'), pattern.inhale),
   ];
-  if (pattern.hold > 0) actions.push(speak(copy('Trattieni dolcemente.', 'Hold gently.')), wait(pattern.hold * 1000));
-  actions.push(speak(copy('Espira lentamente.', 'Breathe out slowly.')), wait(pattern.exhale * 1000));
-  if (pattern.rest > 0) actions.push(speak(copy('Riposa.', 'Rest.')), wait(pattern.rest * 1000));
+  if (pattern.hold > 0) actions.push(...breathingPhase('breathing-hold', copy('Trattieni dolcemente.', 'Hold gently.'), pattern.hold));
+  actions.push(...breathingPhase('breathing-out', copy('Espira lentamente.', 'Breathe out slowly.'), pattern.exhale));
+  if (pattern.rest > 0) actions.push(...breathingPhase('breathing-rest', copy('Riposa.', 'Rest.'), pattern.rest));
 
   return {
     mode: 'automatic',

@@ -9,6 +9,7 @@ export interface GuidedRunnerSnapshot {
   stepCount: number;
   instruction: string;
   visualCue?: string;
+  visualCueDurationMs?: number;
   elapsedMs: number;
   completedStepIds: readonly string[];
 }
@@ -79,6 +80,7 @@ export class GuidedSessionRunner {
   private runningSince: number | null = null;
   private completedNotified = false;
   private visualCue: string | undefined;
+  private visualCueDurationMs: number | undefined;
 
   constructor(plan: GuidedPlan, dependencies: GuidedRunnerDependencies) {
     this.plan = plan;
@@ -94,6 +96,7 @@ export class GuidedSessionRunner {
       stepCount: this.plan.steps.length,
       instruction: step?.instruction ?? '',
       visualCue: this.visualCue ?? step?.visualCue,
+      visualCueDurationMs: this.visualCueDurationMs,
       elapsedMs: this.elapsedMs(),
       completedStepIds: [...this.completedStepIds],
     };
@@ -181,6 +184,7 @@ export class GuidedSessionRunner {
     }
     this.actionQueue = this.plan.mode === 'automatic' ? withVisualDuration(step.actions) : [];
     this.visualCue = step.visualCue;
+    this.visualCueDurationMs = undefined;
     this.pausedWaitMs = null;
   }
 
@@ -221,6 +225,7 @@ export class GuidedSessionRunner {
         return token === this.generation && this.status === 'running';
       case 'visual':
         this.visualCue = action.cue;
+        this.visualCueDurationMs = action.durationMs;
         return true;
       case 'wait':
         return this.wait(action.durationMs, token);

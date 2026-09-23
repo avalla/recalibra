@@ -205,7 +205,12 @@ export const ExerciseSessionScreen: React.FC = () => {
       </View>
 
       <View style={styles.content}>
-        <GuidedCue cue={snapshot.visualCue} instruction={snapshot.instruction} />
+        <GuidedCue
+          cue={snapshot.visualCue}
+          durationMs={snapshot.visualCueDurationMs}
+          instruction={snapshot.instruction}
+          paused={snapshot.status !== 'running'}
+        />
         <Text style={styles.instruction} accessibilityRole="text">{snapshot.instruction}</Text>
         {snapshot.status === 'idle' ? <Text style={styles.starting}>{tr('Starting session...')}</Text> : null}
         <Text style={styles.elapsed}>{formatElapsed(snapshot.elapsedMs)}</Text>

@@ -16,3 +16,15 @@ test('eye yoga exposes a generic automatic guided plan', () => {
   expect(plan.mode).toBe('automatic');
   expect(plan.steps.map((step) => step.id)).toEqual(['prepare', 'up-down', 'left-right', 'diagonals', 'circles', 'rest']);
 });
+
+test('timed breathing exposes visual inhale and exhale phases', () => {
+  const breathing = seedExercises.find((exercise) => exercise.category === 'breathing' && exercise.breathing_pattern);
+  expect(breathing).toBeDefined();
+  const plan = getExercisePlan(breathing!);
+  const repeat = plan.steps[0]?.actions[0];
+  expect(repeat?.type).toBe('repeat');
+  if (repeat?.type !== 'repeat') return;
+  expect(repeat.actions.filter((action) => action.type === 'visual').map((action) => action.cue)).toEqual(
+    expect.arrayContaining(['breathing-in', 'breathing-out']),
+  );
+});

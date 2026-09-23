@@ -95,6 +95,18 @@ describe('GuidedSessionRunner', () => {
     expect(completions).toBe(1);
   });
 
+  test('publishes the active visual cue and its duration', async () => {
+    const timer = new FakeTimer();
+    const runner = new GuidedSessionRunner(plan('automatic', [step('breath', [
+      { type: 'visual', cue: 'breathing-in', durationMs: 4000 },
+    ])]), { timer, speech: new FakeSpeech() });
+
+    runner.start();
+
+    expect(runner.snapshot().visualCue).toBe('breathing-in');
+    expect(runner.snapshot().visualCueDurationMs).toBe(4000);
+  });
+
   test('repeat actions expand into repeated guided actions', async () => {
     const timer = new FakeTimer();
     const speech = new FakeSpeech();
